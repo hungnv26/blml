@@ -19,9 +19,11 @@ class AccountSettingsViewController: UITableViewController {
     private static let kPersonalDanger = 4
     private static let kPersonalDescription = 5
     private static let kSectionActions = 2
-    // Account and Security = 0, Notifications = 1, Help and About = 2
-    private static let kActionsQRCode = 3
-    private static let kActionsInvite = 4
+    // Row order must match the storyboard's Actions section:
+    // Account and Security = 0, Notifications = 1, Help and About = 3.
+    private static let kActionsAppearance = 2
+    private static let kActionsQRCode = 4
+    private static let kActionsInvite = 5
 
     @IBOutlet weak var avatarImageView: RoundImageView!
     @IBOutlet weak var userNameLabel: UILabel!
@@ -111,6 +113,9 @@ class AccountSettingsViewController: UITableViewController {
 
         let cell = tableView.cellForRow(at: indexPath)
         switch indexPath.row {
+        case AccountSettingsViewController.kActionsAppearance:
+            tableView.deselectRow(at: indexPath, animated: true)
+            navigationController?.pushViewController(AppearanceViewController(style: .insetGrouped), animated: true)
         case AccountSettingsViewController.kActionsQRCode:
             tableView.deselectRow(at: indexPath, animated: true)
             showMyQRCode()
