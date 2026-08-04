@@ -25,6 +25,10 @@ class SignupViewController: UITableViewController {
     @IBOutlet weak var telTextField: PhoneNumberTextField!
     @IBOutlet weak var signUpButton: UIButton!
 
+    // Tags sent at account creation; carries the invite code when the server is
+    // configured invite-only.
+    private var signupTags: [String]?
+
     var imagePicker: ImagePicker!
     var avatarReceived: Bool = false
 
@@ -136,7 +140,7 @@ class SignupViewController: UITableViewController {
             do {
                 try Cache.tinode.connectDefault(inBackground: false)?
                     .thenApply { _ in
-                        return Cache.tinode.createAccountBasic(uname: login, pwd: pwd, login: true, tags: nil, desc: desc, creds: creds)
+                        return Cache.tinode.createAccountBasic(uname: login, pwd: pwd, login: true, tags: self.signupTags, desc: desc, creds: creds)
                     }
                     .thenApply { [weak self] msg in
                         let tinode = Cache.tinode
@@ -185,10 +189,12 @@ class SignupViewController: UITableViewController {
             avatar = nil
         }
 
-        var description: String?
-        if let desc = self.descriptionTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) {
-            description = String(desc.prefix(UiUtils.kMaxTopicDescriptionLength))
-        }
+        // The former "Description" field now carries the invite code. It is sent as
+        // a "code:<value>" tag, which every Tinode SDK already supports, and the
+        // server strips it before storing so it never lands on the account.
+        let description: String? = nil
+        let inviteCode = self.descriptionTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        self.signupTags = inviteCode.isEmpty ? nil : ["code:" + inviteCode]
         if let imageBits = avatar?.pixelData(forMimeType: Photo.kDefaultType) {
             if imageBits.count > UiUtils.kMaxInbandAvatarBytes {
                 // Sending image out of band.

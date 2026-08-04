@@ -130,3 +130,34 @@ Two caching gotchas when shipping webapp updates, learned the hard way:
   until ICE is configured.
 - **Monitoring** — upstream ships an exporter (`server/monitoring/`) for
   Prometheus/InfluxDB if you ever want it.
+
+## Invite-only registration
+
+The server is invite-only: creating an account requires a registration code.
+Without one the server returns `403 permission denied` with
+`params: {"what": "registration-code"}`.
+
+- The code lives in `deploy/secrets.env` as `REGISTRATION_CODE` (gitignored).
+- `gen-config.sh` injects it into `blml.conf` as `"registration_codes"`.
+- Clients present it as a `code:<value>` tag at signup. Tags are carried by every
+  Tinode SDK, so this needed no protocol or SDK change. The server strips the tag
+  before saving, so codes never land on accounts or in discovery.
+- On iOS the signup screen's **Invite code** field carries it (this reuses the
+  old "Description" row — a per-user bio is useless for a family chat).
+
+**To change the code:** edit `REGISTRATION_CODE` in `secrets.env`, then
+
+```bash
+cd deploy && ./gen-config.sh && set -a && source secrets.env && set +a && docker compose up -d --build
+```
+
+Existing accounts are unaffected — the code is only checked at signup.
+
+**To reopen registration:** blank out `REGISTRATION_CODE` and regenerate. The
+server logs which mode it is in at startup ("Registration is invite-only" vs
+"Registration is OPEN").
+
+**Not yet wired:** the web and Android signup forms have no invite-code field, so
+signup from those clients now fails while the gate is on. iOS is the only client
+that can register today.
+

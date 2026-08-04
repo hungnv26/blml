@@ -35,5 +35,20 @@ for leaked in 'T713/rYYgW7g4m3vG6zGRh7' 'wfaY2RgF2S1OQI' 'la6YsO+bNX'; do
   fi
 done
 
+# Invite-only registration: inject the code as a top-level array. An empty
+# REGISTRATION_CODE leaves registration open.
+if [ -n "${REGISTRATION_CODE:-}" ]; then
+  python3 - "$REGISTRATION_CODE" "$OUT" <<'PYEOF'
+import re, sys
+code, path = sys.argv[1], sys.argv[2]
+s = open(path).read()
+s = re.sub(r'\n\t"registration_codes": \[[^\]]*\],', '', s)
+entry = '\n\t"registration_codes": ["%s"],' % code
+s = re.sub(r'(\n\t"api_key_salt": "[^"]*",)', lambda m: m.group(1) + entry, s, count=1)
+open(path, 'w').write(s)
+PYEOF
+  echo "  registration_codes: invite-only enabled"
+fi
+
 echo "wrote $OUT"
 grep -n '"use_adapter"\|"Host"\|"max_size"\|"upload_dir"' "$OUT" | head -6

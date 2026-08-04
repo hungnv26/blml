@@ -160,6 +160,9 @@ var globals struct {
 
 	// Salt used for signing API key.
 	apiKeySalt []byte
+
+	// Accepted registration codes; empty means registration is open.
+	registrationCodes []string
 	// Tag namespaces (prefixes) which are immutable to the client.
 	immutableTagNS map[string]bool
 	// Tag namespaces which are immutable on User and partially mutable on Topic:
@@ -279,6 +282,11 @@ type configType struct {
 	StaticData string `json:"static_data"`
 	// Salt used in signing API keys
 	APIKeySalt []byte `json:"api_key_salt"`
+
+	// Registration codes. When non-empty, creating an account requires the client
+	// to present one of these codes (as a "code:<value>" tag). Turns an open
+	// server into an invite-only one without needing email/SMS infrastructure.
+	RegistrationCodes []string `json:"registration_codes"`
 	// Maximum message size allowed from client. Intended to prevent malicious client from sending
 	// very large files inband (does not affect out of band uploads).
 	MaxMessageSize int `json:"max_message_size"`
@@ -450,6 +458,13 @@ func main() {
 
 	// API key signing secret
 	globals.apiKeySalt = config.APIKeySalt
+
+	globals.registrationCodes = config.RegistrationCodes
+	if len(globals.registrationCodes) > 0 {
+		logs.Info.Printf("Registration is invite-only: %d code(s) accepted", len(globals.registrationCodes))
+	} else {
+		logs.Info.Println("Registration is OPEN: anyone can create an account")
+	}
 
 	err = store.InitAuthLogicalNames(config.Auth["logical_names"])
 	if err != nil {

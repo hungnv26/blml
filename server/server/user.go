@@ -2,7 +2,9 @@ package main
 
 import (
 	"container/heap"
+	"crypto/subtle"
 	"math/rand"
+	"strings"
 	"time"
 
 	"slices"
@@ -23,6 +25,42 @@ const (
 )
 
 // Process request for a new account.
+// kRegistrationCodeTag is the tag namespace clients use to present an invite
+// code at signup. Chosen because `tags` is already carried by every Tinode SDK,
+// so gating needs no protocol or SDK change.
+const kRegistrationCodeTag = "code:"
+
+// checkRegistrationCode reports whether tags carry a configured code.
+// Comparison is constant-time to avoid leaking codes through timing.
+func checkRegistrationCode(tags []string) bool {
+	for _, tag := range tags {
+		if !strings.HasPrefix(tag, kRegistrationCodeTag) {
+			continue
+		}
+		presented := strings.TrimPrefix(tag, kRegistrationCodeTag)
+		for _, want := range globals.registrationCodes {
+			if subtle.ConstantTimeCompare([]byte(presented), []byte(want)) == 1 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// stripRegistrationCodeTags removes code tags so they are never stored.
+func stripRegistrationCodeTags(tags []string) []string {
+	if len(tags) == 0 {
+		return tags
+	}
+	out := tags[:0]
+	for _, tag := range tags {
+		if !strings.HasPrefix(tag, kRegistrationCodeTag) {
+			out = append(out, tag)
+		}
+	}
+	return out
+}
+
 func replyCreateUser(s *Session, msg *ClientComMessage, rec *auth.Rec) {
 	// The session cannot authenticate with the new account because  it's already authenticated.
 	if msg.Acc.Login && (!s.uid.IsZero() || rec != nil) {
@@ -39,6 +77,22 @@ func replyCreateUser(s *Session, msg *ClientComMessage, rec *auth.Rec) {
 		logs.Warn.Println("create user: unknown auth handler, sid=", s.sid)
 		return
 	}
+
+	// Invite-only gate: when registration codes are configured, the client must
+	// present a valid one as a "code:<value>" tag. Checked before any account
+	// work so a wrong code costs nothing. The tag is stripped below so codes are
+	// never stored on the user or exposed via discovery.
+	if len(globals.registrationCodes) > 0 {
+		if !checkRegistrationCode(msg.Acc.Tags) {
+			logs.Warn.Println("create user: missing or invalid registration code, sid=", s.sid)
+			resp := ErrPermissionDenied(msg.Id, "", msg.Timestamp)
+			resp.Ctrl.Params = map[string]any{"what": "registration-code"}
+			s.queueOut(resp)
+			return
+		}
+	}
+	// Never persist the code, valid or not.
+	msg.Acc.Tags = stripRegistrationCodeTags(msg.Acc.Tags)
 
 	// Check if login is unique and compliance with the policy (not too long or too short).
 	if ok, err := authhdl.IsUnique(msg.Acc.Secret, s.remoteAddr); !ok {
