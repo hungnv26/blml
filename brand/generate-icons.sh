@@ -98,11 +98,14 @@ ok "16 app icon sizes"
 
 # The in-app logo on the login, signup, reset-password and launch screens. Separate
 # asset from AppIcon — miss it and the app still shows the Tinode logo at runtime.
+# Prefer the background-free mark here: on the dark welcome screen the full
+# icon card reads as a pasted square. Falls back to icon.png if absent.
+LOGO_SRC="$BRAND/logo-transparent.png"; [ -f "$LOGO_SRC" ] || LOGO_SRC="$SRC"
 L="$ROOT/ios/Tinodios/Supporting Files/Assets.xcassets/logo-ios.imageset"
-resize "$SRC" 288 "$L/logo-ios.png"
-resize "$SRC" 576 "$L/logo-ios@2x.png"
-resize "$SRC" 864 "$L/logo-ios@3x.png"
-ok "logo-ios.imageset — in-app + launch screen logo"
+resize "$LOGO_SRC" 288 "$L/logo-ios.png"
+resize "$LOGO_SRC" 576 "$L/logo-ios@2x.png"
+resize "$LOGO_SRC" 864 "$L/logo-ios@3x.png"
+ok "logo-ios.imageset — in-app + launch screen logo (transparent)"
 
 say "Done."
 cat <<EOF
