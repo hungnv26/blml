@@ -392,6 +392,19 @@ func rewriteTag(orig, countryCode string) []string {
 	}
 
 	if tagRegexp.MatchString(orig) {
+		// Also try the login namespace, so searching "alice" finds a user tagged
+		// "basic:alice". Without this a bare username matches nothing and the
+		// searcher has to know to type the namespace prefix themselves.
+		//
+		// Same shape as the email/phone rewrite above: the returned slice is an
+		// OR group, so this widens the search rather than narrowing it.
+		//
+		// "basic" is the tag namespace the basic (login+password) authenticator
+		// writes when add_to_tags is on. Add more here if other auth schemes with
+		// add_to_tags are enabled.
+		if !strings.Contains(orig, ":") {
+			return []string{orig, "basic:" + orig}
+		}
 		return []string{orig}
 	}
 

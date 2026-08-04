@@ -178,6 +178,27 @@ Tinode references) → code accepted → credential stored with `done = true`.
 
 Existing accounts are unaffected; the check applies at signup.
 
+
+## Finding people by username
+
+Searching a bare username works: typing `alice` in Contacts finds the user whose
+login is `alice`.
+
+Upstream only matched the fully-namespaced tag (`basic:alice`), which nobody
+would think to type, so username search silently returned nothing. `rewriteTag`
+in `server/server/utils.go` now expands a bare token into an OR group
+`["alice", "basic:alice"]` — the same shape it already used to let a bare email
+match an `email:` tag. It widens the search; it never narrows it.
+
+Verified A/B against the live server: with the change `thao` finds "Tho" and
+`hungnv` finds "hung viet ngo"; without it both return nothing.
+
+Note you never appear in your own search results — that is Tinode behaviour, not
+a bug.
+
+If you enable another auth scheme with `add_to_tags`, add its namespace beside
+`basic:` in that function.
+
 ## Invite-only registration
 
 The server is invite-only: creating an account requires a registration code.
