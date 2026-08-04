@@ -206,6 +206,11 @@ class MessageViewController: UIViewController {
 
     // Messages to be displayed
     var messages: [Message] = []
+
+    // seqId of the message whose context menu is currently open. Set when the menu
+    // is shown; read by the menu actions. Replaces reading it back from the
+    // sender, which iOS 26 no longer supports (UIMenuController was removed).
+    static var activeMenuSeqId: Int = -1
     // For updating individual messages, we need:
     // * Tinode sequence id -> messages offset.
     var messageSeqIdIndex: [Int: Int] = [:]
