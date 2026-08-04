@@ -131,6 +131,53 @@ Two caching gotchas when shipping webapp updates, learned the hard way:
 - **Monitoring** — upstream ships an exporter (`server/monitoring/`) for
   Prometheus/InfluxDB if you ever want it.
 
+
+## Email verification
+
+Enabled: signing up now requires confirming an email before the account works.
+The server replies `300 validate credentials`, sends a code, and the client shows
+a "Confirm credentials" screen.
+
+Settings live in `deploy/secrets.env` (gitignored) and are injected into
+`blml.conf` by `gen-config.sh`:
+
+```
+EMAIL_VERIFICATION=true
+SMTP_SERVER=mailpit     # local catcher; a real host in production
+SMTP_PORT=1025
+SMTP_LOGIN=
+SMTP_PASSWORD=
+SMTP_SENDER='"BLML" <noreply@blml.app>'
+```
+
+**Local development** uses the `mailpit` container in `docker-compose.yml` — a
+fake SMTP server that captures every message. Open <http://localhost:8025> to
+read verification emails without any real mail account.
+
+**Production** — swap in a real provider and drop the mailpit service. Gmail
+needs an App Password (not your login password):
+
+```
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_LOGIN=you@gmail.com
+SMTP_PASSWORD=<16-char app password>
+```
+
+Then `./gen-config.sh && docker compose up -d --build`.
+
+**To disable:** set `EMAIL_VERIFICATION=false` and regenerate.
+
+### Why this matters beyond signup
+
+Before this, the `credentials` table was completely empty, so **email search and
+address-book contact sync silently returned nothing**. A verified account now
+gets an `email:<address>` tag, which is what those features look up. Verified
+end-to-end: signup gated → BLML-branded mail sent from `noreply@blml.app` (no
+Tinode references) → code accepted → credential stored with `done = true`.
+
+Existing accounts are unaffected; the check applies at signup.
+
 ## Invite-only registration
 
 The server is invite-only: creating an account requires a registration code.
