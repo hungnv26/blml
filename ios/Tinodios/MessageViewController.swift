@@ -614,11 +614,44 @@ class MessageViewController: UIViewController {
         performSegue(withIdentifier: "Messages2TopicInfo", sender: nil)
     }
 
+    /// Wallpapers chosen from the server gallery, kept on disk so opening a chat
+    /// never waits on the network for its own background. Downloaded once by the
+    /// picker; a miss here just falls through to the built-in tile.
+    static func cachedWallpaper(named name: String) -> UIImage? {
+        if let cached = wallpaperCache[name] {
+            return cached
+        }
+        guard let dir = try? FileManager.default.url(for: .cachesDirectory, in: .userDomainMask,
+                                                     appropriateFor: nil, create: true) else {
+            return nil
+        }
+        let file = dir.appendingPathComponent("wallpaper-" + name)
+        guard let data = try? Data(contentsOf: file), let image = UIImage(data: data) else {
+            return nil
+        }
+        wallpaperCache[name] = image
+        return image
+    }
+
+    /// Stores a downloaded wallpaper for `cachedWallpaper(named:)` to find later.
+    static func storeWallpaper(_ data: Data, named name: String) {
+        guard let dir = try? FileManager.default.url(for: .cachesDirectory, in: .userDomainMask,
+                                                     appropriateFor: nil, create: true) else {
+            return
+        }
+        try? data.write(to: dir.appendingPathComponent("wallpaper-" + name))
+        wallpaperCache[name] = UIImage(data: data)
+    }
+
+    private static var wallpaperCache: [String: UIImage] = [:]
+
     private func setInterfaceColors() {
         // WhatsApp-style chat canvas: our own subtle doodle tile (light/dark
         // variants resolve automatically via the asset catalog), with the flat
         // color as fallback. Collection view stays transparent over it.
-        if let tile = UIImage(named: "chat-wallpaper") {
+        if let chosen = AppearanceSettings.wallpaper, let tile = MessageViewController.cachedWallpaper(named: chosen) {
+            view.backgroundColor = UIColor(patternImage: tile)
+        } else if let tile = UIImage(named: "chat-wallpaper") {
             view.backgroundColor = UIColor(patternImage: tile)
         } else if traitCollection.userInterfaceStyle == .dark {
             view.backgroundColor = UIColor(fromHexCode: 0xff0b141a)

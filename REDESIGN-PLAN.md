@@ -155,6 +155,45 @@ preference; iOS follows the system and needs an override), Chats settings /
 wallpaper picker (Android already has `WallpaperFragment`), Starred messages,
 Broadcast via Tinode channels.
 
+## WhatsApp feature parity — Phase 2 ✅ DONE 2026-08-04
+
+Appearance: theme picker and chat wallpaper. Same finding as Phase 1 — **Android
+already had all of it** (Settings > General: Follow System / Light / Dark, plus
+Change Wallpaper). Phase 2 was an iOS catch-up job, not new product work.
+
+The wallpaper gallery is worth knowing about: it is served by **our own server**
+at `/img/bkg/index.json`, shipping with the web app's static files (12 patterns
+plus full images). Nothing points at tinode.co, so a self-hosted BLML has a
+working gallery with no third-party dependency. iOS now reads the same index
+Android does.
+
+| Feature | Android | iOS |
+|---|---|---|
+| Theme override | already had it | added — `overrideUserInterfaceStyle` per window, applied at launch |
+| Wallpaper picker | already had it | added — same server gallery, disk-cached |
+
+Chosen wallpapers are cached to disk, so opening a chat never waits on the
+network to paint its own background.
+
+**Settings order left alone.** WhatsApp's exact grouping (Account / Privacy /
+Chats / Appearance / Notifications) needs Privacy and Chats screens that do not
+exist here, so regrouping now would create empty categories and have to be
+redone. Appearance was slotted next to Notifications instead, with the existing
+rows kept in place.
+
+### Not done, and why
+
+- **Starred messages** — Tinode's pinning is per-topic and owner-only, so true
+  personal starring means client-side storage on every client, plus a list
+  screen on each. Meanwhile **Saved messages** (the `slf` topic) already covers
+  most of the need. Worth doing, but it is a Phase 3 sized job, not a settings
+  toggle.
+- **Broadcast messages** — maps to Tinode channels (`chn` topics), which need
+  creation and subscriber-management UI. For a 50-person family with one
+  "BLML General" group, that group already *is* the broadcast.
+- **Calls tab** — unchanged: blocked on a TURN relay, which is a VPS decision.
+  See SETUP.md, "Voice/video calls".
+
 ## Verifying Android changes (emulator)
 
 Android UI work went unverified for a while because there was no Android device

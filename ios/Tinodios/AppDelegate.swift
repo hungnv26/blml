@@ -83,6 +83,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Cache.log.info("App launched with options: %@", launchOptions ?? [:])
         // WhatsApp-style green accent for links, buttons, and controls app-wide.
         window?.tintColor = UIColor(fromHexCode: 0xff00a884)
+        // Restore the user's theme choice. Windows exist by now, but scene-based
+        // ones may not, so AppearanceSettings.apply() also runs after login.
+        window?.overrideUserInterfaceStyle = AppearanceSettings.theme.interfaceStyle
+        AppearanceSettings.apply()
         if SharedUtils.isFirstLaunch {
             Cache.log.info("First time launch. Setting up...")
             SharedUtils.isFirstLaunch = false
