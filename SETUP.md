@@ -217,6 +217,55 @@ in-band messages inside each conversation, so the history exists and a tab could
 be built over it — but it would list nothing until calls are actually being
 placed, so it is worth doing after TURN is up.
 
+## Phone numbers and address-book sync
+
+Adding a phone number in Settings makes you findable by it, and lets other
+people's address-book sync match you automatically. It is **optional** — nothing
+prompts for it and nobody is locked out without one.
+
+```
+PHONE_VERIFICATION=true
+PHONE_DEBUG_CODE=123456
+TWILIO_SID=
+TWILIO_TOKEN=
+```
+
+**No SMS is sent.** With Twilio credentials blank the server accepts
+`PHONE_DEBUG_CODE` from anyone, so a person could claim a number that is not
+theirs. That is tolerable only because registration is invite-only and everyone
+here is family. Fill in `TWILIO_SID`/`TWILIO_TOKEN` for real SMS verification —
+`gen-config.sh` already writes the `twilio_conf` block when both are set, and
+drops the debug code at the same time.
+
+### Two upstream traps this had to get around
+
+`"required"` on a validator does double duty, and both settings are wrong out of
+the box:
+
+- **Empty** — the validator is skipped at startup entirely
+  (`if len(vconf.Required) == 0 { continue }` in main.go). It is then absent
+  from `globals.validators`, so `rewriteTag` never asks it to expand a bare
+  phone number into a `tel:` tag, and searching a number finds nothing.
+- **`["auth"]`** — a verified phone becomes mandatory. Login gating reads
+  `globals.authValidators[session auth level]`, so every existing account
+  without a phone gets `300 validate credentials` and cannot log in. Verified
+  the hard way: it locked out all four accounts.
+
+So the config uses **`["root"]`**: enough to register the validator, while
+leaving the map empty for ordinary logins.
+
+That alone was still not enough. `validatedCreds` in `server/server/user.go`
+returned early whenever no validator was required at the session's auth level,
+which silently discarded attempts to confirm an optional credential — the
+client got `200 ok` while the credential stayed unverified and no tag was
+written. It now skips only when there is genuinely nothing to check. **This is a
+local patch to the server**; keep it when merging upstream.
+
+Verified end-to-end: phone attached and confirmed through the same `{set}` on
+`me` the apps use, `credentials.done = true`, a `tel:` tag written, and the
+number found by search — `+61412345678` always, and the local `0412345678` too
+as long as the client sends its locale, which both apps do.
+
 ## Finding people by username
 
 Searching a bare username works: typing `alice` in Contacts finds the user whose
