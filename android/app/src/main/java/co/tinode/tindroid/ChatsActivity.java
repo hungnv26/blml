@@ -11,6 +11,8 @@ import android.view.Menu;
 
 import java.util.List;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -33,6 +35,7 @@ import co.tinode.tinodesdk.model.Subscription;
  */
 public class ChatsActivity extends BaseActivity
         implements UiUtils.ProgressIndicator, UtilsMedia.MediaPreviewer,
+        FindFragment.ReadContactsPermissionChecker,
         ImageViewFragment.AvatarCompletionHandler {
     static final String TAG_FRAGMENT_NAME = "fragment";
     static final String FRAGMENT_CHATLIST = "contacts";
@@ -48,7 +51,13 @@ public class ChatsActivity extends BaseActivity
     static final String FRAGMENT_ARCHIVE = "archive";
     static final String FRAGMENT_BANNED = "banned";
     static final String FRAGMENT_WALLPAPERS = "wallpapers";
+    static final String FRAGMENT_FIND = "find";
 
+    private BottomNavigationView mBottomNav = null;
+    // Set while the bar is being selected programmatically, so the tab listener
+    // ignores that selection instead of navigating again (which recursed until
+    // the stack overflowed).
+    private boolean mSuppressNavListener = false;
     private ContactsEventListener mTinodeListener = null;
     private MeListener mMeTopicListener = null;
     private MeTopic<VxCard> mMeTopic = null;
@@ -76,8 +85,133 @@ public class ChatsActivity extends BaseActivity
                     .commit();
         }
 
+        mBottomNav = findViewById(R.id.bottomNav);
+        mBottomNav.setOnItemSelectedListener(item -> {
+            if (mSuppressNavListener) {
+                // Selection came from syncBottomNav, not from the user.
+                return true;
+            }
+            final int id = item.getItemId();
+            if (id == R.id.nav_chats) {
+                showFragment(FRAGMENT_CHATLIST, null);
+            } else if (id == R.id.nav_contacts) {
+                showFragment(FRAGMENT_FIND, null);
+            } else if (id == R.id.nav_settings) {
+                showFragment(FRAGMENT_ACCOUNT_INFO, null);
+            } else {
+                return false;
+            }
+            return true;
+        });
+        // Re-tapping the already-selected tab should do nothing, not rebuild the
+        // fragment and lose its scroll position.
+        mBottomNav.setOnItemReselectedListener(item -> {});
+
+        // Pressing Back pops a fragment without going through showFragment, so
+        // the bar has to follow the back stack too.
+        fm.addOnBackStackChangedListener(() -> {
+            Fragment current = UiUtils.getVisibleFragment(fm);
+            if (current != null && current.getTag() != null) {
+                resetTopLevelToolbar(current.getTag());
+                syncBottomNav(current.getTag());
+            }
+        });
+
         mMeTopic = Cache.getTinode().getOrCreateMeTopic();
         mMeTopicListener = new MeListener();
+    }
+
+    /**
+     * Reset the toolbar when landing on a top-level tab. Sub-screens (account
+     * pages) set their own title and back arrow, and nothing used to undo that,
+     * so switching tabs left the previous screen's "Account settings" title and
+     * up-arrow in place. Fragments that configure their own toolbar do so in
+     * onResume, which runs after this, so they still win.
+     */
+    private void resetTopLevelToolbar(String tag) {
+        final int titleRes;
+        if (FRAGMENT_CHATLIST.equals(tag)) {
+            titleRes = R.string.app_name;
+        } else if (FRAGMENT_FIND.equals(tag)) {
+            titleRes = R.string.contacts;
+        } else {
+            return;
+        }
+
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            toolbar.setTitle(titleRes);
+            toolbar.setSubtitle(null);
+            toolbar.setLogo(null);
+        }
+        androidx.appcompat.app.ActionBar bar = getSupportActionBar();
+        if (bar != null) {
+            bar.setDisplayHomeAsUpEnabled(false);
+        }
+    }
+
+    // FindFragment (the Contacts tab) casts its host to this interface, so any
+    // activity hosting it must implement it. Limits the permission prompt to
+    // once per session, same as StartChatActivity does.
+    private boolean mReadContactsPermissionsAlreadyRequested = false;
+
+    @Override
+    public boolean shouldRequestReadContactsPermission() {
+        return !mReadContactsPermissionsAlreadyRequested;
+    }
+
+    @Override
+    public void setReadContactsPermissionRequested() {
+        mReadContactsPermissionsAlreadyRequested = true;
+    }
+
+    /**
+     * Keep the bottom bar in sync with whatever fragment is actually showing.
+     * Navigation also happens via intents, back-stack pops and in-app links, so
+     * the bar cannot rely on its own taps alone. Sub-screens reached from a tab
+     * (account sub-pages, archive) keep that tab highlighted; screens belonging
+     * to no tab leave the selection untouched.
+     */
+    private void syncBottomNav(String tag) {
+        if (mBottomNav == null) {
+            return;
+        }
+        final int target;
+        switch (tag) {
+            case FRAGMENT_CHATLIST:
+            case FRAGMENT_ARCHIVE:
+            case FRAGMENT_BANNED:
+                target = R.id.nav_chats;
+                break;
+            case FRAGMENT_FIND:
+                target = R.id.nav_contacts;
+                break;
+            case FRAGMENT_ACCOUNT_INFO:
+            case FRAGMENT_ACC_CREDENTIALS:
+            case FRAGMENT_ACC_HELP:
+            case FRAGMENT_ACC_GENERAL:
+            case FRAGMENT_ACC_NOTIFICATIONS:
+            case FRAGMENT_ACC_PERSONAL:
+            case FRAGMENT_ACC_SECURITY:
+            case FRAGMENT_ACC_ABOUT:
+            case FRAGMENT_WALLPAPERS:
+                target = R.id.nav_settings;
+                break;
+            default:
+                return;
+        }
+        if (mBottomNav.getSelectedItemId() != target) {
+            // Assigning selectedItemId fires the tab listener. Comparing ids is
+            // not enough of a guard: the menu dispatches the click before it
+            // marks the item checked, so during a user tap this still reads the
+            // previous id. Suppress the listener outright for the duration.
+            mSuppressNavListener = true;
+            try {
+                mBottomNav.setSelectedItemId(target);
+            } finally {
+                mSuppressNavListener = false;
+            }
+        }
     }
 
     /**
@@ -151,9 +285,23 @@ public class ChatsActivity extends BaseActivity
         }
 
         final FragmentManager fm = getSupportFragmentManager();
+
+        // Already on screen: nothing to do. Without this, syncBottomNav's
+        // programmatic selection would bounce back through the tab listener and
+        // re-create the fragment.
+        Fragment visible = UiUtils.getVisibleFragment(fm);
+        if (visible != null && tag.equals(visible.getTag()) && args == null) {
+            resetTopLevelToolbar(tag);
+            syncBottomNav(tag);
+            return;
+        }
+
         Fragment fragment = fm.findFragmentByTag(tag);
         if (fragment == null) {
             switch (tag) {
+                case FRAGMENT_FIND:
+                    fragment = new FindFragment();
+                    break;
                 case FRAGMENT_ACCOUNT_INFO:
                     fragment = new AccountInfoFragment();
                     break;
@@ -220,6 +368,9 @@ public class ChatsActivity extends BaseActivity
                 .addToBackStack(tag)
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .commit();
+
+        resetTopLevelToolbar(tag);
+        syncBottomNav(tag);
     }
 
     @Override

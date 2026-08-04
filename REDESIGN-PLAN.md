@@ -64,7 +64,7 @@ changes are exact-value swaps in centralized resources).*
 Definition of done: side-by-side screenshots of the same conversation on all three
 clients look like siblings.
 
-## Phase 2 — Chat list rows ✅ DONE 2026-08-03 (iOS + web; Android partial)
+## Phase 2 — Chat list rows ✅ DONE 2026-08-04 (all three clients)
 *iOS: WhatsApp timestamp (green when unread) + green badge pill — verified. Web:
 row timestamp via `touched` prop + green badge — verified live. Android: badge
 greened (`colorPillCounter`); row timestamp deferred until an Android device
@@ -77,7 +77,7 @@ sender prefix in groups) + right-aligned time + green unread badge pill.
 - Web: `src/widgets/contact-badges` / chat-list CSS — mostly styling, data present.
 - Swipe actions (archive/delete) already exist on iOS; verify parity on the others.
 
-## Phase 3 — Navigation chrome ✅ DONE 2026-08-04 (iOS; Android deferred)
+## Phase 3 — Navigation chrome ✅ DONE 2026-08-04 (iOS + Android)
 *iOS: UITabBarController root — **Chats / Contacts / Settings**, green tint; all
 three tabs verified, and opening a conversation verified working with the tab
 root in place. All five rootViewController-cast sites resolve via
@@ -120,6 +120,31 @@ wallpaper engine. Remaining: attachment sheet grid, Android wallpaper.*
 - Android: `./gradlew :app:assembleDebug` + APK to the kid's/family phones.
 - Web: rebuild + redeploy; server cache means returning browsers lag ≤ 11 h.
 - Screenshot set per release in `brand/screenshots/` for before/after.
+
+## Verifying Android changes (emulator)
+
+Android UI work went unverified for a while because there was no Android device
+to hand. An emulator removes that excuse — it caught three real bugs the same
+afternoon it was set up (stock API key, invisible tab bar, tab-tap crash):
+
+```bash
+sdkmanager "system-images;android-35;google_apis;arm64-v8a" "emulator"
+avdmanager create avd -n blml-test -k "system-images;android-35;google_apis;arm64-v8a"
+emulator -avd blml-test -no-snapshot -no-audio &
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER \
+    -n app.blml.chat/co.tinode.tindroid.LoginActivity
+```
+
+The emulator reaches the host stack at `10.0.2.2:6060`; the app picks that up on
+its own (`TindroidApp.getDefaultHostName()` checks `isEmulator()`), so no config
+change is needed. `ChatsActivity` is not exported — always launch via
+`LoginActivity`, which routes to the chat list when a session exists.
+
+Two things that make screenshot-driven checks reliable: `adb shell uiautomator
+dump` gives exact tap coordinates (guessing from a screenshot hits the system
+gesture strip near the bottom bar), and `adb logcat -b crash` holds the stack
+trace when a tap silently sends the app to the home screen.
 
 ## Explicitly out of scope (no backend to power them)
 

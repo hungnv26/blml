@@ -38,7 +38,11 @@ import co.tinode.tinodesdk.model.ServerMessage;
 public class Cache {
     private static final String TAG = "Cache";
 
-    private static final String API_KEY = "AQEAAAABAAD_rAp4DJh05a1HAwFT3A6K";
+    // Derived from BLML's own api_key_salt, so it must match the key baked into
+    // the other two clients (ios/TinodiosDB/SharedUtils.swift, webapp/src/config.js).
+    // The stock Tinode key that used to be here is rejected with 403 by any
+    // server running a non-default salt — see SETUP.md, "The API key chain".
+    private static final String API_KEY = "AQAAAAABAAC-d-KsShjNeHzNi7myV36_";
 
     private static final Cache sInstance = new Cache();
 

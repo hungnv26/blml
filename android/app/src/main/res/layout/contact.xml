@@ -135,6 +135,25 @@
                 android:visibility="gone"
                 app:srcCompat="@drawable/ic_danger" />
 
+            <!-- Right-aligned timestamp, WhatsApp-style. layout_weight=1 on the
+                 spacer pushes it to the end of the title row. -->
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/contactTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:maxLines="1"
+                android:paddingStart="6dp"
+                android:textSize="12sp"
+                android:textColor="@color/colorGray"
+                tools:ignore="RtlSymmetry"
+                tools:text="4:48 pm" />
+
             <TextView
                 android:id="@+id/unreadCount"
                 android:layout_width="20dp"

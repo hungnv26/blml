@@ -38,4 +38,7 @@
     <color name="circularProgressFg">#FFCCCCCC</color>
 
     <color name="colorImageMetaPanel">#80000000</color>
+    <color name="colorBottomNavBackground">#1F2C34</color>
+    <color name="colorBottomNavUnselected">#8696A0</color>
+    <color name="colorBottomNavSelected">#25D366</color>
 </resources>
