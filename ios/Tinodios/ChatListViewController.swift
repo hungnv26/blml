@@ -28,7 +28,7 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
     // Everything the presenter delivered, unfiltered. Kept separate so
     // clearing the search restores the full list without a server round-trip.
     private var allTopics: [DefaultComTopic] = []
-    private let searchController = UISearchController(searchResultsController: nil)
+    private let searchField = UISearchTextField()
     var archivedTopics: [DefaultComTopic]?
     var numArchivedTopics: Int { return archivedTopics?.count ?? 0 }
 
@@ -84,15 +84,29 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
         // Do any additional setup after loading the view, typically from a nib.
         setup()
 
-        // WhatsApp-style search box under the "Chats" title. Pinned rather than
-        // hidden-until-scroll so it is always visible at the top of the list.
-        searchController.searchResultsUpdater = self
-        searchController.obscuresBackgroundDuringPresentation = false
-        searchController.searchBar.placeholder = NSLocalizedString("Search", comment: "Chat list search placeholder")
-        navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false
-        // Keep the search box (and the list under it) when a chat is opened.
-        definesPresentationContext = true
+        // Tone the large title down a step: the default ~34pt reads louder than
+        // anything else on screen. 28pt keeps the hierarchy title > search > list.
+        navigationController?.navigationBar.largeTitleTextAttributes =
+            [.font: UIFont.systemFont(ofSize: 28, weight: .bold)]
+
+        // WhatsApp-style search box under the "Chats" title. A slim
+        // UISearchTextField in the table header rather than a UISearchController:
+        // the system bar's height cannot be reduced, and it dwarfed the rows it
+        // was meant to search.
+        let headerHeight: CGFloat = 46
+        let header = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: headerHeight))
+        header.autoresizingMask = [.flexibleWidth]
+        searchField.placeholder = NSLocalizedString("Search", comment: "Chat list search placeholder")
+        searchField.font = .systemFont(ofSize: 15)
+        searchField.clearButtonMode = .whileEditing
+        searchField.returnKeyType = .done
+        searchField.autocorrectionType = .no
+        searchField.frame = CGRect(x: 14, y: 4, width: header.bounds.width - 28, height: 36)
+        searchField.autoresizingMask = [.flexibleWidth]
+        searchField.addTarget(self, action: #selector(searchTextChanged), for: .editingChanged)
+        searchField.addTarget(self, action: #selector(dismissSearchKeyboard), for: .editingDidEndOnExit)
+        header.addSubview(searchField)
+        tableView.tableHeaderView = header
 
         NotificationCenter.default.addObserver(
             self, selector: #selector(self.appGoingInactive),
@@ -152,13 +166,21 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
         self.toggleFooter(visible: self.numArchivedTopics > 0)
     }
 
+    @objc private func searchTextChanged() {
+        applySearchFilter()
+    }
+
+    @objc private func dismissSearchKeyboard() {
+        searchField.resignFirstResponder()
+    }
+
     /// Rebuilds the visible list from `allTopics` and the current query.
     /// Matches the chat title and the About line, same fields Android's chat
     /// list filter uses. rowIndex must be rebuilt in the same pass: updateChat
     /// and deleteChat address rows through it, so a stale index would repaint
     /// or remove the wrong row while a filter is active.
     private func applySearchFilter() {
-        let query = (searchController.searchBar.text ?? "").trimmingCharacters(in: .whitespaces).lowercased()
+        let query = (searchField.text ?? "").trimmingCharacters(in: .whitespaces).lowercased()
         if query.isEmpty {
             self.topics = allTopics
         } else {
@@ -258,11 +280,5 @@ extension ChatListViewController {
         } else {
             tableView.backgroundView = nil
         }
-    }
-}
-
-extension ChatListViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        applySearchFilter()
     }
 }
