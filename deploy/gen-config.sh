@@ -84,5 +84,55 @@ open(path, 'w').write(s)
 print("  email verification: " + ("REQUIRED" if enabled else "disabled"))
 PYEOF
 
+# Voice/video calls. Upstream ships "enabled": false with placeholder ICE
+# servers (stun.example.com), which silently fails to connect rather than
+# erroring, so the whole block is rewritten from secrets.env.
+python3 - "$OUT" <<'PYEOF'
+import json, os, re, sys
+path = sys.argv[1]
+s = open(path).read()
+enabled = os.environ.get('WEBRTC_ENABLED', '').lower() == 'true'
+
+i = s.find('"webrtc": {')
+if i < 0:
+    print("  webrtc: section not found, skipped")
+    sys.exit(0)
+
+# Find the matching close brace by depth, since the block contains nested
+# objects and arrays.
+depth, j = 0, i + len('"webrtc": ')
+for k in range(j, len(s)):
+    if s[k] == '{':
+        depth += 1
+    elif s[k] == '}':
+        depth -= 1
+        if depth == 0:
+            j = k + 1
+            break
+
+ice = []
+if os.environ.get('STUN_URL'):
+    ice.append({"urls": [os.environ['STUN_URL']]})
+if os.environ.get('TURN_URL'):
+    entry = {"urls": [os.environ['TURN_URL']]}
+    if os.environ.get('TURN_USER'):
+        entry["username"] = os.environ['TURN_USER']
+    if os.environ.get('TURN_PASSWORD'):
+        entry["credential"] = os.environ['TURN_PASSWORD']
+    ice.append(entry)
+
+block = {"enabled": enabled, "call_establishment_timeout": 30, "ice_servers": ice}
+rendered = '"webrtc": ' + json.dumps(block, indent='\t').replace('\n', '\n\t')
+s = s[:i] + rendered + s[j:]
+open(path, 'w').write(s)
+
+if enabled and not ice:
+    print("  WARNING: webrtc enabled but no ICE servers — calls will not connect")
+else:
+    print("  webrtc: %s (%d ICE server(s)%s)" % (
+        "ENABLED" if enabled else "disabled", len(ice),
+        "" if os.environ.get('TURN_URL') else ", STUN only — no TURN relay"))
+PYEOF
+
 echo "wrote $OUT"
 grep -n '"use_adapter"\|"Host"\|"max_size"\|"upload_dir"' "$OUT" | head -6
