@@ -27,7 +27,7 @@ public enum PendingPreviewAction {
 
 protocol SendMessageBarDelegate: AnyObject {
     func sendMessageBar(sendText: String)
-    func sendMessageBar(attachment: Bool)
+    func sendMessageBar(attachment: AttachmentKind)
     func sendMessageBar(textChangedTo text: String)
     func sendMessageBar(enablePeersMessaging: Bool)
     func sendMessageBar(recordAudio: AudioBarAction)
@@ -140,15 +140,12 @@ class SendMessageBar: UIView {
     @IBAction func attach(_ sender: UIButton) {
         inputField.resignFirstResponder()
 
-        let alert = UIAlertController(title: "Attachment", message: nil, preferredStyle: .actionSheet)
-        alert.addAction(UIAlertAction(title: "Image / Video", style: .default, handler: { _ in
-            self.delegate?.sendMessageBar(attachment: false)
-        }))
-        alert.addAction(UIAlertAction(title: "File", style: .default, handler: { _ in
-            self.delegate?.sendMessageBar(attachment: true)
-        }))
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        self.window?.rootViewController?.present(alert, animated: true, completion: nil)
+        guard let presenter = self.window?.rootViewController else {
+            return
+        }
+        AttachmentSheetViewController.present(over: presenter) { [weak self] kind in
+            self?.delegate?.sendMessageBar(attachment: kind)
+        }
     }
 
     @IBAction func send(_ sender: UIButton) {

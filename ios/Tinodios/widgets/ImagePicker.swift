@@ -51,6 +51,21 @@ open class ImagePicker: NSObject {
         }
     }
 
+    /// Opens a specific source straight away. The attachment sheet already asked
+    /// the user to choose, so showing `present(from:)`'s action sheet on top of
+    /// it would ask the same question twice.
+    public func present(source: UIImagePickerController.SourceType, from sourceView: UIView) {
+        guard UIImagePickerController.isSourceTypeAvailable(source) else {
+            // Simulators have no camera; fall back rather than silently no-op.
+            if source != .photoLibrary {
+                self.present(source: .photoLibrary, from: sourceView)
+            }
+            return
+        }
+        self.pickerController.sourceType = source
+        self.presentationController?.present(self.pickerController, animated: true)
+    }
+
     public func present(from sourceView: UIView) {
 
         let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
