@@ -210,14 +210,26 @@ public class WallpaperFragment extends Fragment {
                             getString(R.string.wp_pattern) :
                             getString(R.string.wp_image))).attach();
 
+        // A lone "Pattern" tab is just a label over the only page, so hide the
+        // strip when the server serves no photo wallpapers.
+        mTabLayout.setVisibility(adapter.getItemCount() > 1 ? View.VISIBLE : View.GONE);
+
     }
 
     private void syncSelectionFromPrefs() {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(requireContext());
         final String name = pref.getString(Utils.PREFS_WALLPAPER, "");
         int size = pref.getInt(Utils.PREFS_WALLPAPER_SIZE, 0);
-        int tab = TextUtils.isEmpty(name) ? TAB_PATTERN : size > 0 ? TAB_PATTERN : TAB_IMAGE;
+        int wanted = TextUtils.isEmpty(name) ? TAB_PATTERN : size > 0 ? TAB_PATTERN : TAB_IMAGE;
         mBlur = pref.getInt(Utils.PREFS_WALLPAPER_BLUR, 0);
+
+        // Someone who picked a photo before the server stopped serving them
+        // would land on a page that no longer exists.
+        RecyclerView.Adapter<?> pagerAdapter = mViewPager.getAdapter();
+        if (pagerAdapter != null && wanted >= pagerAdapter.getItemCount()) {
+            wanted = TAB_PATTERN;
+        }
+        final int tab = wanted;
 
         // Activate tab with selected wallpaper or pattern.
         mViewPager.setCurrentItem(tab, false);
@@ -265,6 +277,8 @@ public class WallpaperFragment extends Fragment {
     }
 
     private static class ImagePagerAdapter extends FragmentStateAdapter {
+        // Upper bound. The actual count follows the data — the server may serve
+        // patterns only, in which case there is no photo page to show.
         private static final int PAGE_COUNT = 2;
 
         private final Wallpapers mData;
@@ -291,7 +305,8 @@ public class WallpaperFragment extends Fragment {
 
         @Override
         public int getItemCount() {
-            return PAGE_COUNT;
+            boolean hasPhotos = mData != null && mData.wallpapers != null && !mData.wallpapers.isEmpty();
+            return hasPhotos ? PAGE_COUNT : 1;
         }
 
         // Set selection on one page and deselect on the other.
