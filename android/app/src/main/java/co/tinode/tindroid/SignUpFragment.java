@@ -256,14 +256,14 @@ public class SignUpFragment extends Fragment
             fullName = fn;
         }
 
-        String description = ((EditText) parent.findViewById(R.id.userDescription)).getText().toString().trim();
-        if (!TextUtils.isEmpty(description)) {
-            if (description.length() > Const.MAX_DESCRIPTION_LENGTH) {
-                description = description.substring(0, Const.MAX_DESCRIPTION_LENGTH);
-            }
-        } else {
-            description = null;
-        }
+        // The former "Description" field now carries the invite code, matching the
+        // iOS and web signup forms. Sent as a "code:<value>" tag which the server
+        // validates and strips, so it is never stored on the account.
+        String description = null;
+        String inviteCode = ((EditText) parent.findViewById(R.id.userDescription))
+                .getText().toString().trim();
+        final String[] signupTags = TextUtils.isEmpty(inviteCode)
+                ? null : new String[]{"code:" + inviteCode};
 
         final Button signUp = parent.findViewById(R.id.signUp);
         signUp.setEnabled(false);
@@ -299,7 +299,7 @@ public class SignUpFragment extends Fragment
                                 MetaSetDesc<VxCard, String> meta = new MetaSetDesc<>(theCard, null);
                                 meta.attachments = theCard.getPhotoRefs();
                                 return tinode.createAccountBasic(
-                                        login, password, true, null, meta,
+                                        login, password, true, signupTags, meta,
                                         credentials.toArray(new Credential[]{}));
                             }
                         })

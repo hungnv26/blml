@@ -1962,5 +1962,12 @@
     "description": "Link or title for working with wallpapers.",
     "missing": false,
     "obsolete": false
+  },
+  "invite_code_prompt": {
+    "translation": "",
+    "defaultMessage": "Invite code",
+    "description": "Input placeholder for the registration invite code",
+    "missing": true,
+    "obsolete": false
   }
 }

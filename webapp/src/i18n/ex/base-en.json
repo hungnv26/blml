@@ -418,6 +418,10 @@
     "defaultMessage": "Invalid security token",
     "description": "Error message when resetting password."
   },
+  "invite_code_prompt": {
+    "defaultMessage": "Invite code",
+    "description": "Input placeholder for the registration invite code"
+  },
   "label_alias": {
     "defaultMessage": "Alias:",
     "description": "Label for user or topic alias"
