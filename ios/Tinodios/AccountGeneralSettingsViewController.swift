@@ -23,7 +23,10 @@ class AccountGeneralSettingsViewController: UITableViewController {
 
     private static let kSectionContacts = 1
 
-    private static let kDescriptionPlaceholder = NSLocalizedString("Optional description", comment: "Placeholder for missing user self-description")
+    // "About" rather than "Optional description": this is the user's own status
+    // line, the same thing WhatsApp calls About. Topic descriptions elsewhere
+    // keep the old wording — they really are descriptions of a group.
+    private static let kDescriptionPlaceholder = NSLocalizedString("About — e.g. Hey there! I am using BLML.", comment: "Placeholder for the user's own status line")
     
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var aliasTextField: UITextField!

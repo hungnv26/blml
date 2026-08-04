@@ -121,6 +121,40 @@ wallpaper engine. Remaining: attachment sheet grid, Android wallpaper.*
 - Web: rebuild + redeploy; server cache means returning browsers lag ≤ 11 h.
 - Screenshot set per release in `brand/screenshots/` for before/after.
 
+## WhatsApp feature parity — Phase 1 ✅ DONE 2026-08-04
+
+Researched against WhatsApp's You/Settings screens. Most of what looked like new
+features turned out to be already present in Tinode, just unreachable:
+
+| Feature | Found | Done |
+|---|---|---|
+| About / status text | `TheCard.note` already editable on both clients | Relabelled "About" on iOS; verified it saves and syncs iOS → Android |
+| My QR code | Already rendered inside the Add-by-ID tab | Surfaced as a Settings row on both |
+| Invite a friend | Nothing existed | Built on both |
+
+**Invite a friend** is the one that matters here, because the server is
+invite-only: an invitation without the registration code leaves the recipient
+stuck at a 403 on the signup screen. So the app remembers the code the account
+signed up with and puts app + server + code in one share message.
+
+Two cases the first cut got wrong, both fixed:
+- Accounts created before this existed (or on another device) have no stored
+  code, so tapping Invite collects it first rather than sharing an invitation
+  the recipient cannot act on.
+- A mistyped code was permanent — the prompt only appeared while no code was
+  stored. **Long-press the row to edit it.**
+
+Skipped deliberately, with reasons: Subscriptions and Accounts Center (Meta
+monetisation, meaningless self-hosted), Communities (no Tinode concept),
+Updates/Status (no ephemeral-media backend), Linked devices (Tinode accounts are
+already multi-device), Lists (nothing to filter at 50 people), Storage and data
+(matters at WhatsApp scale on metered data, not on your own server).
+
+Phase 2 candidates, in order: Appearance (Android already has the theme
+preference; iOS follows the system and needs an override), Chats settings /
+wallpaper picker (Android already has `WallpaperFragment`), Starred messages,
+Broadcast via Tinode channels.
+
 ## Verifying Android changes (emulator)
 
 Android UI work went unverified for a while because there was no Android device

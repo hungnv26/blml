@@ -18,6 +18,10 @@ class AccountSettingsViewController: UITableViewController {
     private static let kPersonalStaff = 3
     private static let kPersonalDanger = 4
     private static let kPersonalDescription = 5
+    private static let kSectionActions = 2
+    // Account and Security = 0, Notifications = 1, Help and About = 2
+    private static let kActionsQRCode = 3
+    private static let kActionsInvite = 4
 
     @IBOutlet weak var avatarImageView: RoundImageView!
     @IBOutlet weak var userNameLabel: UILabel!
@@ -27,11 +31,6 @@ class AccountSettingsViewController: UITableViewController {
     
     weak var tinode: Tinode!
     weak var me: DefaultMeTopic!
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setup()
-    }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -81,6 +80,64 @@ class AccountSettingsViewController: UITableViewController {
         }
 
         return super.tableView(tableView, heightForRowAt: indexPath)
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setup()
+
+        // Long press on "Invite a friend" edits the stored code. Without this a
+        // typo is permanent: the prompt only appears while no code is saved, so
+        // a wrong one would be shared forever with no way back short of
+        // reinstalling.
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        tableView.addGestureRecognizer(longPress)
+    }
+
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began,
+              let indexPath = tableView.indexPathForRow(at: gesture.location(in: tableView)),
+              indexPath.section == AccountSettingsViewController.kSectionActions,
+              indexPath.row == AccountSettingsViewController.kActionsInvite else {
+            return
+        }
+        InviteHelper.promptForCode(from: self)
+    }
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard indexPath.section == AccountSettingsViewController.kSectionActions else {
+            return
+        }
+
+        let cell = tableView.cellForRow(at: indexPath)
+        switch indexPath.row {
+        case AccountSettingsViewController.kActionsQRCode:
+            tableView.deselectRow(at: indexPath, animated: true)
+            showMyQRCode()
+        case AccountSettingsViewController.kActionsInvite:
+            tableView.deselectRow(at: indexPath, animated: true)
+            if InviteHelper.hasInviteCode {
+                InviteHelper.share(from: self, sourceView: cell)
+            } else {
+                // Nothing to send without the code, so collect it first rather
+                // than share an invitation the recipient cannot act on.
+                InviteHelper.promptForCode(from: self) { [weak self] in
+                    guard let self = self else { return }
+                    InviteHelper.share(from: self, sourceView: cell)
+                }
+            }
+        default:
+            break
+        }
+    }
+
+    /// Reuses the existing "Add by ID" screen, which already renders the user's
+    /// own UID as a QR code alongside a scanner.
+    private func showMyQRCode() {
+        guard let vc = self.storyboard?.instantiateViewController(withIdentifier: "AddByIDViewController") else {
+            return
+        }
+        self.navigationController?.pushViewController(vc, animated: true)
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

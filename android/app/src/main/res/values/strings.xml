@@ -400,4 +400,15 @@
     <string name="wp_pattern">Pattern</string>
     <string name="wp_image">Wallpaper</string>
     <string name="note">Note</string>
+    <string name="my_qr_code">My QR code</string>
+    <string name="invite_a_friend">Invite a friend</string>
+    <string name="invite_a_friend_explained">Share the server and invite code</string>
+    <string name="invite_code_title">Invite code</string>
+    <string name="invite_code_explained">The code new members type when signing up. It is stored on this device only.</string>
+    <string name="invite_message_intro">Join me on BLML \u2014 our private group chat.</string>
+    <string name="invite_message_install">Ask me for the app install link.</string>
+    <string name="invite_message_server">Server: %s</string>
+    <string name="invite_message_code">Invite code: %s</string>
+    <string name="invite_message_no_code">You\'ll need an invite code \u2014 ask me for it.</string>
+    <string name="invite_share_via">Invite a friend</string>
 </resources>

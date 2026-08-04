@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -71,6 +72,32 @@ public class AccountInfoFragment extends Fragment implements ChatsActivity.FormU
                 ((ChatsActivity) activity).showFragment(ChatsActivity.FRAGMENT_ACC_SECURITY, null));
         fragment.findViewById(R.id.help).setOnClickListener(v ->
                 ((ChatsActivity) activity).showFragment(ChatsActivity.FRAGMENT_ACC_HELP, null));
+
+        // Reuses the existing "Add by ID" screen, which already renders the
+        // user's own ID as a QR code next to a scanner.
+        fragment.findViewById(R.id.my_qr_code).setOnClickListener(v -> {
+            Intent intent = new Intent(activity, StartChatActivity.class);
+            intent.putExtra(StartChatFragment.EXTRA_TAB, StartChatFragment.TAB_BY_ID);
+            startActivity(intent);
+        });
+
+        View invite = fragment.findViewById(R.id.invite_friend);
+        invite.setOnClickListener(v -> {
+            if (InviteHelper.hasInviteCode(activity)) {
+                InviteHelper.share(activity);
+            } else {
+                // Nothing worth sending without the code, so collect it first
+                // rather than share an invitation the recipient cannot act on.
+                InviteHelper.promptForCode(activity, () -> InviteHelper.share(activity));
+            }
+        });
+        // Long press edits the stored code. Without this a typo is permanent:
+        // the prompt only appears while no code is saved, so a wrong one would
+        // be shared forever with no way back short of reinstalling.
+        invite.setOnLongClickListener(v -> {
+            InviteHelper.promptForCode(activity, null);
+            return true;
+        });
 
         return fragment;
     }
