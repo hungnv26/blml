@@ -275,7 +275,7 @@
     <string name="accept_avatar_button_hint">Accept avatar</string>
     <string name="next_button_hint">Next</string>
     <string name="your_name">Your name</string>
-    <string name="description_optional">Description (optional)</string>
+    <string name="description_optional">Invite code</string>
     <string name="change_avatar">Change avatar</string>
     <string name="badge_verified">Verified/official</string>
     <string name="badge_staff">Staff-managed</string>

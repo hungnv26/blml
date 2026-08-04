@@ -157,7 +157,15 @@ Existing accounts are unaffected — the code is only checked at signup.
 server logs which mode it is in at startup ("Registration is invite-only" vs
 "Registration is OPEN").
 
-**Not yet wired:** the web and Android signup forms have no invite-code field, so
-signup from those clients now fails while the gate is on. iOS is the only client
-that can register today.
+**All three clients are wired.** Each signup form has an **Invite code** field
+(reusing the old "Description" row, which a family chat has no use for):
+
+| Client | File |
+|---|---|
+| iOS | `Tinodios/SignupViewController.swift` + storyboard placeholder |
+| Web | `src/views/create-account-view.jsx` (passes tags as the 5th arg to `onCreateAccount`) |
+| Android | `SignUpFragment.java` + `description_optional` string |
+
+Verified against the running server: wrong code → `permission denied (403)`,
+correct code → account created.
 

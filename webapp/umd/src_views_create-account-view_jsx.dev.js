@@ -49,6 +49,7 @@ class CreateAccountView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Pu
       email: '',
       tel: '',
       fn: '',
+      inviteCode: '',
       imageUrl: null,
       uploadUrl: null,
       newAvatar: null,
@@ -57,6 +58,7 @@ class CreateAccountView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Pu
       saveToken: _lib_local_storage_js__WEBPACK_IMPORTED_MODULE_7__["default"].getObject('keep-logged-in')
     };
     this.handleLoginChange = this.handleLoginChange.bind(this);
+    this.handleInviteCodeChange = this.handleInviteCodeChange.bind(this);
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
     this.handleEmailChange = this.handleEmailChange.bind(this);
     this.handlePhoneChange = this.handlePhoneChange.bind(this);
@@ -116,12 +118,17 @@ class CreateAccountView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Pu
       saveToken: !this.state.saveToken
     });
   }
+  handleInviteCodeChange(e) {
+    this.setState({
+      inviteCode: e.target.value
+    });
+  }
   handleSubmit(e) {
     e.preventDefault();
     this.props.onCreateAccount(this.state.login.trim(), this.state.password.trim(), (0,_lib_utils_js__WEBPACK_IMPORTED_MODULE_9__.theCard)((0,_lib_strformat_js__WEBPACK_IMPORTED_MODULE_10__.truncateString)(this.state.fn.trim(), _config_js__WEBPACK_IMPORTED_MODULE_11__.MAX_TITLE_LENGTH), this.state.uploadUrl), {
       'meth': this.state.meth,
       'val': this.state.meth == 'email' ? this.state.email : this.state.meth == 'tel' ? this.state.tel : null
-    });
+    }, this.state.inviteCode.trim() ? ['code:' + this.state.inviteCode.trim()] : undefined);
   }
   handleAvatarCropped(mime, blob, width, height) {
     const url = blob ? URL.createObjectURL(blob) : null;
@@ -243,6 +250,21 @@ class CreateAccountView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Pu
             value: this.state.fn,
             onChange: this.handleFnChange,
             required: true
+          }, void 0, false)
+        }, void 0, false)
+      }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxDEV)("div", {
+        className: "panel-form-row",
+        children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
+          id: "invite_code_prompt",
+          defaultMessage: "Invite code",
+          description: "Input placeholder for the registration invite code",
+          children: invite_code_prompt => (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxDEV)("input", {
+            type: "text",
+            placeholder: invite_code_prompt,
+            autoComplete: "off",
+            autoCapitalize: "characters",
+            value: this.state.inviteCode,
+            onChange: this.handleInviteCodeChange
           }, void 0, false)
         }, void 0, false)
       }, void 0, false), this.props.reqCredMethod == 'email' ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxDEV)("div", {

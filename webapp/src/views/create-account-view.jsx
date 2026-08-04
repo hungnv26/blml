@@ -27,6 +27,7 @@ export default class CreateAccountView extends React.PureComponent {
       email: '',
       tel: '',
       fn: '', // full/formatted name
+      inviteCode: '', // required when the server is invite-only
       imageUrl: null,
       uploadUrl: null,
       newAvatar: null,
@@ -36,6 +37,7 @@ export default class CreateAccountView extends React.PureComponent {
     };
 
     this.handleLoginChange = this.handleLoginChange.bind(this);
+    this.handleInviteCodeChange = this.handleInviteCodeChange.bind(this);
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
     this.handleEmailChange = this.handleEmailChange.bind(this);
     this.handlePhoneChange = this.handlePhoneChange.bind(this);
@@ -87,6 +89,10 @@ export default class CreateAccountView extends React.PureComponent {
     this.setState({saveToken: !this.state.saveToken});
   }
 
+  handleInviteCodeChange(e) {
+    this.setState({inviteCode: e.target.value});
+  }
+
   handleSubmit(e) {
     e.preventDefault();
     this.props.onCreateAccount(
@@ -98,7 +104,10 @@ export default class CreateAccountView extends React.PureComponent {
         'val': this.state.meth == 'email' ?
           this.state.email :
             this.state.meth == 'tel' ? this.state.tel : null
-      }
+      },
+      // Invite code travels as a 'code:<value>' tag; the server checks and
+      // strips it. Omitted entirely when blank so an open server still works.
+      this.state.inviteCode.trim() ? ['code:' + this.state.inviteCode.trim()] : undefined
     );
   }
 
@@ -190,6 +199,14 @@ export default class CreateAccountView extends React.PureComponent {
             description="Input placeholder for person's full name">{
             (full_name_prompt) => <input type="text" placeholder={full_name_prompt} autoComplete="name"
               value={this.state.fn} onChange={this.handleFnChange} required/>
+          }</FormattedMessage>
+        </div>
+        <div className="panel-form-row">
+          <FormattedMessage id="invite_code_prompt" defaultMessage="Invite code"
+            description="Input placeholder for the registration invite code">{
+            (invite_code_prompt) => <input type="text" placeholder={invite_code_prompt}
+              autoComplete="off" autoCapitalize="characters"
+              value={this.state.inviteCode} onChange={this.handleInviteCodeChange} />
           }</FormattedMessage>
         </div>
         {this.props.reqCredMethod == 'email' ?

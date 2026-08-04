@@ -141,3 +141,21 @@ it succeeded. Redirect to a log file and check `$?` instead.
 Both apps let the user override the server address in settings, so these are defaults,
 not hard limits. Change them in `android/app/build.gradle` (the `resValue` lines) and the
 two `.xcconfig` files.
+
+## Android versioning after the monorepo flatten
+
+`android/build.gradle` used to derive its version from `git rev-list --count` and
+`git describe --tags`. Flattening the four upstream clones into one repo removed
+the version tags, so `git describe` returned "" and `.substring(1)` threw
+`begin 1, end 0, length 0` — the build failed during configuration, before
+compiling anything.
+
+Both functions now return static values:
+
+```groovy
+static def gitVersionCode() { return 1 }
+static def gitVersionName() { return "1.0.0" }
+```
+
+**Bump `gitVersionCode` for every Play Store upload** — Google requires it to
+strictly increase, and nothing does it automatically now.
