@@ -299,8 +299,16 @@ extension AccountGeneralSettingsViewController {
 
         var container: CredentialContainer!
         if !cred.isDone {
-            let oldCred = me.creds?.first(where: { $0.meth == cred.meth && $0.isDone })
-            container = CredentialContainer(currentCred: oldCred!, newCred: cred)
+            // An unconfirmed credential used to imply a confirmed one it was
+            // replacing, so this force-unwrapped. Adding a *first* phone number
+            // breaks that assumption: get the code wrong and the pending
+            // credential stands alone, so tapping it to retry crashed the app.
+            guard let oldCred = me.creds?.first(where: { $0.meth == cred.meth && $0.isDone }) else {
+                // Nothing to change — it just needs confirming.
+                promptForConfirmationCode(number: cred.val ?? "", wrongCode: false)
+                return
+            }
+            container = CredentialContainer(currentCred: oldCred, newCred: cred)
         } else {
             container = CredentialContainer(currentCred: cred, newCred: nil)
         }
@@ -348,10 +356,13 @@ extension AccountGeneralSettingsViewController {
 
     /// Step 2: confirm it. This server sends no SMS — it accepts a fixed code —
     /// so the prompt says so rather than telling people to check their messages.
-    private func promptForConfirmationCode(number: String) {
+    private func promptForConfirmationCode(number: String, wrongCode: Bool = false) {
+        let prompt = wrongCode
+            ? NSLocalizedString("That code was not right. The code is 123456 — this server does not send an SMS.", comment: "Alert message after a wrong code")
+            : String(format: NSLocalizedString("Enter the confirmation code for %@. This server does not send an SMS — the code is 123456.", comment: "Alert message"), number)
         let alert = UIAlertController(
             title: NSLocalizedString("Confirm number", comment: "Alert title"),
-            message: String(format: NSLocalizedString("Enter the confirmation code for %@. This server does not send an SMS — the code is 123456.", comment: "Alert message"), number),
+            message: prompt,
             preferredStyle: .alert)
         alert.addTextField { field in
             field.placeholder = NSLocalizedString("Code", comment: "Placeholder")
@@ -370,9 +381,12 @@ extension AccountGeneralSettingsViewController {
                     }
                     return nil
                 },
-                onFailure: { err in
+                onFailure: { [weak self] _ in
+                    // Re-ask rather than dropping out of the flow. A mistyped
+                    // digit otherwise left a pending, unconfirmable number
+                    // behind with no obvious way to finish.
                     DispatchQueue.main.async {
-                        UiUtils.showToast(message: String(format: NSLocalizedString("Wrong code: %@", comment: "Error"), err.localizedDescription))
+                        self?.promptForConfirmationCode(number: number, wrongCode: true)
                     }
                     return nil
                 })
