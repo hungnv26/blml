@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorMessageBubbleMine">#FF005C4B</color><!-- WhatsApp-style: mine = teal-green -->
+    <color name="colorMessageBubbleMineFlashing">#FF00745F</color>
+    <color name="colorMessageBubbleMineFlashingLight">#FF00685A</color>
+    <color name="colorMessageBubbleOther">#FF202C33</color><!-- WhatsApp-style: incoming = dark slate -->
+    <color name="colorMessageBubbleOtherFlashing">#FF2F3B44</color>
+    <color name="colorMessageBubbleOtherFlashingLight">#FF37444E</color>
+
+    <color name="colorReplyBubble">#10CCCCCC</color>
+    <color name="colorReplyText">#CCCCCC</color>
+
+    <color name="colorNegativeAction">#983220</color>
+    <color name="colorPositiveAction">#326F3E</color>
+    <color name="colorNeutralAction">#555555</color>
+    <color name="colorSwipeChervon">#AAAAAA</color>
+
+    <!-- Audio waveform color -->
+    <color name="waveform">#60CCCCCC</color>
+    <color name="waveformPast">#80FFFFFF</color>
+
+    <color name="colorChipBackground">#263238</color>
+    <color name="colorChipBorder">#546E7A</color>
+
+    <color name="colorListDivider">#666666</color>
+
+    <color name="colorAccent">#00A884</color><!-- WhatsApp green -->
+
+    <color name="colorDanger">#d32f2f</color>
+
+    <color name="colorOffline">#999900</color>
+
+    <color name="colorImagePreviewBg">#333333</color>
+
+    <color name="colorImagePlaceholder">#212121</color>
+
+    <color name="circularProgressBg">#FF666666</color>
+    <color name="circularProgressFg">#FFCCCCCC</color>
+
+    <color name="colorImageMetaPanel">#80000000</color>
+</resources>

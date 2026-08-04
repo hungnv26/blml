@@ -1,0 +1,64 @@
+# BLML chat stack: Postgres + BLML server (serving the web app).
+#
+#   1. ./gen-config.sh          # regenerate blml.conf from secrets.env
+#   2. docker compose up -d --build
+#   3. open http://localhost:6060
+#
+# First run initializes the database schema automatically (init-db in the
+# blml-init service). No sample data is loaded — create accounts via Sign Up.
+#
+# In production, put a TLS reverse proxy (Caddy/nginx) or the server's own
+# ACME support in front of port 6060 — see ../SETUP.md.
+
+name: blml
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in secrets.env — run "set -a; source secrets.env" or use --env-file}
+      # No POSTGRES_DB here: init-db creates the "tinode" database itself and
+      # fails if an empty one already exists.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # One-shot: creates the schema if missing, upgrades it if the server version
+  # moved ahead. Safe to run on every `up` — exits 0 quickly when nothing to do.
+  blml-init:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    entrypoint: ["/opt/blml/init-db"]
+    command: ["--config=/etc/blml/blml.conf", "--upgrade"]
+    volumes:
+      - ./blml.conf:/etc/blml/blml.conf:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  blml:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "6060:6060"
+    volumes:
+      - ./blml.conf:/etc/blml/blml.conf:ro
+      - uploads:/var/blml/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      blml-init:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:
+  uploads:

@@ -1,0 +1,501 @@
+/* Invite reaction button */
+"Accept" = "Aceptar";
+
+/* Toast notification */
+"Action failed: %@" = "Se ha producido un error al realizar la acción: %@";
+
+/* Alert title */
+"Add contact" = "Añadir contacto";
+
+/* Alert placeholder */
+"Additional info (private)" = "Información adicional (sólo visible para tí)";
+
+/* Toast notification */
+"Address copied" = "Dirección copiada";
+
+/* Toast notification */
+"Alias copied" = "Alias copiado";
+
+/* Alert explanation */
+"Also block and remove all messages" = "También bloquear y eliminar todos los mensajes";
+
+/* Swipe action */
+"Archive" = "Archivar";
+
+/* View title */
+"Archived Chats" = "Chats archivados";
+
+/* Button to open chat archive */
+"Archived Chats (%@)" = "Chats archivados (%@)";
+
+/* Warning in delete account alert */
+"Are you sure you want to delete your account? It cannot be undone." = "¿Estás seguro de que deseas eliminar permanentemente tu cuenta? Esta acción es irreversible.";
+
+/* Warning in logout alert */
+"Are you sure you want to log out?" = "¿Estás seguro de que quieres cerrar la sesión?";
+
+/* Label shown next to an attachment */
+"Attachment" = "Apego";
+
+/* Error message: attachment too large */
+"Attachment exceeds maximum size" = "El accesorio supera el tamaño máximo";
+
+/* Menu item: audio-only call */
+"Audio-only" = "Solo audio";
+
+/* Alert action
+   Invite reaction button */
+"Block" = "Bloquear";
+
+/* Alert action */
+"Block contact?" = "¿Bloquear contacto?";
+
+/* Text written on button face when all else fails. */
+"button" = "pulsador";
+
+/* Menu title for selecting type of call */
+"Call" = "Llamada";
+
+/* Toast notification */
+"Can't change permissions for this user." = "No se puede cambiar los permisos para este usuario.";
+
+/* Toast notification */
+"Can't make this user owner." = "No se puede convertir a este usuario en propietario.";
+
+/* Alert action */
+"Cancel" = "Cancelar";
+
+/* Label for cancelled call */
+"cancelled" = "cancelado";
+
+/* Error message */
+"Cannot send email: functionality not accessible." = "No se puede enviar correo electrónico: funcionalidad no accesible.";
+
+/* Alert title */
+"Change Password" = "Cambiar contraseña";
+
+/* Alert action */
+"Change permissions" = "Cambiar permisos";
+
+/* Invitation subject */
+"Check out Tinode Messenger" = "Echa un vistazo a Tinode Messenger";
+
+/* Invitation body */
+"Check out Tinode Messenger: https://tinode.co/" = "Echa un vistazo a Tinode Messenger: https://tinode.co/";
+
+/* Alert title */
+"Clear all messages?" = "¿Borrar todos los mensajes?";
+
+/* Button text */
+"confirm" = "confirmar";
+
+/* Alert title */
+"Confirm contact" = "Confirmar contacto";
+
+/* Info message */
+"Confirmaition message sent to %@" = "El mensaje de confirmación ha sido enviado a %@";
+
+/* Confirmation code sent */
+"Confirmation code sent" = "Código de confirmación";
+
+/* Toast info message */
+"Confirmed successfully" = "Confirmado con éxito";
+
+/* Progress overlay */
+"Confirming..." = "Confirmando...";
+
+/* Label for initiated call */
+"connecting" = "conectando";
+
+/* Toast notification */
+"Connection to server lost." = "Se perdió la conexión al servidor.";
+
+/* Replacement for chat message with no content */
+"Content deleted" = "Este mensaje fue eliminado";
+
+/* Menu item */
+"Copy" = "Copiar";
+
+/* Alert action */
+"Copy to clipboard" = "Copiar al portapapeles";
+
+/* Error message */
+"Could not change password: %@" = "No se pudo cambiar la contraseña: %@";
+
+/* Error message */
+"Couldn't connect to server at %@: %@" = "No se pudo conectar al servidor en %@: %@";
+
+/* Label for email or phone number entering */
+"Current credential" = "Credencial actual";
+
+/* Alert action
+   Menu item
+   Swipe action */
+"Delete" = "Eliminar";
+
+/* Menu item */
+"Delete for all" = "Eliminar para todos";
+
+/* Menu item */
+"Delete for me" = "Eliminar para mí";
+
+/* Alert title */
+"Delete Saved messages?" = "¿Eliminar mensajes guardados?";
+
+/* Alert title */
+"Delete the group?" = "¿Eliminar el grupo?";
+
+/* Section title */
+"Directory" = "Directorio";
+
+/* Menu item */
+"Edit" = "Editar";
+
+/* Alert title */
+"Edit account name" = "Editar nombre de la cuenta";
+
+/* Alert title */
+"Edit Group" = "Editar grupo";
+
+/* `Edited` message marker */
+"edited" = "editado";
+
+/* Alert action */
+"Email" = "Correo electrónico";
+
+/* Toast error message */
+"Enter a valid credential (phone or email)." = "Introduzca una credencial válida (teléfono o correo electrónico).";
+
+/* Alert prompt */
+"Enter confirmation code sent to you by %@" = "Introduzca el código de confirmación enviado a tu %@";
+
+/* Alert message */
+"Enter email or phone number" = "Introduzca correo electrónico o número de teléfono";
+
+/* Alert prompt */
+"Enter new password" = "Introduzca una nueva contraseña";
+
+/* Error message */
+"Entered text is neither email nor phone number." = "El texto introducido no es ni correo electrónico ni número de teléfono.";
+
+/* Toast notification */
+"Error changing permissions: %@" = "Error al cambiar permisos: %@";
+
+/* Error message */
+"Failed to create account: %@" = "No se pudo crear cuenta: %@";
+
+/* Error message: malformed URL string */
+"Failed to create URL string for file: %@" = "Error al crear una cadena de URL para el archivo: %@";
+
+/* Error message */
+"Failed to save group and contact info." = "No se pudo guardar el grupo y la información de contacto.";
+
+/* Error message */
+"Failed to send email: %@" = "No se pudo enviar el correo electrónico: %@";
+
+/* Error message */
+"Failed to subscribe to topic: %@" = "Error al suscribirse al tema: %@";
+
+/* Alert action qualifier as in 'Delete for all' */
+"For all" = "Para todos";
+
+/* Alert action 'Delete for me' */
+"For me" = "Para mí";
+
+/* Label shown next to a form in preview */
+"Form" = "Formulario";
+
+/* Menu item */
+"Forward" = "Reenviar";
+
+/* User name prompt */
+"Full name, e.g. John Doe" = "Nombre completo, p.ej. Juan González Hernández";
+
+/* Invite reaction button */
+"Ignore" = "Ignorar";
+
+/* Label for call in progress */
+"in progress" = "en progreso";
+
+/* Label for incoming video/audio calls */
+"Incoming call" = "Llamada entrante";
+
+/* Error message */
+"Invalid group ID: %d (%@)" = "ID del grupo no es válido %1$d (%2$@)";
+
+/* Error message when the image cannot be processed */
+"Invalid image" = "Imagen no válida";
+
+/* Password reset error */
+"Invalid or unknown address" = "Dirección no válida o desconocida";
+
+/* Dialog title: call to action */
+"Invite" = "Invitar";
+
+/* Label for join conference link */
+"Join" = "Unirse";
+
+/* Alert action */
+"Leave" = "Dejar";
+
+/* Alert title */
+"Leave the conversation?" = "¿Dejar la conversación?";
+
+/* Alert title */
+"Leave the group?" = "¿Dejar el grupo?";
+
+/* Section title */
+"Local Contacts" = "Contactos locales";
+
+/* Login progress text */
+"Logging in..." = "Iniciando sesión...";
+
+/* Error message */
+"Login info missing..." = "Falta la información de inicio de sesión...";
+
+/* Alert action */
+"Make owner" = "Convertitr en propietario";
+
+/* View title */
+"Manage members" = "Gestionar miembros";
+
+/* Content of a pinned message when the message is deleted */
+"message deleted" = "mensaje eliminado";
+
+/* Content of a pinned message when the message is missing */
+"message not found" = "mensaje no encontrado";
+
+/* Toast notification */
+"Message not sent." = "No se pudo enviar mensaje.";
+
+/* Toast info */
+"Message with instructions sent to the provided address." = "Mensaje con instrucciones ha sido enviado a la dirección de correo electrónico proporcionada.";
+
+/* Alert action */
+"Messages" = "Mensajes";
+
+/* Title for displaying a QR Code */
+"My Code" = "Mi código";
+
+/* Alert placeholder */
+"Name of the group" = "Nombre del grupo";
+
+/* Invalid date */
+"Never ??:??" = "Nunca ??:??";
+
+/* View title */
+"New Chat" = "Nuevo chat";
+
+/* Error message */
+"No access to email" = "No hay acceso al correo electrónico";
+
+/* No read access in chat
+   Toast error message */
+"No access to messages" = "No hay acceso a los mensajes";
+
+/* Placeholder when no members are selected */
+"No members selected" = "No hay miembros seleccionados";
+
+/* Placeholder in empty chat */
+"No messages in the conversation" = "No hay mensajes en la conversación";
+
+/* Error message when call cannot be started due to missing camera permission */
+"No permission to access camera" = "No hay permiso para acceder a la cámara";
+
+/* Error message when call cannot be started due to missing microphone permission */
+"No permission to access microphone" = "No hay permiso para acceder al micrófono";
+
+/* Explanation for Saved messages topic */
+"Notes, messages, links, files saved for posterity" = "Notas, mensajes, enlaces, archivos guardados para la posteridad";
+
+/* Alert action */
+"OK" = "OK";
+
+/* The topic or user is currently online */
+"online now" = "en línea ahora";
+
+/* Toast notification */
+"Only Owner can delete group" = "Sólo el propietario puede eliminar el grupo";
+
+/* Placeholder for missing topic description
+Placeholder for missing user self-description */
+"Optional description" = "Descripción opcional";
+
+/* Label for outgoing video/audio calls */
+"Outgoing call" = "Llamada saliente";
+
+/* Toast notification */
+"Owner cannot leave the group" = "El propietario del grupo no puede darse de baja";
+
+/* Error message */
+"Password too short" = "La contraseña es demasiado corta";
+
+/* Success message */
+"Password updated" = "Contraseña actualizada";
+
+/* Toast notification */
+"Permissions not modified: %d (%s)" = "No se pudo modificar los permisos %1$d (%2$s)";
+
+/* Label shown next to an inline image */
+"Picture" = "Fotografía";
+
+/* Menu item for pinning message */
+"Pin" = "Anclar";
+
+/* Error message */
+"Playback failed" = "Error en la reproducción";
+
+/* Progress overlay */
+"Please wait..." = "Por favor, espera...";
+
+/* Placeholder text in editor */
+"Private info: not set" = "Información privada: no establecida";
+
+/* Error message when QR code scanner failed to init */
+"QRCode scanner failed to initialize" = "El escáner QRCode no se pudo inicializar";
+
+/* Error message */
+"Recording failed" = "Error al grabar";
+
+/* Progress overlay */
+"Registering..." = "Registrando...";
+
+/* Alert action */
+"Remove" = "Eliminar";
+
+/* Confirmation */
+"Remove %@ from %@?" = "Eliminar a %1$@ del %2$@?";
+
+/* Confirmation */
+"Remove and ban %@ from %@?" = "Eliminar y bloquear a %1$@ del %2$@?";
+
+/* Menu item */
+"Reply" = "Respuesta";
+
+/* Alert action */
+"Report" = "Reportar";
+
+/* Alert title */
+"Report contact?" = "¿Reportar contacto?";
+
+/* Alert title */
+"Report Group?" = "¿Report grupo?";
+
+/* Error message */
+"Request failed: %@" = "Se produjo un error al procesar la solicitud: %@";
+
+/* Progress overlay */
+"Requesting..." = "Solicitando...";
+
+/* Title for slf topic
+Title of slf topic
+Title of the slf topic */
+"Saved messages" = "Mensajes guardados";
+
+/* Title for camera preview when scanning a QR code */
+"Scan Code" = "Código de escaneo";
+
+/* Placeholder prompt */
+"Search by tags" = "Buscar por etiquetas";
+
+/* Error message when permissions are missing */
+"Search functionality limited. Grant Contacts permission." = "Funcionalidad de búsqueda limitada. Otorga permisos a los contactos.";
+
+/* Error message */
+"Select at least one group member" = "Selecciona al menos un usuario para el grupo";
+
+/* Alert action */
+"Send message" = "Enviar mensaje";
+
+/* Service unavailable */
+"Service unavailable at this time. Please try again later." = "El servicio no está disponible en este momento. Por favor, inténtelo de nuevo más tarde.";
+
+/* Toast notification */
+"Something went wrong: (%d) %@" = "Algo salió mal: (%1$d) %2$@";
+
+/* Toast notification */
+"Something went wrong: %d (%s)" = "Algo salió mal: %1$d (%2$s)";
+
+/* Toast notification */
+"Tags missing." = "Faltan las etiquetas.";
+
+/* Toast notification */
+"The avatar is too small." = "El avatar es demasiado pequeño.";
+
+/* Error message */
+"The file size exceeds the limit %@" = "El tamaño del archivo excede el límite %@";
+
+/* Toast notification */
+"Topic name missing" = "Falta el nombre del tema";
+
+/* Swipe action */
+"Unarchive" = "Desarchivar";
+
+/* Swipe action */
+"Unblock" = "Desatascar";
+
+/* Button with missing text
+   Placeholder for missing file name
+   Placeholder for missing file type */
+"undefined" = "indefinido";
+
+/* Undefined chat name */
+"Undefined" = "Sin nombre";
+
+/* Placeholder for missing topic name
+   Placeholder for missing user name */
+"Unknown" = "Desconocido";
+
+/* Sender with missing name */
+"Unknown %@" = "Desconocido %@";
+
+/* Topic title when it has no name */
+"Unknown or unnamed" = "Desconocido o sin nombre";
+
+/* Displayed when the type of attachment cannot be determined */
+"Unknown type" = "Tipo desconocido";
+
+/* Menu item for un-pinning message */
+"Unpin" = "Desanclar\n";
+
+/* Label shown next to an unsupported Drafty format element
+Unsupported (unknown) Drafty tag */
+"Unsupported" = "Sin base";
+
+/* Progress overlay */
+"Updating password..." = "Actualización de la contraseña...";
+
+/* Error message */
+"Upload failed (%@): empty response body." = "Error al subir el archivo (%@): respuesta vacía.";
+
+/* Error message */
+"Upload failed (%@): response code %d." = "Error al subir el archivo (%1$@): código de la respuesta %2$d.";
+
+/* Error message */
+"Upload failed (%@). No server response." = "Error al subir el archivo (%@). No hay respuesta del servidor.";
+
+/* Error message */
+"Verification failure: %d %@" = "Error de verificación: %1$d %2$@";
+
+/* Label shown next to an inline video
+Menu item: video call */
+"Video" = "Vídeo";
+
+/* Telephone password reset prompt */
+"We will send a SMS with confirmation code to the number below" = "Enviaremos un SMS con el código de confirmación al siguiente número";
+
+/* Email password reset prompt */
+"We will send an email with confirmation code to the address below" = "Enviaremos un correo electrónico con el código de confirmación a la siguiente dirección";
+
+/* This is 'you' */
+"You" = "Tú";
+
+/* Call to action */
+"You are invited to start a new chat. What would you like?" = "Estás invitado participar en un nuevo chat. ¿Qué te gustaría hacer?";
+
+/* Toast notification */
+"You are offline." = "Estás desconectado.";
+
+/* Placeholder when no chats found */
+"You have no chats\n\n¯\\_(ツ)_/¯" = "No tienes chats\n\n¯\\_(ツ)_/¯";
+

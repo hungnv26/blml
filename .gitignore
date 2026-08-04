@@ -1,0 +1,30 @@
+# ─── SECRETS — never commit ────────────────────────────────────────────────────
+# Live server keys: API_KEY_SALT, AUTH_TOKEN_KEY, UID_ENCRYPTION_KEY, DB password.
+deploy/secrets.env
+# Rendered from blml.conf.template by gen-config.sh; contains those same secrets.
+deploy/blml.conf
+# Android signing. Losing OR leaking this key is unrecoverable for a published app.
+*.keystore
+*.jks
+keystore.properties
+# Firebase configs (per-developer, contain project keys).
+**/google-services.json
+**/GoogleService-Info.plist
+
+# ─── machine-local ─────────────────────────────────────────────────────────────
+local.properties
+.DS_Store
+
+# ─── build output / dependencies ───────────────────────────────────────────────
+build/
+build-device/
+DerivedData/
+*.xcuserdatastate
+xcuserdata/
+Pods/
+node_modules/
+.gradle/
+
+# ─── generated ─────────────────────────────────────────────────────────────────
+brand/screenshots/*.png
+!brand/screenshots/.gitkeep
