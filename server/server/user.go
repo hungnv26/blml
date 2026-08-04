@@ -461,9 +461,28 @@ func addCreds(uid types.Uid, creds []MsgCredClient, extraTags []string,
 // Returns either a full set of tags or nil for tags if tags are unchanged.
 func validatedCreds(uid types.Uid, authLvl auth.Level, creds []MsgCredClient,
 	errorOnFail bool) ([]string, []string, error) {
-	// Check if credential validation is required.
+	// Upstream returned here whenever no validator is *required* at this auth
+	// level. That also silently discarded attempts to confirm an OPTIONAL
+	// credential: the response came back 200 while never being checked, so the
+	// credential stayed unverified and no "method:value" tag was written — which
+	// is what address-book sync and phone search look up.
+	//
+	// Making the credential required instead is not an answer: login gating
+	// reads the same map, so every existing account without that credential is
+	// met with "300 validate credentials" and locked out.
+	//
+	// Skip only when there is genuinely nothing to check.
 	if len(globals.authValidators[authLvl]) == 0 {
-		return nil, nil, nil
+		hasResponse := false
+		for i := range creds {
+			if creds[i].Response != "" {
+				hasResponse = true
+				break
+			}
+		}
+		if !hasResponse {
+			return nil, nil, nil
+		}
 	}
 
 	// Get all validated methods

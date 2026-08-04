@@ -84,6 +84,75 @@ open(path, 'w').write(s)
 print("  email verification: " + ("REQUIRED" if enabled else "disabled"))
 PYEOF
 
+# Phone verification. A verified number becomes a "tel:<number>" tag, which is
+# what address-book contact sync and phone search look up. Without Twilio
+# credentials the server sends no SMS and accepts a fixed debug code — see the
+# warning printed below and the note in secrets.env.
+python3 - "$OUT" <<'PYEOF'
+import json, os, re, sys
+path = sys.argv[1]
+s = open(path).read()
+enabled = os.environ.get('PHONE_VERIFICATION', '').lower() == 'true'
+
+i = s.find('"tel": {')
+if i < 0:
+    print("  phone: tel validator not found, skipped")
+    sys.exit(0)
+
+depth, j = 0, i + len('"tel": ')
+for k in range(j, len(s)):
+    if s[k] == '{':
+        depth += 1
+    elif s[k] == '}':
+        depth -= 1
+        if depth == 0:
+            j = k + 1
+            break
+
+cfg = {
+    "host_url": "http://localhost:6060/",
+    "languages": ["en", "vi"],
+    "sender": "BLML",
+    "universal_templ": "./templ/sms-universal-{{.Language}}.templ",
+    "max_retries": 3,
+}
+sid, token = os.environ.get('TWILIO_SID', ''), os.environ.get('TWILIO_TOKEN', '')
+if sid and token:
+    cfg["twilio_conf"] = {"account_sid": sid, "auth_token": token}
+else:
+    # No SMS gateway: accept a fixed code instead of texting one.
+    cfg["debug_response"] = os.environ.get('PHONE_DEBUG_CODE', '123456')
+
+block = {
+    "add_to_tags": True,
+    # "root", not "auth" — deliberately.
+    #
+    # Two competing facts: a validator with an empty "required" is skipped at
+    # startup, so a bare phone number never gets rewritten to a "tel:" tag and
+    # phone search finds nothing. But "auth" makes a verified phone MANDATORY,
+    # and login gating reads globals.authValidators[session auth level]: every
+    # existing account without a phone is met with "300 validate credentials"
+    # and cannot get in.
+    #
+    # "root" registers the validator (so the rewrite and the search work) while
+    # leaving that map empty for ordinary "auth" logins, so a phone number stays
+    # optional: add one in Settings when you want to be findable by it.
+    "required": ["root"] if enabled else [],
+    "config": cfg,
+}
+rendered = '"tel": ' + json.dumps(block, indent='\t').replace('\n', '\n\t\t')
+s = s[:i] + rendered + s[j:]
+open(path, 'w').write(s)
+
+if enabled and "debug_response" in cfg:
+    print("  phone verification: ENABLED (DEBUG MODE — no SMS sent, code '%s' accepted;"
+          " anyone can claim any number)" % cfg["debug_response"])
+elif enabled:
+    print("  phone verification: ENABLED via Twilio")
+else:
+    print("  phone verification: disabled")
+PYEOF
+
 # Voice/video calls. Upstream ships "enabled": false with placeholder ICE
 # servers (stun.example.com), which silently fails to connect rather than
 # erroring, so the whole block is rewritten from secrets.env.
