@@ -59,6 +59,19 @@ services:
       blml-init:
         condition: service_completed_successfully
 
+  # Local SMTP catcher for developing/verifying the email-verification flow
+  # without real mail credentials. Web UI on :8025 shows every sent message.
+  # In production, point SMTP_SERVER at a real provider and drop this service.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: blml-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"   # web UI
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+
 volumes:
   pgdata:
   uploads:

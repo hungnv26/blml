@@ -50,5 +50,39 @@ PYEOF
   echo "  registration_codes: invite-only enabled"
 fi
 
+# Email verification. When EMAIL_VERIFICATION=true the email validator is
+# required for auth-level accounts and SMTP settings are substituted in.
+python3 - "$OUT" <<'PYEOF'
+import re, sys, os
+path = sys.argv[1]
+s = open(path).read()
+enabled = os.environ.get('EMAIL_VERIFICATION', '').lower() == 'true'
+
+s = re.sub(r'("email":\s*\{[^}]*?"required":\s*)\[[^\]]*\]',
+           lambda m: m.group(1) + ('["auth"]' if enabled else '[]'), s, count=1, flags=re.S)
+
+if enabled:
+    def setkey(text, key, value):
+        # The value may contain escaped quotes, e.g. "\"BLML\" <a@b>", so the
+        # naive "[^"]*" pattern stops at the first \" and corrupts the line.
+        return re.sub(r'("%s":\s*)"(?:[^"\\]|\\.)*"' % key,
+                      lambda m: m.group(1) + '"' + value.replace('"', '\\"') + '"',
+                      text, count=1)
+    # Only the email validator's own config block, not the SMS one below it.
+    i = s.find('"email": {')
+    j = s.find('"tel": {', i)
+    block = s[i:j]
+    block = setkey(block, 'smtp_server', os.environ.get('SMTP_SERVER', ''))
+    block = setkey(block, 'smtp_port', os.environ.get('SMTP_PORT', ''))
+    block = setkey(block, 'login', os.environ.get('SMTP_LOGIN', ''))
+    block = setkey(block, 'sender_password', os.environ.get('SMTP_PASSWORD', ''))
+    block = setkey(block, 'sender', os.environ.get('SMTP_SENDER', ''))
+    block = setkey(block, 'smtp_helo_host', 'blml.app')
+    s = s[:i] + block + s[j:]
+
+open(path, 'w').write(s)
+print("  email verification: " + ("REQUIRED" if enabled else "disabled"))
+PYEOF
+
 echo "wrote $OUT"
 grep -n '"use_adapter"\|"Host"\|"max_size"\|"upload_dir"' "$OUT" | head -6
