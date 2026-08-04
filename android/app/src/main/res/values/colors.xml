@@ -121,4 +121,5 @@
     <color name="colorBottomNavBackground">#FFFFFF</color>
     <color name="colorBottomNavUnselected">#8A8A8E</color>
     <color name="colorBottomNavSelected">#25D366</color>
+    <color name="colorSearchBox">#F0F2F5</color>
 </resources>

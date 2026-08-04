@@ -124,6 +124,27 @@ public class ChatsFragment extends Fragment implements ActionMode.Callback, UiUt
         mSelectionTracker.onRestoreInstanceState(savedInstanceState);
 
         mAdapter.setSelectionTracker(mSelectionTracker);
+
+        // WhatsApp-style search box above the list. The adapter's text filter
+        // lowercases the haystack but not the query, so the query must arrive
+        // already lowercased or uppercase input would never match.
+        android.widget.EditText searchBox = view.findViewById(R.id.chatsSearch);
+        if (searchBox != null) {
+            searchBox.addTextChangedListener(new android.text.TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) { }
+
+                @Override
+                public void afterTextChanged(android.text.Editable s) {
+                    String query = s.toString().trim().toLowerCase(java.util.Locale.getDefault());
+                    mAdapter.setTextFilter(query.isEmpty() ? null : query);
+                    mAdapter.resetContent(requireActivity());
+                }
+            });
+        }
         mSelectionTracker.addObserver(new SelectionTracker.SelectionObserver<>() {
             @Override
             public void onSelectionChanged() {

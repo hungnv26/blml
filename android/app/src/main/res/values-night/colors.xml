@@ -41,4 +41,5 @@
     <color name="colorBottomNavBackground">#1F2C34</color>
     <color name="colorBottomNavUnselected">#8696A0</color>
     <color name="colorBottomNavSelected">#25D366</color>
+    <color name="colorSearchBox">#1F2C34</color>
 </resources>

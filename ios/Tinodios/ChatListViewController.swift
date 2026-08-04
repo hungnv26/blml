@@ -23,7 +23,12 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
     @IBOutlet var chatListTableView: UITableView!
 
     var interactor: ChatListBusinessLogic?
+    // What the table shows: allTopics with the search filter applied.
     var topics: [DefaultComTopic] = []
+    // Everything the presenter delivered, unfiltered. Kept separate so
+    // clearing the search restores the full list without a server round-trip.
+    private var allTopics: [DefaultComTopic] = []
+    private let searchController = UISearchController(searchResultsController: nil)
     var archivedTopics: [DefaultComTopic]?
     var numArchivedTopics: Int { return archivedTopics?.count ?? 0 }
 
@@ -79,6 +84,16 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
         // Do any additional setup after loading the view, typically from a nib.
         setup()
 
+        // WhatsApp-style search box under the "Chats" title. Pinned rather than
+        // hidden-until-scroll so it is always visible at the top of the list.
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = NSLocalizedString("Search", comment: "Chat list search placeholder")
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        // Keep the search box (and the list under it) when a chat is opened.
+        definesPresentationContext = true
+
         NotificationCenter.default.addObserver(
             self, selector: #selector(self.appGoingInactive),
             name: UIApplication.willResignActiveNotification,
@@ -131,11 +146,29 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
 
     func displayChats(_ topics: [DefaultComTopic], archivedTopics: [DefaultComTopic]?) {
         assert(Thread.isMainThread)
-        self.topics = topics
+        self.allTopics = topics
         self.archivedTopics = archivedTopics
-        self.rowIndex = Dictionary(uniqueKeysWithValues: topics.enumerated().map { (index, topic) in (topic.name, index) })
-        self.tableView!.reloadData()
+        self.applySearchFilter()
         self.toggleFooter(visible: self.numArchivedTopics > 0)
+    }
+
+    /// Rebuilds the visible list from `allTopics` and the current query.
+    /// Matches the chat title and the About line, same fields Android's chat
+    /// list filter uses. rowIndex must be rebuilt in the same pass: updateChat
+    /// and deleteChat address rows through it, so a stale index would repaint
+    /// or remove the wrong row while a filter is active.
+    private func applySearchFilter() {
+        let query = (searchController.searchBar.text ?? "").trimmingCharacters(in: .whitespaces).lowercased()
+        if query.isEmpty {
+            self.topics = allTopics
+        } else {
+            self.topics = allTopics.filter { topic in
+                let hayStack = [topic.pub?.fn, topic.pub?.note, topic.comment]
+                return hayStack.contains { $0?.lowercased().contains(query) ?? false }
+            }
+        }
+        self.rowIndex = Dictionary(uniqueKeysWithValues: self.topics.enumerated().map { (index, topic) in (topic.name, index) })
+        self.tableView!.reloadData()
     }
 
     func updateChat(_ name: String) {
@@ -147,8 +180,12 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
 
     func deleteChat(_ name: String) {
         assert(Thread.isMainThread)
+        // Drop from the unfiltered list too, or the chat would reappear the
+        // moment the search box is cleared.
+        self.allTopics.removeAll { $0.name == name }
         guard let position = rowIndex[name] else { return }
         self.topics.remove(at: position)
+        self.rowIndex = Dictionary(uniqueKeysWithValues: self.topics.enumerated().map { (index, topic) in (topic.name, index) })
         self.tableView!.deleteRows(at: [IndexPath(item: position, section: 0)], with: .fade)
         self.toggleFooter(visible: self.numArchivedTopics > 0)
     }
@@ -221,5 +258,11 @@ extension ChatListViewController {
         } else {
             tableView.backgroundView = nil
         }
+    }
+}
+
+extension ChatListViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        applySearchFilter()
     }
 }
