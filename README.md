@@ -33,13 +33,13 @@ signing key, and an actual server at `chat.blml.app`.
 | `android/` | [tinode/tindroid](https://github.com/tinode/tindroid) | v0.25.5 | Apache 2.0 |
 | `ios/` | [tinode/ios](https://github.com/tinode/ios) | v1.24.4 | Apache 2.0 |
 
-Each is an untouched git clone with `origin` pointing at upstream, so `git pull` still
-works and `git diff` always shows exactly what you changed.
+These were four separate upstream clones; they are now directories in this single
+repository (see [UPSTREAM.md](UPSTREAM.md) for the commits they were forked from).
 
-Licensing for this use case: the three clients are Apache 2.0, so renaming, re-logoing,
-and redistributing them is fine (keep the license files). The server is GPL 3.0, but
-running a modified server for your own group is not distribution and triggers no
-obligations.
+Licensing: the three clients are Apache 2.0, so renaming, re-logoing, and
+redistributing them is fine (keep the license files). The server is GPL 3.0 —
+running it for your own group is not distribution, but **publishing this repo is**,
+so `server/` and its modifications stay GPL 3.0.
 
 ## Version control
 
