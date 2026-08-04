@@ -28,3 +28,10 @@ node_modules/
 # ─── generated ─────────────────────────────────────────────────────────────────
 brand/screenshots/*.png
 !brand/screenshots/.gitkeep
+# Only the five screenshots used by README.md are published; everything
+# else in this folder is working material and may contain personal data.
+!brand/screenshots/01-chats.png
+!brand/screenshots/02-chat.png
+!brand/screenshots/03-attachments.png
+!brand/screenshots/04-appearance.png
+!brand/screenshots/05-wallpapers.png
