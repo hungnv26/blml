@@ -131,9 +131,6 @@ Two caching gotchas when shipping webapp updates, learned the hard way:
 
 - **Email verification** — needs SMTP credentials; `"email"` validator in
   blml.conf. For a 50-person group you can skip it entirely.
-- **Voice/video calls** — needs `"webrtc"` enabled + ICE servers (coturn or
-  Twilio's). The rebranded apps hide nothing; it just won't connect calls
-  until ICE is configured.
 - **Monitoring** — upstream ships an exporter (`server/monitoring/`) for
   Prometheus/InfluxDB if you ever want it.
 
@@ -184,6 +181,41 @@ Tinode references) → code accepted → credential stored with `done = true`.
 
 Existing accounts are unaffected; the check applies at signup.
 
+
+## Voice/video calls
+
+Enabled. The call button shows in the chat header and the server logs
+`Video calls enabled with 1 ICE servers` at startup.
+
+Settings live in `secrets.env` and are rendered into `blml.conf` by
+`gen-config.sh`, which rewrites the whole `"webrtc"` block — upstream ships it
+disabled with `stun.example.com` placeholders that fail silently rather than
+erroring.
+
+```
+WEBRTC_ENABLED=true
+STUN_URL=stun:stun.l.google.com:19302
+TURN_URL=
+TURN_USER=
+TURN_PASSWORD=
+```
+
+**STUN only, for now.** STUN just tells each phone its public address; the two
+then connect directly. That works when at least one side is not behind
+symmetric NAT — typical for phones on home wifi, which covers most family
+calls. It fails when both sides are on mobile data or strict NAT, because
+neither can accept a direct connection.
+
+Fixing that needs a **TURN relay**, which forwards the actual audio/video and so
+must be hosted (bandwidth costs money — that is why there is no free public
+TURN). Once you have the VPS, run coturn beside the server and fill in
+`TURN_URL`/`TURN_USER`/`TURN_PASSWORD`, then `./gen-config.sh && docker compose
+restart blml`.
+
+A **Calls tab** listing call history is not built. Tinode records calls as
+in-band messages inside each conversation, so the history exists and a tab could
+be built over it — but it would list nothing until calls are actually being
+placed, so it is worth doing after TURN is up.
 
 ## Finding people by username
 
