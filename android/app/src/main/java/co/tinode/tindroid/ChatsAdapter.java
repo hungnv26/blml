@@ -5,6 +5,11 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.text.TextUtils;
+
+import java.util.Calendar;
+import java.util.Date;
+
+import androidx.core.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -246,10 +251,23 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
         }
     }
 
+    /** Time for today, otherwise a short date — matches the iOS/web row format. */
+    private static String shortTime(Context ctx, Date when) {
+        Calendar then = Calendar.getInstance();
+        then.setTime(when);
+        Calendar now = Calendar.getInstance();
+        boolean sameDay = then.get(Calendar.YEAR) == now.get(Calendar.YEAR)
+                && then.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR);
+        return sameDay
+                ? android.text.format.DateFormat.getTimeFormat(ctx).format(when)
+                : android.text.format.DateFormat.getDateFormat(ctx).format(when);
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         final int viewType;
         TextView name;
         TextView unreadCount;
+        TextView time;
         TextView priv;
         ImageView messageStatus;
         AppCompatImageView avatarView;
@@ -275,6 +293,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             if (viewType == R.layout.contact) {
                 name = item.findViewById(R.id.contactName);
                 unreadCount = item.findViewById(R.id.unreadCount);
+                time = item.findViewById(R.id.contactTime);
                 priv = item.findViewById(R.id.contactPriv);
                 messageStatus = item.findViewById(R.id.messageStatus);
                 avatarView = item.findViewById(R.id.avatar);
@@ -341,6 +360,21 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                 unreadCount.setVisibility(View.VISIBLE);
             } else {
                 unreadCount.setVisibility(View.GONE);
+            }
+
+            // WhatsApp-style row timestamp: time today, date otherwise; green
+            // while there are unread messages, same as iOS and web.
+            if (time != null) {
+                Date touched = topic.getTouched();
+                if (touched != null) {
+                    time.setText(shortTime(time.getContext(), touched));
+                    time.setTextColor(unread > 0
+                            ? 0xFF25D366
+                            : ContextCompat.getColor(time.getContext(), R.color.colorGray));
+                    time.setVisibility(View.VISIBLE);
+                } else {
+                    time.setVisibility(View.GONE);
+                }
             }
 
             UiUtils.setAvatar(avatarView, pub, topicName, topic.isDeleted());

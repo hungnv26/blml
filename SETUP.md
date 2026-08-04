@@ -63,6 +63,12 @@ was generated with the in-image keygen and baked into:
 - `android/.../co/tinode/tindroid/Cache.java` → `API_KEY`
 - `ios/TinodiosDB/SharedUtils.swift` → `kApiKey`
 
+All three must hold the *same* key. Android was missed for a while and kept the
+stock Tinode key, so the Android app could not connect to BLML at all — the
+WebSocket was rejected with `403 Forbidden` and the client surfaced it as the
+misleading "disconnected (503)". If Android ever fails to log in while iOS and
+web are fine, compare these three constants first.
+
 If you ever regenerate the salt: `docker compose run --rm --entrypoint
 /opt/blml/keygen blml -salt "$API_KEY_SALT"`, paste the new key into those
 three files, rebuild all clients.
