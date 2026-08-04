@@ -10,6 +10,7 @@ import MobileCoreServices
 import MobileVLCKit
 import TinodeSDK
 import UIKit
+import UniformTypeIdentifiers
 
 extension MessageViewController: SendMessageBarDelegate {
     // Default 256K server limit. Does not account for base64 compression and overhead.
@@ -21,22 +22,24 @@ extension MessageViewController: SendMessageBarDelegate {
         interactor?.sendMessage(content: Drafty(content: sendText))
     }
 
-    func sendMessageBar(attachment: Bool) {
-        if attachment {
-            attachFile()
-        } else {
-            attachImage()
+    func sendMessageBar(attachment: AttachmentKind) {
+        switch attachment {
+        case .document:
+            attachFile(ofTypes: [.item, .image])
+        case .audio:
+            attachFile(ofTypes: [.audio])
+        case .camera:
+            imagePicker?.present(source: .camera, from: self.view)
+        case .gallery:
+            imagePicker?.present(source: .photoLibrary, from: self.view)
         }
     }
-    private func attachFile() {
-        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item, .image])
+
+    private func attachFile(ofTypes types: [UTType]) {
+        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: types)
         documentPicker.delegate = self
         documentPicker.modalPresentationStyle = .formSheet
         self.present(documentPicker, animated: true, completion: nil)
-    }
-
-    private func attachImage() {
-        imagePicker?.present(from: self.view)
     }
 
     func sendMessageBar(textChangedTo text: String) {
