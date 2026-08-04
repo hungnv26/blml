@@ -195,6 +195,9 @@ class SignupViewController: UITableViewController {
         let description: String? = nil
         let inviteCode = self.descriptionTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         self.signupTags = inviteCode.isEmpty ? nil : ["code:" + inviteCode]
+        // Remember it so "Invite a friend" can pass the same code on. Stored
+        // even if signup then fails — a wrong code is overwritten by the retry.
+        SharedUtils.setInviteCode(inviteCode)
         if let imageBits = avatar?.pixelData(forMimeType: Photo.kDefaultType) {
             if imageBits.count > UiUtils.kMaxInbandAvatarBytes {
                 // Sending image out of band.

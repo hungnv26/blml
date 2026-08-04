@@ -264,6 +264,9 @@ public class SignUpFragment extends Fragment
                 .getText().toString().trim();
         final String[] signupTags = TextUtils.isEmpty(inviteCode)
                 ? null : new String[]{"code:" + inviteCode};
+        // Remember it so "Invite a friend" can pass the same code on. Stored
+        // even if signup then fails — a wrong code is overwritten by the retry.
+        InviteHelper.setInviteCode(requireContext(), inviteCode);
 
         final Button signUp = parent.findViewById(R.id.signUp);
         signUp.setEnabled(false);

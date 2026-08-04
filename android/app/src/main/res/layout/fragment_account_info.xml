@@ -373,5 +373,69 @@
                 android:text="@string/help_explained" />
 
         </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/my_qr_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="?attr/listPreferredItemHeight"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:layout_width="@dimen/settings_icon_size"
+                android:layout_height="@dimen/settings_icon_size"
+                android:src="@drawable/ic_qr_code"
+                app:tint="@color/colorAccent"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                style="?android:textAppearanceLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="@string/my_qr_code" />
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/invite_friend"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="?attr/listPreferredItemHeight">
+
+            <ImageView
+                android:id="@+id/icon_invite"
+                android:layout_width="@dimen/settings_icon_size"
+                android:layout_height="@dimen/settings_icon_size"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_favorite"
+                app:tint="@color/colorAccent"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/invite_text"
+                style="?android:textAppearanceLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_toEndOf="@id/icon_invite"
+                android:text="@string/invite_a_friend" />
+
+            <TextView
+                style="?android:textAppearanceMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/invite_text"
+                android:layout_marginStart="16dp"
+                android:layout_toEndOf="@id/icon_invite"
+                android:text="@string/invite_a_friend_explained" />
+        </RelativeLayout>
     </LinearLayout>
 </ScrollView>

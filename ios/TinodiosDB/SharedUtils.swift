@@ -29,6 +29,10 @@ public class SharedUtils {
 
     static public let kPrefHostName = "host_name_preference"
     static public let kPrefUseTLS = "use_tls_preference"
+    // The invite code this account signed up with. Remembered so "Invite a
+    // friend" can pass it on: the server is invite-only, and nobody remembers a
+    // code they typed once at signup.
+    static public let kPrefInviteCode = "invite_code_preference"
 
     // App Tinode api key.
     private static let kApiKey = "AQAAAAABAAC-d-KsShjNeHzNi7myV36_"
@@ -288,7 +292,22 @@ public class SharedUtils {
         return success
     }
 
-    static func getConnectionSettings() -> (hostName: String?, useTLS: Bool?) {
+    /// The invite code this account signed up with, if it was entered in-app.
+    /// Empty for accounts created before this was stored, or on a reinstall.
+    public static func getInviteCode() -> String? {
+        let code = kAppDefaults.string(forKey: kPrefInviteCode)
+        return (code?.isEmpty ?? true) ? nil : code
+    }
+
+    public static func setInviteCode(_ code: String?) {
+        guard let code = code, !code.isEmpty else {
+            return
+        }
+        kAppDefaults.set(code, forKey: kPrefInviteCode)
+        UserDefaults.standard.set(code, forKey: kPrefInviteCode)
+    }
+
+    public static func getConnectionSettings() -> (hostName: String?, useTLS: Bool?) {
         return (hostName: kAppDefaults.string(forKey: kPrefHostName), useTLS: kAppDefaults.bool(forKey: kPrefUseTLS))
     }
 
