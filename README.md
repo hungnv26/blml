@@ -41,6 +41,19 @@ and redistributing them is fine (keep the license files). The server is GPL 3.0,
 running a modified server for your own group is not distribution and triggers no
 obligations.
 
+## Version control
+
+This is a single git repository (`main` branch). It was flattened from four
+upstream Tinode clones — [UPSTREAM.md](UPSTREAM.md) records the exact commits
+each directory came from, and how to diff against upstream later.
+
+**Never committed** (see `.gitignore`): `deploy/secrets.env`, the generated
+`deploy/blml.conf`, `android/blml-release.keystore`, `android/keystore.properties`,
+and both Firebase configs. Start from `deploy/secrets.env.example`.
+
+Before pushing anywhere public, re-read the licensing note in
+[UPSTREAM.md](UPSTREAM.md): `server/` is GPL-3.0, so publishing distributes it.
+
 ## Rebranding
 
 - **`REBRANDING.md`** — every file and line where the name or logo appears, per repo.
