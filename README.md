@@ -1,90 +1,151 @@
-# BLML — self-hosted chat
+# BLML
 
-Working copy of the Tinode chat platform, cloned 2026-08-03, rebranded to **BLML** and
-set up for self-hosting for a ~50 person group.
+A self-hosted, invite-only chat app for a private group — family, friends, a small
+team. You run the server; the messages, photos and files stay on your own
+machine. No third-party accounts, no ads, no analytics.
 
-## Status
+Native apps for iOS and Android, plus a web client, all talking to a single Go
+server backed by PostgreSQL.
 
-Rebranding is applied and both mobile apps compile.
+<p align="center">
+  <img src="brand/screenshots/01-chats.png" width="230" alt="Chat list with search">
+  <img src="brand/screenshots/02-chat.png" width="230" alt="Conversation">
+  <img src="brand/screenshots/03-attachments.png" width="230" alt="Attachment sheet">
+</p>
+<p align="center">
+  <img src="brand/screenshots/04-appearance.png" width="230" alt="Appearance settings">
+  <img src="brand/screenshots/05-wallpapers.png" width="230" alt="Chat wallpapers">
+</p>
 
-| | Status |
-|---|---|
-| Name | `BLML` across web, Android, iOS, and server emails |
-| Logo | `brand/source-artwork.png` → 31 icon files across the three clients |
-| Brand colour | `#0e1b52` (sampled from the artwork) |
-| Bundle id | `app.blml.chat` on both platforms |
-| Android APK | ✅ `android/app/build/outputs/apk/debug/app-debug.apk` (102 MB) |
-| iOS simulator build | ✅ `ios/build/Build/Products/Debug-iphonesimulator/Tinodios.app` (81 MB) |
-| Verified | installed on an iPhone 17 Pro simulator — see `brand/verification-ios-home.png` |
+## What it does
 
-See [BUILDING.md](BUILDING.md) for the toolchain, the local config files, and the
-upstream bugs that had to be patched. [REDESIGN-PLAN.md](REDESIGN-PLAN.md) is the
-WhatsApp-style interface plan for all three clients (iOS phase 1 shipped).
+**Messaging** — one-to-one and group chats, delivery and read receipts, typing
+indicators, replies, message editing and voice messages. Attachments up to
+100 MB: photos, video, documents, audio.
 
-**Not yet done:** push notifications (placeholder Firebase config), a real Android
-signing key, and an actual server at `chat.blml.app`.
+**Invite-only by design.** Creating an account requires a registration code that
+you control. Without it the server refuses signup outright, so a public address
+does not mean a public server. *Invite a friend* shares the app, the server
+address and the code in one message.
 
-## Layout
+**Finding people** — search by username, scan a QR code in person, or match
+against your phone's address book once members add a phone number.
 
-| Folder | Upstream | Version | License |
-|---|---|---|---|
-| `server/` | [tinode/chat](https://github.com/tinode/chat) | v0.25.3 | GPL 3.0 |
-| `webapp/` | [tinode/webapp](https://github.com/tinode/webapp) | v0.25.3 | Apache 2.0 |
-| `android/` | [tinode/tindroid](https://github.com/tinode/tindroid) | v0.25.5 | Apache 2.0 |
-| `ios/` | [tinode/ios](https://github.com/tinode/ios) | v1.24.4 | Apache 2.0 |
+**Voice and video calls** over WebRTC, direct between devices.
 
-These were four separate upstream clones; they are now directories in this single
-repository (see [UPSTREAM.md](UPSTREAM.md) for the commits they were forked from).
+**Appearance** — light/dark/system theme and a chat wallpaper gallery served
+from your own server, so nothing external is needed to render it.
 
-Licensing: the three clients are Apache 2.0, so renaming, re-logoing, and
-redistributing them is fine (keep the license files). The server is GPL 3.0 —
-running it for your own group is not distribution, but **publishing this repo is**,
-so `server/` and its modifications stay GPL 3.0.
+## Architecture
 
-## Version control
-
-This is a single git repository (`main` branch). It was flattened from four
-upstream Tinode clones — [UPSTREAM.md](UPSTREAM.md) records the exact commits
-each directory came from, and how to diff against upstream later.
-
-**Never committed** (see `.gitignore`): `deploy/secrets.env`, the generated
-`deploy/blml.conf`, `android/blml-release.keystore`, `android/keystore.properties`,
-and both Firebase configs. Start from `deploy/secrets.env.example`.
-
-Before pushing anywhere public, re-read the licensing note in
-[UPSTREAM.md](UPSTREAM.md): `server/` is GPL-3.0, so publishing distributes it.
-
-## Rebranding
-
-- **`REBRANDING.md`** — every file and line where the name or logo appears, per repo.
-- **`rebrand.sh`** — applies all the text changes. The CONFIG block at the top holds the
-  current BLML values; edit and re-run to change them (revert first, see below).
-- **`brand/`** — source artwork plus `generate-icons.sh`, which produces and installs
-  every icon size the three clients need from `icon.png`.
-
-Because everything is git, any run is undoable:
-
-```bash
-for d in server webapp android ios; do git -C "$d" checkout .; done
+```
+   iOS ─┐
+Android ─┼──►  BLML server (Go, :6060)  ──►  PostgreSQL
+    Web ─┘         ├── WebSocket + long-polling API
+                   ├── serves the web client
+                   └── serves uploads
+                                │
+                          uploads volume
 ```
 
-## Suggested order
+One binary does the API, the web client and file uploads. Postgres holds
+accounts, messages and file metadata; attachment bytes live on disk.
 
-1. Edit CONFIG in `rebrand.sh`, run it, review with `git -C webapp diff`.
-2. Put artwork in `brand/`, run `brand/generate-icons.sh`.
-3. Generate your own API key (`server/keygen`) and put it in `webapp/src/config.js` —
-   don't ship the demo key that's checked in.
-4. Build and check the web app: `cd webapp && npm install && npm run build`.
-5. Stand the server up with Docker (Postgres + `tinode/tinode-postgres`), serve your
-   built web app from it, verify branding end to end.
-6. Android and iOS last — those need store accounts, signing keys, and Firebase config
-   for push.
+## Quick start
 
-## Things to remember when deploying
+Requires Docker.
 
-- Set a real database password; the upstream Docker examples use empty/default ones.
-- Disable the sample/test data the server seeds on first run.
-- TLS via the server's built-in Let's Encrypt (`TLS_DOMAIN_NAME`) or a reverse proxy.
-- Push notifications need your own Firebase project, wired into both `tinode.conf` and
-  the rebuilt mobile apps.
-- Back up the database plus the media upload directory.
+```bash
+cd deploy
+cp secrets.env.example secrets.env
+```
+
+Generate the four secrets and put them in `secrets.env`:
+
+```bash
+openssl rand -base64 32   # API_KEY_SALT
+openssl rand -base64 32   # AUTH_TOKEN_KEY
+openssl rand -base64 16   # UID_ENCRYPTION_KEY
+openssl rand -base64 24   # POSTGRES_PASSWORD
+```
+
+Set `REGISTRATION_CODE` to whatever you will hand out, then:
+
+```bash
+./gen-config.sh
+set -a; source secrets.env; set +a
+docker compose up -d --build
+```
+
+Open <http://localhost:6060>. The first run creates the database schema. No
+sample accounts are loaded — create yours through Sign Up.
+
+> **The API key chain.** Changing `API_KEY_SALT` invalidates the key baked into
+> the clients. Regenerate it with the in-image keygen and paste the result into
+> `webapp/src/config.js`, `android/.../Cache.java` and
+> `ios/TinodiosDB/SharedUtils.swift` — all three must match, or that client gets
+> `403` on connect.
+
+## Building the clients
+
+| Client | Command |
+|---|---|
+| Web | `cd webapp && rm -f umd/* && npm install && npm run build` |
+| Android | `cd android && ./gradlew :app:assembleDebug` |
+| iOS | `cd ios && pod install && open Tinodios.xcworkspace` |
+
+Point the apps at your server: iOS via `dev.xcconfig` / `prod.xcconfig`, Android
+via `TindroidApp.getDefaultHostName()`, web via `webapp/src/config.js`.
+
+`ios/install-devices.sh` builds and installs on every paired device at once.
+With a free Apple developer account the signature expires after 7 days, so
+rerun it weekly.
+
+## Going to production
+
+1. A VPS with 2 vCPU / 4 GB / 40 GB and Docker installed.
+2. Point a domain at it.
+3. Copy the repo and `secrets.env` (which is **not** in git) to the server.
+4. Terminate TLS with Caddy or nginx in front of port 6060, or enable the
+   server's built-in ACME.
+5. `docker compose up -d --build`.
+6. Calls need ICE servers. Public STUN is enough when one side is on home wifi;
+   add a TURN relay for calls that always connect.
+
+Backups, phone and email verification, and push notifications are covered in
+[SETUP.md](SETUP.md).
+
+## Repository layout
+
+```
+server/    Go server and database adapters
+ios/       iOS client (Swift)
+android/   Android client (Java)
+webapp/    Web client (React) and static assets
+deploy/    Docker Compose stack and config generator
+brand/     Icons, logo, wallpapers and their generator scripts
+```
+
+Design notes are in [REDESIGN-PLAN.md](REDESIGN-PLAN.md), operational detail in
+[SETUP.md](SETUP.md), build instructions in [BUILDING.md](BUILDING.md).
+
+## Security notes
+
+- `deploy/secrets.env`, the generated `blml.conf` and signing keystores are
+  gitignored. Keep them that way.
+- Phone verification ships in a no-SMS debug mode: the server accepts a fixed
+  code, so a member could claim a number that is not theirs. Fine for a closed
+  group, not for a public one — configure Twilio credentials for real
+  verification.
+- Registration is invite-only, but the code is a shared secret. Rotate it in
+  `secrets.env` when someone should no longer be able to invite.
+
+## License
+
+The server is licensed under the **GNU GPL v3.0**; the iOS, Android and web
+clients under the **Apache License 2.0**. Both licenses and the upstream
+copyright notices are preserved in `server/LICENSE`, `ios/LICENSE`,
+`android/LICENSE` and `webapp/LICENSE`.
+
+The BLML name, logo and artwork under `brand/` are not covered by those
+licenses.
