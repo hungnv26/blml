@@ -1,0 +1,501 @@
+/* Invite reaction button */
+"Accept" = "接受";
+
+/* Toast notification */
+"Action failed: %@" = "动作失败：%@";
+
+/* Alert title */
+"Add contact" = "添加联系人";
+
+/* Alert placeholder */
+"Additional info (private)" = "附加信息（私人）";
+
+/* Toast notification */
+"Address copied" = "地址已复制";
+
+/* Toast notification */
+"Alias copied" = "别名已复制";
+
+/* Alert explanation */
+"Also block and remove all messages" = "同时阻止并删除所有消息";
+
+/* Swipe action */
+"Archive" = "存档";
+
+/* View title */
+"Archived Chats" = "存档的聊天";
+
+/* Button to open chat archive */
+"Archived Chats (%@)" = "存档的聊天 (%@)";
+
+/* Warning in delete account alert */
+"Are you sure you want to delete your account? It cannot be undone." = "您确定要删除您的帐户吗?无法撤销。";
+
+/* Warning in logout alert */
+"Are you sure you want to log out?" = "您确定要注销吗？";
+
+/* Label shown next to an attachment */
+"Attachment" = "附件";
+
+/* Error message: attachment too large */
+"Attachment exceeds maximum size" = "附件超过最大尺寸";
+
+/* Menu item: audio-only call */
+"Audio-only" = "仅限音频";
+
+/* Alert action
+   Invite reaction button */
+"Block" = "屏蔽";
+
+/* Alert action */
+"Block contact?" = "屏蔽联系人？";
+
+/* Text written on button face when all else fails. */
+"button" = "按钮";
+
+/* Menu title for selecting type of call */
+"Call" = "电话";
+
+/* Toast notification */
+"Can't change permissions for this user." = "无法更改此用户的权限。";
+
+/* Toast notification */
+"Can't make this user owner." = "无法将此用户设为所有者。";
+
+/* Alert action */
+"Cancel" = "取消";
+
+/* Label for cancelled call */
+"cancelled" = "已取消";
+
+/* Error message */
+"Cannot send email: functionality not accessible." = "无法发送电子邮件：功能无法访问。";
+
+/* Alert title */
+"Change Password" = "更改密码";
+
+/* Alert action */
+"Change permissions" = "变更权限";
+
+/* Invitation subject */
+"Check out Tinode Messenger" = "查看Tinode即时通讯";
+
+/* Invitation body */
+"Check out Tinode Messenger: https://tinode.co/" = "查看Tinode即时通讯：https://tinode.co/";
+
+/* Alert title */
+"Clear all messages?" = "清除所有消息？";
+
+/* Button text */
+"confirm" = "确认";
+
+/* Alert title */
+"Confirm contact" = "确认联络人";
+
+/* Info message */
+"Confirmaition message sent to %@" = "确认消息已发送至%@";
+
+/* Confirmation code sent */
+"Confirmation code sent" = "已发送确认码";
+
+/* Toast info message */
+"Confirmed successfully" = "确认成功";
+
+/* Progress overlay */
+"Confirming..." = "确认...";
+
+/* Label for initiated call */
+"connecting" = "联运的";
+
+/* Toast notification */
+"Connection to server lost." = "与服务器的连接丢失。";
+
+/* Replacement for chat message with no content */
+"Content deleted" = "内容已删除";
+
+/* Menu item */
+"Copy" = "复制";
+
+/* Alert action */
+"Copy to clipboard" = "复制到剪贴板";
+
+/* Error message */
+"Could not change password: %@" = "无法更改密码：%@";
+
+/* Error message */
+"Couldn't connect to server at %@: %@" = "无法连接到服务器 (%@)：%@";
+
+/* Label for email or phone number entering */
+"Current credential" = "当前证书";
+
+/* Alert action
+   Menu item
+   Swipe action */
+"Delete" = "删除";
+
+/* Menu item */
+"Delete for all" = "为所有人删除";
+
+/* Menu item */
+"Delete for me" = "为我删除";
+
+/* Alert title */
+"Delete Saved messages?" = "删除收藏的消息？";
+
+/* Alert title */
+"Delete the group?" = "删除群组？";
+
+/* Section title */
+"Directory" = "目录";
+
+/* Menu item */
+"Edit" = "编辑";
+
+/* Alert title */
+"Edit account name" = "修改帐号名称";
+
+/* Alert title */
+"Edit Group" = "编辑主题";
+
+/* `Edited` message marker */
+"edited" = "编辑";
+
+/* Alert action */
+"Email" = "电子邮件";
+
+/* Toast error message */
+"Enter a valid credential (phone or email)." = "输入有效的凭证（电话或电子邮件）。";
+
+/* Alert prompt */
+"Enter confirmation code sent to you by %@" = "输入%@发送给您的确认码";
+
+/* Alert message */
+"Enter email or phone number" = "输入电子邮件或电话号码";
+
+/* Alert prompt */
+"Enter new password" = "输入新密码";
+
+/* Error message */
+"Entered text is neither email nor phone number." = "输入的文字既不是电子邮件也不是电话号码。";
+
+/* Toast notification */
+"Error changing permissions: %@" = "更改权限时出错：%@";
+
+/* Error message */
+"Failed to create account: %@" = "无法创建帐户：%@";
+
+/* Error message: malformed URL string */
+"Failed to create URL string for file: %@" = "未能为文件创建URL字符串：%@";
+
+/* Error message */
+"Failed to save group and contact info." = "无法保存群组和联系信息。";
+
+/* Error message */
+"Failed to send email: %@" = "发送电子邮件失败：%@";
+
+/* Error message */
+"Failed to subscribe to topic: %@" = "无法订阅群组：%@";
+
+/* Alert action qualifier as in 'Delete for all' */
+"For all" = "为所有人";
+
+/* Alert action 'Delete for me' */
+"For me" = "只对我来说";
+
+/* Label shown next to a form in preview */
+"Form" = "表格";
+
+/* Menu item */
+"Forward" = "转发";
+
+/* User name prompt */
+"Full name, e.g. John Doe" = "全名，例如张伟";
+
+/* Invite reaction button */
+"Ignore" = "忽略";
+
+/* Label for call in progress */
+"in progress" = "进行中";
+
+/* Label for incoming video/audio calls */
+"Incoming call" = "来电";
+
+/* Error message */
+"Invalid group ID: %d (%@)" = "无效的群组ID：%1$d (%2$@)";
+
+/* Error message when the image cannot be processed */
+"Invalid image" = "图像无效";
+
+/* Password reset error */
+"Invalid or unknown address" = "地址无效或未知";
+
+/* Dialog title: call to action */
+"Invite" = "邀请";
+
+/* Label for join conference link */
+"Join" = "加入";
+
+/* Alert action */
+"Leave" = "离开";
+
+/* Alert title */
+"Leave the conversation?" = "离开对话吗？";
+
+/* Alert title */
+"Leave the group?" = "离开小组？";
+
+/* Section title */
+"Local Contacts" = "本地联络人";
+
+/* Login progress text */
+"Logging in..." = "登录中...";
+
+/* Error message */
+"Login info missing..." = "找不到登录信息...";
+
+/* Alert action */
+"Make owner" = "设为拥有者";
+
+/* View title */
+"Manage members" = "管理成员";
+
+/* Content of a pinned message when the message is deleted */
+"message deleted" = "消息已删除";
+
+/* Content of a pinned message when the message is missing */
+"message not found" = "未找到消息";
+
+/* Toast notification */
+"Message not sent." = "消息未发送。";
+
+/* Toast info */
+"Message with instructions sent to the provided address." = "带有说明的消息已发送到提供的地址。";
+
+/* Alert action */
+"Messages" = "“信息”";
+
+/* Title for displaying a QR Code */
+"My Code" = "我的代码";
+
+/* Alert placeholder */
+"Name of the group" = "组名";
+
+/* Invalid date */
+"Never ??:??" = "没有时间戳记";
+
+/* View title */
+"New Chat" = "新聊天";
+
+/* Error message */
+"No access to email" = "无法访问电子邮件";
+
+/* No read access in chat
+   Toast error message */
+"No access to messages" = "无法访问“信息”";
+
+/* Placeholder when no members are selected */
+"No members selected" = "未选择成员";
+
+/* Placeholder in empty chat */
+"No messages in the conversation" = "对话中没有讯息";
+
+/* Error message when call cannot be started due to missing camera permission */
+"No permission to access camera" = "不允许访问相机";
+
+/* Error message when call cannot be started due to missing microphone permission */
+"No permission to access microphone" = "不允许访问麦克风";
+
+/* Explanation for Saved messages topic */
+"Notes, messages, links, files saved for posterity" = "永久保存的笔记、消息、链接、文件";
+
+/* Alert action */
+"OK" = "好";
+
+/* The topic or user is currently online */
+"online now" = "现在在线";
+
+/* Toast notification */
+"Only Owner can delete group" = "只有所有者可以删除群组";
+
+/* Placeholder for missing topic description
+Placeholder for missing user self-description */
+"Optional description" = "可选描述";
+
+/* Label for outgoing video/audio calls */
+"Outgoing call" = "呼出电话";
+
+/* Toast notification */
+"Owner cannot leave the group" = "所有者不能离开群组";
+
+/* Error message */
+"Password too short" = "密码太短";
+
+/* Success message */
+"Password updated" = "密码已更新";
+
+/* Toast notification */
+"Permissions not modified: %d (%s)" = "权限未修改：%1$d (%2$s)";
+
+/* Label shown next to an inline image */
+"Picture" = "照片";
+
+/* Menu item for pinning message */
+"Pin" = "固定";
+
+/* Error message */
+"Playback failed" = "播放失败";
+
+/* Progress overlay */
+"Please wait..." = "请耐心等待...";
+
+/* Placeholder text in editor */
+"Private info: not set" = "私人信息：未设置";
+
+/* Error message when QR code scanner failed to init */
+"QRCode scanner failed to initialize" = "QRCode扫描仪初始化失败";
+
+/* Error message */
+"Recording failed" = "录音失败";
+
+/* Progress overlay */
+"Registering..." = "建立帐户...";
+
+/* Alert action */
+"Remove" = "去掉";
+
+/* Confirmation */
+"Remove %@ from %@?" = "从%2$@?中删除%1$@？";
+
+/* Confirmation */
+"Remove and ban %@ from %@?" = "从%2$@中删除并禁止%1$@？";
+
+/* Menu item */
+"Reply" = "答复";
+
+/* Alert action */
+"Report" = "向当局报告";
+
+/* Alert title */
+"Report contact?" = "向当局报告小组？";
+
+/* Alert title */
+"Report Group?" = "向当局报告小组？";
+
+/* Error message */
+"Request failed: %@" = "请求失败：%@";
+
+/* Progress overlay */
+"Requesting..." = "请求中...";
+
+/* Title for slf topic
+Title of slf topic
+Title of the slf topic */
+"Saved messages" = "收藏的消息";
+
+/* Title for camera preview when scanning a QR code */
+"Scan Code" = "扫描代码";
+
+/* Placeholder prompt */
+"Search by tags" = "按标签搜索";
+
+/* Error message when permissions are missing */
+"Search functionality limited. Grant Contacts permission." = "搜索功能受限。授予联系人权限。";
+
+/* Error message */
+"Select at least one group member" = "选择至少一个小组成员";
+
+/* Alert action */
+"Send message" = "发信息";
+
+/* Service unavailable */
+"Service unavailable at this time. Please try again later." = "服务目前不可用。请稍后再试。";
+
+/* Toast notification */
+"Something went wrong: (%d) %@" = "发生错误: (%1$d) %2$@";
+
+/* Toast notification */
+"Something went wrong: %d (%s)" = "有些不对劲：%1$d (%2$s)";
+
+/* Toast notification */
+"Tags missing." = "标签缺失。";
+
+/* Toast notification */
+"The avatar is too small." = "头像太小了。";
+
+/* Error message */
+"The file size exceeds the limit %@" = "文件大小超过限制%@";
+
+/* Toast notification */
+"Topic name missing" = "组名丢失";
+
+/* Swipe action */
+"Unarchive" = "取消存档";
+
+/* Swipe action */
+"Unblock" = "疏通";
+
+/* Button with missing text
+   Placeholder for missing file name
+   Placeholder for missing file type */
+"undefined" = "未定义";
+
+/* Undefined chat name */
+"Undefined" = "未定义";
+
+/* Placeholder for missing topic name
+   Placeholder for missing user name */
+"Unknown" = "未知";
+
+/* Sender with missing name */
+"Unknown %@" = "未知 %@";
+
+/* Topic title when it has no name */
+"Unknown or unnamed" = "未知或未命名";
+
+/* Displayed when the type of attachment cannot be determined */
+"Unknown type" = "未知类型";
+
+/* Menu item for un-pinning message */
+"Unpin" = "取消固定";
+
+/* Label shown next to an unsupported Drafty format element
+Unsupported (unknown) Drafty tag */
+"Unsupported" = "不支持";
+
+/* Progress overlay */
+"Updating password..." = "更新密码...";
+
+/* Error message */
+"Upload failed (%@): empty response body." = "上传失败（％@）：响应正文为空。";
+
+/* Error message */
+"Upload failed (%@): response code %d." = "上传失败（％1$@）：响应代码％2$d。";
+
+/* Error message */
+"Upload failed (%@). No server response." = "上传失败（％@）。没有服务器响应。";
+
+/* Error message */
+"Verification failure: %d %@" = "验证失败：%1$d (%2$@)";
+
+/* Label shown next to an inline video
+Menu item: video call */
+"Video" = "视频";
+
+/* Telephone password reset prompt */
+"We will send a SMS with confirmation code to the number below" = "我们将向以下号码发送带有确认码的短信";
+
+/* Email password reset prompt */
+"We will send an email with confirmation code to the address below" = "我们将向以下地址发送一封包含确认码的电子邮件";
+
+/* This is 'you' */
+"You" = "您";
+
+/* Call to action */
+"You are invited to start a new chat. What would you like?" = "邀请您开始新的聊天。你想干什么？";
+
+/* Toast notification */
+"You are offline." = "您已离线。";
+
+/* Placeholder when no chats found */
+"You have no chats\n\n¯\\_(ツ)_/¯" = "您没有聊天记录\n\n¯\\_(ツ)_/¯";
+

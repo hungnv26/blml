@@ -1,0 +1,197 @@
+//
+//  ComTopic.swift
+//  TinodeSDK
+//
+//  Copyright © 2020-2025 Tinode LLC. All rights reserved.
+//
+
+import Foundation
+
+public class ComTopic: Topic<TheCard, PrivateType, TheCard, PrivateType> {
+    public convenience init(in tinode: Tinode?, forwardingEventsTo l: Listener? = nil, isChannel: Bool) {
+        let name = (isChannel ? Tinode.kChannelNew : Tinode.kTopicNew) + tinode!.nextUniqueString()
+        self.init(tinode: tinode!, name: name, l: l)
+    }
+
+    @discardableResult
+    public override func subscribe() -> PromisedReply<ServerMessage> {
+        if isNew {
+            let desc = MetaSetDesc(pub: self.pub, priv: self.priv)
+            if let pub = self.pub {
+                desc.attachments = pub.photoRefs
+            }
+            return subscribe(set: MsgSetMeta(desc: desc, tags: self.tags), get: nil)
+        }
+        return super.subscribe()
+    }
+
+    public override func routeData(data: MsgServerData) {
+        if let head = data.head, let content = data.content,
+           head["webrtc"]?.asString() != nil,
+           let mime = head["mime"]?.asString(), mime == Drafty.kMimeType {
+            // If it's a video call,
+            // rewrite VC body with info from the headers.
+            let outgoing = (!self.isChannel && data.from == nil) || (self.tinode?.isMe(uid: data.from) ?? false)
+            content.updateVideoEnt(withParams: head, isIncoming: !outgoing)
+        }
+        super.routeData(data: data)
+    }
+
+    /// Check if the topic is archived.
+    public override var isArchived: Bool {
+        guard let archived = priv?["arch"] else { return false }
+        switch archived {
+        case .bool(let x):
+            return x
+        default:
+            return false
+        }
+    }
+
+    /// Check if the topic is a channel.
+    public var isChannel: Bool {
+        return ComTopic.isChannel(name: name)
+    }
+
+    /// Check if the given topic name is a name of a channel.
+    public static func isChannel(name: String) -> Bool {
+        return name.starts(with: Tinode.kTopicChnPrefix)
+    }
+
+    public var comment: String? {
+        return priv?.comment
+    }
+
+    public var peer: Subscription<TheCard, PrivateType>? {
+        guard isP2PType else { return nil }
+        return self.getSubscription(for: self.name)
+    }
+
+    override public func getSubscription(for key: String?) -> Subscription<TheCard, PrivateType>? {
+        guard let sub = super.getSubscription(for: key) else { return nil }
+        if isP2PType && sub.pub == nil {
+            sub.pub = self.name == key ? self.pub : tinode?.getMeTopic()?.pub
+        }
+        return sub
+    }
+
+    /// Send message to server that the topic is archived or un-archived.
+    /// - Parameters:
+    ///  - archived: `true` to archive the topic, `false` to un-archive.
+    /// - Returns: PromisedReply of the reply ctrl message
+    public func updateArchived(archived: Bool) -> PromisedReply<ServerMessage>? {
+        var priv = PrivateType()
+        priv.archived = archived
+        let meta = MsgSetMeta<TheCard, PrivateType>(desc: MetaSetDesc(pub: nil, priv: priv))
+        return setMeta(meta: meta)
+    }
+
+    /// Set message as pinned or unpinned by adding it to aux.pins array.
+    /// - Parameters:
+    ///     - seq: ID of the message to pin or un-pin.
+    ///     - pin: `true` to pin the message, `false` to un-pin.
+    /// - Returns:
+    ///     Promise to be resolved/rejected when the server responds to request.
+    public func pinMessage(seq: Int, pin: Bool) -> PromisedReply<ServerMessage>? {
+        var pinned = getAux(key: "pins")?.asArray() ?? []
+        var changed = false
+        if pin {
+            if !isPinned(seq: seq) {
+                changed = true
+                if pinned.count == Tinode.kMaxPinnedCount {
+                    // Too many elements: drop the earliest.
+                    pinned.remove(at: 0)
+                }
+                pinned.append(.int(seq))
+            }
+        } else {
+            let count = pinned.count
+            pinned.removeAll(where: { $0.asInt() == seq })
+            changed = count != pinned.count
+        }
+
+        if (changed) {
+            var aux = [String:JSONValue]()
+            aux["pins"] = pinned.count > 0 ? .array(pinned) : .string(Tinode.kNullValue)
+            return setMeta(meta: MsgSetMeta<TheCard, PrivateType>(aux: aux))
+        }
+
+        return PromisedReply<ServerMessage>(value: ServerMessage())
+    }
+
+    public func isPinned(seq: Int) -> Bool {
+        let pinned = getAux(key: "pins")?.asArray()
+        return pinned?.contains(where: { $0.asInt() == seq }) ?? false
+     }
+
+    public func pinnedIndex(seq: Int) -> Int {
+        let pinned = getAux(key: "pins")?.asArray()
+        return pinned?.first(where: { $0.asInt() == seq })?.asInt() ?? -1
+     }
+
+    public var pinned: [Int] {
+        guard let pinned = getAux(key: "pins")?.asArray() else { return [] }
+        return pinned.map { $0.asInt() ?? -1 }.filter { $0 > 0 }
+    }
+
+    public var pinnedCount: Int {
+        guard let pinned = getAux(key: "pins")?.asArray() else { return 0 }
+        return pinned.count
+    }
+
+    public var pinHash: Int {
+        pinned.hashValue
+    }
+
+    /// First read messages from the local cache. If cache does not contain enough messages, fetch more from the server.
+    /// - Parameters:
+    ///    - startWithSeq: the seq ID of the message to start loading from (exclusive); if `startWithSeq` is greater than the maximum seq value or less than 1, then use max seq value or 1 respectively.
+    ///    - pageSize: number of messages to fetch.
+    ///    - forward: load newer messages if `true`, older if `false`.
+    ///    - onLoaded: callback which receives loaded messages and an error.
+    public func loadMessagePage(startWithSeq: Int, pageSize limit: Int, forward: Bool, onLoaded: @escaping ([Message]?, Error?) -> Void) {
+        if limit <= 0 || self.seq == nil || self.seq! == 0 {
+            // Invalid limit or topic has no messages.
+            onLoaded([], nil)
+        }
+
+        // Sanitize 'from'.
+        let from = forward ? max(0, startWithSeq) : min(self.seq! + 1, startWithSeq)
+
+        // TODO: check if cache has enough messages to fullfill the request. If not, don't query the DB, fetch delta from the server right away, then fetch all needed messages from DB.
+        // let range = store?.getCachedMessagesRange(topic: self)
+
+        // First try fetching from DB, then from the server.
+        let messages = store?.getMessagePage(topic: self, from: from, limit: limit, forward: forward)
+        let remainingCount = limit - (messages?.count ?? 0)
+        if remainingCount <= 0 {
+            // Request is fulfilled with cached messages.
+            onLoaded(messages, nil)
+            return
+        }
+
+        // ID of the last message loaded from DB.
+        let lastLoadedSeq = messages?.last?.seqId ?? from
+        if !self.attached || (forward && lastLoadedSeq == self.seq!) || (!forward && lastLoadedSeq == 1) {
+            // All messages are loaded, nothing to fetch from the server or not attached.
+            onLoaded(messages, nil)
+            return
+        }
+
+        // Not enough messages in cache to fullfill the request, call the server.
+
+        // Use query builder to get cached message ranges.
+        let query = metaGetBuilder().withEarlierData(limit: limit)
+        getMeta(query: query.build())
+            .thenApply({ _ in
+                // Read message page from DB.
+                let messages = self.store?.getMessagePage(topic: self, from: from, limit: limit, forward: forward)
+                onLoaded(messages, nil)
+                return nil
+            })
+            .thenCatch({ err in
+                onLoaded(nil, err)
+                return nil
+            })
+    }
+}

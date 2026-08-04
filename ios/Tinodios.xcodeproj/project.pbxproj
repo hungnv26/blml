@@ -1,0 +1,1537 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0A0016E721E7236900088188 /* MessageInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0016E621E7236900088188 /* MessageInteractor.swift */; };
+		0A0016E921E736CD00088188 /* MessagePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0016E821E736CD00088188 /* MessagePresenter.swift */; };
+		0A0380D821B3CC8100A3FA0E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0380D721B3CC8100A3FA0E /* AppDelegate.swift */; };
+		0A0380DA21B3CC8100A3FA0E /* ChatListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0380D921B3CC8100A3FA0E /* ChatListViewController.swift */; };
+		0A0380DD21B3CC8100A3FA0E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A0380DB21B3CC8100A3FA0E /* Main.storyboard */; };
+		0A0380DF21B3CC8200A3FA0E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0A0380DE21B3CC8200A3FA0E /* Assets.xcassets */; };
+		0A0380E221B3CC8200A3FA0E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A0380E021B3CC8200A3FA0E /* LaunchScreen.storyboard */; };
+		0A0D92D72840EFEF00B5B5B0 /* CallProviderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0D92D62840EFEF00B5B5B0 /* CallProviderDelegate.swift */; };
+		0A0D92D928410D4100B5B5B0 /* CallManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0D92D828410D4100B5B5B0 /* CallManager.swift */; };
+		0A11912D22F03E3100A1BBA1 /* TagsEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11912C22F03E3100A1BBA1 /* TagsEditView.swift */; };
+		0A2F81C6229677DD007E562C /* AddByIDViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2F81C5229677DD007E562C /* AddByIDViewController.swift */; };
+		0A35BA9E22836CCF00AA5E2F /* ContactsSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A35BA9D22836CCF00AA5E2F /* ContactsSynchronizer.swift */; };
+		0A35BAA02283A37500AA5E2F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A35BA9F2283A37500AA5E2F /* Utils.swift */; };
+		0A36776922B09C1900724873 /* EditMembersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A36776822B09C1900724873 /* EditMembersViewController.swift */; };
+		0A3AE3B5274CAD2500CB673E /* ForwardMessageBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3AE3B4274CAD2500CB673E /* ForwardMessageBar.swift */; };
+		0A3AE3B7274CAD5800CB673E /* ForwardMessageBar.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A3AE3B6274CAD5800CB673E /* ForwardMessageBar.xib */; };
+		0A431C032244A26200A837F7 /* TinodeSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A431C022244A26200A837F7 /* TinodeSDK.framework */; };
+		0A431C042244A26200A837F7 /* TinodeSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0A431C022244A26200A837F7 /* TinodeSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0A4B11FE2373DC1400199310 /* TagsEditDialogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4B11FD2373DC1400199310 /* TagsEditDialogView.swift */; };
+		0A4BD27129568B8E00493A04 /* VideoPreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4BD27029568B8E00493A04 /* VideoPreviewController.swift */; };
+		0A4E1D3022829C46006C0912 /* ContactsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E1D2F22829C46006C0912 /* ContactsManager.swift */; };
+		0A57890927487B9400E77F0C /* ForwardToViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A57890827487B9400E77F0C /* ForwardToViewController.swift */; };
+		0A68703E29B5951200A6F126 /* BrandingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A68703D29B5951200A6F126 /* BrandingViewController.swift */; };
+		0A68704029B5A10C00A6F126 /* QRScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A68703F29B5A10C00A6F126 /* QRScanner.swift */; };
+		0A69D47F22A6552300769426 /* TopicInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A69D47E22A6552300769426 /* TopicInfoViewController.swift */; };
+		0A6AC322229FAA130025A4EC /* PermissionsEditView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A6AC321229FAA130025A4EC /* PermissionsEditView.xib */; };
+		0A6AC324229FB0EE0025A4EC /* PermissionsEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6AC323229FB0ED0025A4EC /* PermissionsEditViewController.swift */; };
+		0A6F260A21BE51D800B9726E /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6F260921BE51D800B9726E /* LoginViewController.swift */; };
+		0A8A8BDA21C380E80090BCBA /* Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A8A8BD921C380E80090BCBA /* Cache.swift */; };
+		0A8C8A4621E5E72D00D8751E /* MessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A8C8A4521E5E72D00D8751E /* MessageViewController.swift */; };
+		0A8D945822BEED3700DC154E /* AvatarWithOnlineIndicator.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A8D945722BEED3700DC154E /* AvatarWithOnlineIndicator.xib */; };
+		0A8D945A22BEF08100DC154E /* AvatarWithOnlineIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A8D945922BEF08100DC154E /* AvatarWithOnlineIndicator.swift */; };
+		0A8D945C22BF5B7F00DC154E /* AvatarWithOnlineIndicator+TypingAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A8D945B22BF5B7F00DC154E /* AvatarWithOnlineIndicator+TypingAnimation.swift */; };
+		0A8EA5B029838E5900B116EA /* CredentialsChangeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A8EA5AF29838E5900B116EA /* CredentialsChangeViewController.swift */; };
+		0A910AFC2383A60500C95AD3 /* TinodiosDB.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0ACE9E7E23814157006BE575 /* TinodiosDB.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0A95F4D4229BD95900AEF7D3 /* AccountSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A95F4D3229BD95900AEF7D3 /* AccountSettingsViewController.swift */; };
+		0A9E7149237BCC8400C1D491 /* NewChatTabController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9E7148237BCC8400C1D491 /* NewChatTabController.swift */; };
+		0AB5FDCE22C20D1900F44AFD /* ArchivedChatsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB5FDCD22C20D1900F44AFD /* ArchivedChatsTableViewController.swift */; };
+		0AC33D032293C7A00060D263 /* NewGroupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC33D022293C7A00060D263 /* NewGroupViewController.swift */; };
+		0ACB5F0E22097651008FE740 /* ChatListPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ACB5F0D22097651008FE740 /* ChatListPresenter.swift */; };
+		0ACB5F1022097665008FE740 /* ChatListRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ACB5F0F22097665008FE740 /* ChatListRouter.swift */; };
+		0ACE9E7523813A1D006BE575 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ACE9E7423813A1D006BE575 /* NotificationService.swift */; };
+		0ACE9E7923813A1D006BE575 /* TinodiosNSExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0ACE9E7223813A1D006BE575 /* TinodiosNSExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		0ACE9E7F23814157006BE575 /* TinodiosDB.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0ACE9E7E23814157006BE575 /* TinodiosDB.framework */; };
+		0AD5552A21C625BB0027FD16 /* ChatListInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD5552921C625BB0027FD16 /* ChatListInteractor.swift */; };
+		0AD6873D27233C0800A39486 /* QuotedAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD6873C27233C0800A39486 /* QuotedAttachment.swift */; };
+		0ADDBC8B2249F617000BD00D /* ChatListViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ADDBC8A2249F617000BD00D /* ChatListViewCell.swift */; };
+		0AE21E4E28D21849008F486C /* TinodiosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE21E4D28D21849008F486C /* TinodiosUITests.swift */; };
+		0AE21E5028D21849008F486C /* TinodiosUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE21E4F28D21849008F486C /* TinodiosUITestsLaunchTests.swift */; };
+		0AE50D4422156A250021F7B7 /* FindViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE50D4322156A250021F7B7 /* FindViewController.swift */; };
+		0AE50D4622156A4B0021F7B7 /* FindInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE50D4522156A4B0021F7B7 /* FindInteractor.swift */; };
+		0AE50D4822156A5B0021F7B7 /* FindPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE50D4722156A5B0021F7B7 /* FindPresenter.swift */; };
+		0AE7339C22C33FEF0089C8D8 /* ChatListViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0AE7339B22C33FEF0089C8D8 /* ChatListViewCell.xib */; };
+		0AEE3A33283E57230037BEC4 /* CallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AEE3A32283E57230037BEC4 /* CallViewController.swift */; };
+		0AEE8BEE226456080022EC3F /* UiUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AEE8BED226456080022EC3F /* UiUtils.swift */; };
+		0FE526C4E14CE1F2D7FABB30 /* libPods-TinodiosUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8941EC0EF6DEEA661A222467 /* libPods-TinodiosUITests.a */; };
+		6AB6957DBFD1FB12CA01DCE4 /* libPods-Tinodios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E30BDE2C5D7E82671DD7DE4 /* libPods-Tinodios.a */; };
+		7DDADC5221D5C219009733B5 /* ValidatedCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DDADC5121D5C219009733B5 /* ValidatedCredential.swift */; };
+		7DDADC5421D5C2E6009733B5 /* CredentialsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DDADC5321D5C2E6009733B5 /* CredentialsViewController.swift */; };
+		B008593C22741B8A002C5168 /* FullFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B008593B22741B89002C5168 /* FullFormatter.swift */; };
+		B00CB5F629D7461B00BFE5C2 /* PinnedMessagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00CB5F529D7461B00BFE5C2 /* PinnedMessagesView.swift */; };
+		B0125998229C982900688FCE /* ContactViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0125996229C982900688FCE /* ContactViewCell.swift */; };
+		B0125999229C982900688FCE /* ContactViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B0125997229C982900688FCE /* ContactViewCell.xib */; };
+		B012599C229CEBE600688FCE /* SelectedMemberViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B012599A229CEBE600688FCE /* SelectedMemberViewCell.swift */; };
+		B012599D229CEBE600688FCE /* SelectedMemberViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B012599B229CEBE600688FCE /* SelectedMemberViewCell.xib */; };
+		B0133AE323D1AADF00C813CA /* SendImageBar.xib in Resources */ = {isa = PBXBuildFile; fileRef = B0133AE223D1AADF00C813CA /* SendImageBar.xib */; };
+		B0133AE523D1ACBD00C813CA /* SendImageBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0133AE423D1ACBC00C813CA /* SendImageBar.swift */; };
+		B01C693F22F87B5C003C0AA7 /* SignupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01C693E22F87B5C003C0AA7 /* SignupViewController.swift */; };
+		B01D2C6D27910B1E009543F2 /* ThumbnailTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01D2C6C27910B1E009543F2 /* ThumbnailTransformer.swift */; };
+		B01D2C6F2793915D009543F2 /* FormatNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01D2C6E2793915D009543F2 /* FormatNode.swift */; };
+		B01D2C712794E1E0009543F2 /* AbstractFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01D2C702794E1E0009543F2 /* AbstractFormatter.swift */; };
+		B02598432D8AD8FC00965CEA /* NoContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B02598422D8AD8EC00965CEA /* NoContentView.swift */; };
+		B026F243257C59CA003BA14B /* ProgressView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B026F242257C59CA003BA14B /* ProgressView.xib */; };
+		B026F247257C5EFF003BA14B /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B026F246257C5EFF003BA14B /* ProgressView.swift */; };
+		B02725FC283DB3BB0055D446 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B02725FA283DB3BB0055D446 /* Localizable.strings */; };
+		B027E5AE278901CA00A34C17 /* PreviewFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B027E5AD278901CA00A34C17 /* PreviewFormatter.swift */; };
+		B027E5B02789020D00A34C17 /* QuoteFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B027E5AF2789020D00A34C17 /* QuoteFormatter.swift */; };
+		B027E5B22789026200A34C17 /* SendReplyFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B027E5B12789026200A34C17 /* SendReplyFormatter.swift */; };
+		B02F5C8B22679BC80079A97E /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B02F5C8A22679BC80079A97E /* ImagePicker.swift */; };
+		B03066432805F2AA00497EF4 /* EntityTextAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03066422805F2AA00497EF4 /* EntityTextAttachment.swift */; };
+		B03066452805FAD300497EF4 /* MultiImageTextAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03066442805FAD300497EF4 /* MultiImageTextAttachment.swift */; };
+		B031BE552263075E004160AE /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = B031BE542263075E004160AE /* Settings.bundle */; };
+		B03B51342803AF26006C714B /* WaveTextAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03B51332803AF26006C714B /* WaveTextAttachment.swift */; };
+		B052ABCD2863F7E700A7D550 /* call-end.m4a in Resources */ = {isa = PBXBuildFile; fileRef = B052ABCC2863F7E700A7D550 /* call-end.m4a */; };
+		B052ABCF2863F81500A7D550 /* call-out.m4a in Resources */ = {isa = PBXBuildFile; fileRef = B052ABCE2863F81500A7D550 /* call-out.m4a */; };
+		B052ABD12863F82000A7D550 /* dialing.m4a in Resources */ = {isa = PBXBuildFile; fileRef = B052ABD02863F82000A7D550 /* dialing.m4a */; };
+		B05ACEB322FDAB5200276713 /* ResetPasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B05ACEB222FDAB5200276713 /* ResetPasswordViewController.swift */; };
+		B079062523EEA0C90019ED75 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B079062423EEA0C90019ED75 /* GoogleService-Info.plist */; };
+		B081B27F29D621380026089C /* DotSelectorImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B081B27E29D621380026089C /* DotSelectorImageView.swift */; };
+		B081B28129D638850026089C /* PagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B081B28029D638850026089C /* PagerView.swift */; };
+		B081B28329D6512E0026089C /* PagerViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B081B28229D6512E0026089C /* PagerViewCell.swift */; };
+		B081B28529D73EE10026089C /* PinnedMessagesView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B081B28429D73EE10026089C /* PinnedMessagesView.xib */; };
+		B091BA442808ED6000317CDC /* MessageCell+VLCMediaPlayerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B091BA432808ED6000317CDC /* MessageCell+VLCMediaPlayerDelegate.swift */; };
+		B091BA462808FE8500317CDC /* MessageViewController+MessageCellDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B091BA452808FE8500317CDC /* MessageViewController+MessageCellDelegate.swift */; };
+		B091BA482809048000317CDC /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B091BA472809048000317CDC /* AVFoundation.framework */; };
+		B091BA4A282087D700317CDC /* MediaRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B091BA49282087D700317CDC /* MediaRecorder.swift */; };
+		B091BA4C2820A98B00317CDC /* RecordedMediaPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = B091BA4B2820A98B00317CDC /* RecordedMediaPlayback.swift */; };
+		B091BA542824916800317CDC /* WaveImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B091BA532824916800317CDC /* WaveImage.swift */; };
+		B091BA5628272A2400317CDC /* WaveImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B091BA5528272A2400317CDC /* WaveImageView.swift */; };
+		B091BA58282DA01200317CDC /* SendForwardedFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B091BA57282DA01200317CDC /* SendForwardedFormatter.swift */; };
+		B09C564A2469362A00D6615D /* AccountGeneralSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B09C56492469362A00D6615D /* AccountGeneralSettingsViewController.swift */; };
+		B09C564C2469756B00D6615D /* SettingsNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B09C564B2469756B00D6615D /* SettingsNotificationsViewController.swift */; };
+		B09C564E246975F700D6615D /* SettingsHelpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B09C564D246975F700D6615D /* SettingsHelpViewController.swift */; };
+		B09C5650246976AC00D6615D /* SettingsSecurityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B09C564F246976AC00D6615D /* SettingsSecurityViewController.swift */; };
+		B09C5652246C0E6B00D6615D /* BlockedContactsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B09C5651246C0E6B00D6615D /* BlockedContactsTableViewController.swift */; };
+		B0A612AF228B08EC00569DFE /* RichTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A612AE228B08EC00569DFE /* RichTextView.swift */; };
+		B0A612B1228C85C300569DFE /* MessageViewLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A612B0228C85C300569DFE /* MessageViewLayout.swift */; };
+		B0A612B3228EDC7B00569DFE /* ButtonAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A612B2228EDC7B00569DFE /* ButtonAttachment.swift */; };
+		B0A612B5229132CC00569DFE /* MessageBubbleDecorator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A612B4229132CC00569DFE /* MessageBubbleDecorator.swift */; };
+		B0A612B72294289000569DFE /* MessageViewController+SendMessageBarDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A612B62294288F00569DFE /* MessageViewController+SendMessageBarDelegate.swift */; };
+		B0BA208523D5D8CF00C59BD4 /* FilePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BA208423D5D8CF00C59BD4 /* FilePreviewController.swift */; };
+		B0BB539F256B14A1000FE949 /* AsyncImageTextAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BB539E256B14A1000FE949 /* AsyncImageTextAttachment.swift */; };
+		B0BB53C3256DD5C9000FE949 /* LargeFileHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BB53C2256DD5C9000FE949 /* LargeFileHelper.swift */; };
+		B0BE301C27B3367E00B04631 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B0BE301A27B3367E00B04631 /* InfoPlist.strings */; };
+		B0BE302327B771E100B04631 /* MultilineAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BE302227B771E100B04631 /* MultilineAlertView.swift */; };
+		B0BE302427B831BD00B04631 /* TagsEditDialogView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B0BE302627B831BD00B04631 /* TagsEditDialogView.xib */; };
+		B0BE302727B831D400B04631 /* MultilineAlertView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B0BE302927B831D400B04631 /* MultilineAlertView.xib */; };
+		B0BE302B27B8A3B600B04631 /* TopicSecurityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BE302A27B8A3B600B04631 /* TopicSecurityViewController.swift */; };
+		B0BE302D27BAC90E00B04631 /* TopicGeneralViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BE302C27BAC90E00B04631 /* TopicGeneralViewController.swift */; };
+		B0C6A3C2229EDF14009B0B5D /* ImagePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C6A3C1229EDF14009B0B5D /* ImagePreviewController.swift */; };
+		B0CF83E0244E074A00E79D22 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B0CF83E2244E074A00E79D22 /* Localizable.strings */; };
+		B0DF03172279F027000F9492 /* RoundImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0DF03162279F027000F9492 /* RoundImageView.swift */; };
+		B0DF0319227C2517000F9492 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0DF0318227C2517000F9492 /* MessageView.swift */; };
+		B0DF031D227C604C000F9492 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0DF031C227C604C000F9492 /* MessageCell.swift */; };
+		B0DF031F227C6898000F9492 /* PaddedLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0DF031E227C6898000F9492 /* PaddedLabel.swift */; };
+		B0DF0323228051B4000F9492 /* MessageViewController+Keyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0DF0322228051B4000F9492 /* MessageViewController+Keyboard.swift */; };
+		B0DF032D2282EE8A000F9492 /* SendMessageBar.xib in Resources */ = {isa = PBXBuildFile; fileRef = B0DF032C2282EE8A000F9492 /* SendMessageBar.xib */; };
+		B0DF032F2282FF46000F9492 /* SendMessageBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0DF032E2282FF46000F9492 /* SendMessageBar.swift */; };
+		B0DF03312283FFD8000F9492 /* PlaceholderTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0DF03302283FFD8000F9492 /* PlaceholderTextView.swift */; };
+		B0E6F5EF2DF44DFF00A8B1FF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B0E6F5ED2DF44DFF00A8B1FF /* InfoPlist.strings */; };
+		B0F2F0C929DA295900100B24 /* MessageViewController+MessageDisplayLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F2F0C829DA295900100B24 /* MessageViewController+MessageDisplayLogic.swift */; };
+		B0F98C8322E381C300444121 /* MessageMenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F98C8222E381C300444121 /* MessageMenuItem.swift */; };
+		FA37AD24238B0D6F00301261 /* KeyboardInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA37AD23238B0D6F00301261 /* KeyboardInfo.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0ACE9E7723813A1D006BE575 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0A0380CC21B3CC8100A3FA0E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0ACE9E7123813A1D006BE575;
+			remoteInfo = TinodiosNSExtension;
+		};
+		0AE21E5128D21849008F486C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0A0380CC21B3CC8100A3FA0E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0A0380D321B3CC8100A3FA0E;
+			remoteInfo = Tinodios;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0A431C052244A26200A837F7 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				0A910AFC2383A60500C95AD3 /* TinodiosDB.framework in Embed Frameworks */,
+				0A431C042244A26200A837F7 /* TinodeSDK.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0ACE9E7A23813A1D006BE575 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				0ACE9E7923813A1D006BE575 /* TinodiosNSExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0A0016E621E7236900088188 /* MessageInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageInteractor.swift; sourceTree = "<group>"; };
+		0A0016E821E736CD00088188 /* MessagePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePresenter.swift; sourceTree = "<group>"; };
+		0A0380D421B3CC8100A3FA0E /* Tinodios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tinodios.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A0380D721B3CC8100A3FA0E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		0A0380D921B3CC8100A3FA0E /* ChatListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListViewController.swift; sourceTree = "<group>"; };
+		0A0380DC21B3CC8100A3FA0E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		0A0380DE21B3CC8200A3FA0E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		0A0380E121B3CC8200A3FA0E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		0A0380E321B3CC8200A3FA0E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0A0D92D62840EFEF00B5B5B0 /* CallProviderDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallProviderDelegate.swift; sourceTree = "<group>"; };
+		0A0D92D828410D4100B5B5B0 /* CallManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallManager.swift; sourceTree = "<group>"; };
+		0A11912C22F03E3100A1BBA1 /* TagsEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagsEditView.swift; sourceTree = "<group>"; };
+		0A2F81C5229677DD007E562C /* AddByIDViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddByIDViewController.swift; sourceTree = "<group>"; };
+		0A35BA9D22836CCF00AA5E2F /* ContactsSynchronizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsSynchronizer.swift; sourceTree = "<group>"; };
+		0A35BA9F2283A37500AA5E2F /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		0A36776822B09C1900724873 /* EditMembersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditMembersViewController.swift; sourceTree = "<group>"; };
+		0A3AE3B4274CAD2500CB673E /* ForwardMessageBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForwardMessageBar.swift; sourceTree = "<group>"; };
+		0A3AE3B6274CAD5800CB673E /* ForwardMessageBar.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ForwardMessageBar.xib; sourceTree = "<group>"; };
+		0A3EECCC28DA0EEF00313C35 /* TinodiosUITests.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = TinodiosUITests.entitlements; sourceTree = "<group>"; };
+		0A431C022244A26200A837F7 /* TinodeSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TinodeSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A4B11FD2373DC1400199310 /* TagsEditDialogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagsEditDialogView.swift; sourceTree = "<group>"; };
+		0A4BD27029568B8E00493A04 /* VideoPreviewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPreviewController.swift; sourceTree = "<group>"; };
+		0A4E1D2F22829C46006C0912 /* ContactsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsManager.swift; sourceTree = "<group>"; };
+		0A57890827487B9400E77F0C /* ForwardToViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForwardToViewController.swift; sourceTree = "<group>"; };
+		0A68703D29B5951200A6F126 /* BrandingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandingViewController.swift; sourceTree = "<group>"; };
+		0A68703F29B5A10C00A6F126 /* QRScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScanner.swift; sourceTree = "<group>"; };
+		0A69D47E22A6552300769426 /* TopicInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicInfoViewController.swift; sourceTree = "<group>"; };
+		0A6AC321229FAA130025A4EC /* PermissionsEditView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PermissionsEditView.xib; sourceTree = "<group>"; };
+		0A6AC323229FB0ED0025A4EC /* PermissionsEditViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsEditViewController.swift; sourceTree = "<group>"; };
+		0A6F260921BE51D800B9726E /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		0A8A8BD921C380E80090BCBA /* Cache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cache.swift; sourceTree = "<group>"; };
+		0A8C8A4521E5E72D00D8751E /* MessageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageViewController.swift; sourceTree = "<group>"; };
+		0A8D945722BEED3700DC154E /* AvatarWithOnlineIndicator.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AvatarWithOnlineIndicator.xib; sourceTree = "<group>"; };
+		0A8D945922BEF08100DC154E /* AvatarWithOnlineIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarWithOnlineIndicator.swift; sourceTree = "<group>"; };
+		0A8D945B22BF5B7F00DC154E /* AvatarWithOnlineIndicator+TypingAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AvatarWithOnlineIndicator+TypingAnimation.swift"; sourceTree = "<group>"; };
+		0A8EA5AF29838E5900B116EA /* CredentialsChangeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CredentialsChangeViewController.swift; sourceTree = "<group>"; };
+		0A95F4D3229BD95900AEF7D3 /* AccountSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSettingsViewController.swift; sourceTree = "<group>"; };
+		0A9E7148237BCC8400C1D491 /* NewChatTabController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewChatTabController.swift; sourceTree = "<group>"; };
+		0AB5FDCD22C20D1900F44AFD /* ArchivedChatsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchivedChatsTableViewController.swift; sourceTree = "<group>"; };
+		0AC33D022293C7A00060D263 /* NewGroupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewGroupViewController.swift; sourceTree = "<group>"; };
+		0ACB5F0D22097651008FE740 /* ChatListPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListPresenter.swift; sourceTree = "<group>"; };
+		0ACB5F0F22097665008FE740 /* ChatListRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListRouter.swift; sourceTree = "<group>"; };
+		0ACE9E7223813A1D006BE575 /* TinodiosNSExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TinodiosNSExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		0ACE9E7423813A1D006BE575 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		0ACE9E7623813A1D006BE575 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0ACE9E7E23814157006BE575 /* TinodiosDB.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TinodiosDB.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0ACE9E8723814D6C006BE575 /* TinodiosNSExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TinodiosNSExtension.entitlements; sourceTree = "<group>"; };
+		0AD5552921C625BB0027FD16 /* ChatListInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListInteractor.swift; sourceTree = "<group>"; };
+		0AD6873C27233C0800A39486 /* QuotedAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuotedAttachment.swift; sourceTree = "<group>"; };
+		0ADDBC8A2249F617000BD00D /* ChatListViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListViewCell.swift; sourceTree = "<group>"; };
+		0AE21E4B28D21849008F486C /* TinodiosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TinodiosUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0AE21E4D28D21849008F486C /* TinodiosUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TinodiosUITests.swift; sourceTree = "<group>"; };
+		0AE21E4F28D21849008F486C /* TinodiosUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TinodiosUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		0AE50D4322156A250021F7B7 /* FindViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindViewController.swift; sourceTree = "<group>"; };
+		0AE50D4522156A4B0021F7B7 /* FindInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindInteractor.swift; sourceTree = "<group>"; };
+		0AE50D4722156A5B0021F7B7 /* FindPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindPresenter.swift; sourceTree = "<group>"; };
+		0AE7339B22C33FEF0089C8D8 /* ChatListViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ChatListViewCell.xib; sourceTree = "<group>"; };
+		0AEE3A32283E57230037BEC4 /* CallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallViewController.swift; sourceTree = "<group>"; };
+		0AEE8BED226456080022EC3F /* UiUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UiUtils.swift; sourceTree = "<group>"; };
+		4F6E20F7F9A02F33DBC019E7 /* Pods-TinodiosUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TinodiosUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-TinodiosUITests/Pods-TinodiosUITests.release.xcconfig"; sourceTree = "<group>"; };
+		5900B7863CDFB018A86DD3AC /* Pods-Tinodios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tinodios.release.xcconfig"; path = "Pods/Target Support Files/Pods-Tinodios/Pods-Tinodios.release.xcconfig"; sourceTree = "<group>"; };
+		5E30BDE2C5D7E82671DD7DE4 /* libPods-Tinodios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Tinodios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		75BC852198885F22E865D563 /* Pods-Tinodios.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tinodios.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Tinodios/Pods-Tinodios.debug.xcconfig"; sourceTree = "<group>"; };
+		7DDADC5121D5C219009733B5 /* ValidatedCredential.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValidatedCredential.swift; sourceTree = "<group>"; };
+		7DDADC5321D5C2E6009733B5 /* CredentialsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CredentialsViewController.swift; sourceTree = "<group>"; };
+		8941EC0EF6DEEA661A222467 /* libPods-TinodiosUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TinodiosUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B008593B22741B89002C5168 /* FullFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullFormatter.swift; sourceTree = "<group>"; };
+		B00CB5F529D7461B00BFE5C2 /* PinnedMessagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedMessagesView.swift; sourceTree = "<group>"; };
+		B01120B72357469300EFCB1F /* devel.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = devel.xcconfig; sourceTree = "<group>"; };
+		B01120B8235746BF00EFCB1F /* prod.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = prod.xcconfig; sourceTree = "<group>"; };
+		B0125996229C982900688FCE /* ContactViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactViewCell.swift; sourceTree = "<group>"; };
+		B0125997229C982900688FCE /* ContactViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ContactViewCell.xib; sourceTree = "<group>"; };
+		B012599A229CEBE600688FCE /* SelectedMemberViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedMemberViewCell.swift; sourceTree = "<group>"; };
+		B012599B229CEBE600688FCE /* SelectedMemberViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SelectedMemberViewCell.xib; sourceTree = "<group>"; };
+		B0133AE223D1AADF00C813CA /* SendImageBar.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SendImageBar.xib; sourceTree = "<group>"; };
+		B0133AE423D1ACBC00C813CA /* SendImageBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendImageBar.swift; sourceTree = "<group>"; };
+		B01C693E22F87B5C003C0AA7 /* SignupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupViewController.swift; sourceTree = "<group>"; };
+		B01D2C6C27910B1E009543F2 /* ThumbnailTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailTransformer.swift; sourceTree = "<group>"; };
+		B01D2C6E2793915D009543F2 /* FormatNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormatNode.swift; sourceTree = "<group>"; };
+		B01D2C702794E1E0009543F2 /* AbstractFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractFormatter.swift; sourceTree = "<group>"; };
+		B02598422D8AD8EC00965CEA /* NoContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoContentView.swift; sourceTree = "<group>"; };
+		B026F242257C59CA003BA14B /* ProgressView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProgressView.xib; sourceTree = "<group>"; };
+		B026F246257C5EFF003BA14B /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
+		B02725FB283DB3BB0055D446 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B02725FD283DB3C70055D446 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B02725FE283DB3D10055D446 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B02725FF283DB3DB0055D446 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B027E5AD278901CA00A34C17 /* PreviewFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewFormatter.swift; sourceTree = "<group>"; };
+		B027E5AF2789020D00A34C17 /* QuoteFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuoteFormatter.swift; sourceTree = "<group>"; };
+		B027E5B12789026200A34C17 /* SendReplyFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendReplyFormatter.swift; sourceTree = "<group>"; };
+		B02F5C8A22679BC80079A97E /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
+		B03066422805F2AA00497EF4 /* EntityTextAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityTextAttachment.swift; sourceTree = "<group>"; };
+		B03066442805FAD300497EF4 /* MultiImageTextAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiImageTextAttachment.swift; sourceTree = "<group>"; };
+		B031BE542263075E004160AE /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
+		B03B51332803AF26006C714B /* WaveTextAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveTextAttachment.swift; sourceTree = "<group>"; };
+		B04D95572A8A79D800558612 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/MultilineAlertView.strings; sourceTree = "<group>"; };
+		B04D95582A8A79D900558612 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/TagsEditDialogView.strings; sourceTree = "<group>"; };
+		B04D95592A8A79D900558612 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Main.strings; sourceTree = "<group>"; };
+		B04D955A2A8A79D900558612 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
+		B04D955B2A8A79D900558612 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B04D955F2A8A7D2000558612 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B04D95602A8A7D2000558612 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B052ABCC2863F7E700A7D550 /* call-end.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = "call-end.m4a"; sourceTree = "<group>"; };
+		B052ABCE2863F81500A7D550 /* call-out.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = "call-out.m4a"; sourceTree = "<group>"; };
+		B052ABD02863F82000A7D550 /* dialing.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = dialing.m4a; sourceTree = "<group>"; };
+		B05ACEB222FDAB5200276713 /* ResetPasswordViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetPasswordViewController.swift; sourceTree = "<group>"; };
+		B079062423EEA0C90019ED75 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B081B27E29D621380026089C /* DotSelectorImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DotSelectorImageView.swift; sourceTree = "<group>"; };
+		B081B28029D638850026089C /* PagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagerView.swift; sourceTree = "<group>"; };
+		B081B28229D6512E0026089C /* PagerViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagerViewCell.swift; sourceTree = "<group>"; };
+		B081B28429D73EE10026089C /* PinnedMessagesView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PinnedMessagesView.xib; sourceTree = "<group>"; };
+		B091BA432808ED6000317CDC /* MessageCell+VLCMediaPlayerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MessageCell+VLCMediaPlayerDelegate.swift"; sourceTree = "<group>"; };
+		B091BA452808FE8500317CDC /* MessageViewController+MessageCellDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MessageViewController+MessageCellDelegate.swift"; sourceTree = "<group>"; };
+		B091BA472809048000317CDC /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		B091BA49282087D700317CDC /* MediaRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaRecorder.swift; sourceTree = "<group>"; };
+		B091BA4B2820A98B00317CDC /* RecordedMediaPlayback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordedMediaPlayback.swift; sourceTree = "<group>"; };
+		B091BA532824916800317CDC /* WaveImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveImage.swift; sourceTree = "<group>"; };
+		B091BA5528272A2400317CDC /* WaveImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveImageView.swift; sourceTree = "<group>"; };
+		B091BA57282DA01200317CDC /* SendForwardedFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendForwardedFormatter.swift; sourceTree = "<group>"; };
+		B093F50126C5BBF300FAA4E8 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B093F50426C5BD4200FAA4E8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
+		B093F50526C5BD8800FAA4E8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B0941BC42487CEE100A891B7 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
+		B0941BC52487CEE100A891B7 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
+		B0941BC62487CEE100A891B7 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B0979FCB27BD99B80045FC73 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/MultilineAlertView.strings; sourceTree = "<group>"; };
+		B0979FCC27BD99B80045FC73 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/TagsEditDialogView.strings; sourceTree = "<group>"; };
+		B0979FCD27BD9A070045FC73 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/MultilineAlertView.strings; sourceTree = "<group>"; };
+		B0979FCE27BD9A070045FC73 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/TagsEditDialogView.strings; sourceTree = "<group>"; };
+		B0979FCF27BD9A2A0045FC73 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/MultilineAlertView.strings"; sourceTree = "<group>"; };
+		B0979FD027BD9A2A0045FC73 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/TagsEditDialogView.strings"; sourceTree = "<group>"; };
+		B0979FD127BD9A3B0045FC73 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/MultilineAlertView.strings"; sourceTree = "<group>"; };
+		B0979FD227BD9A3B0045FC73 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/TagsEditDialogView.strings"; sourceTree = "<group>"; };
+		B09C56492469362A00D6615D /* AccountGeneralSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountGeneralSettingsViewController.swift; sourceTree = "<group>"; };
+		B09C564B2469756B00D6615D /* SettingsNotificationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsNotificationsViewController.swift; sourceTree = "<group>"; };
+		B09C564D246975F700D6615D /* SettingsHelpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsHelpViewController.swift; sourceTree = "<group>"; };
+		B09C564F246976AC00D6615D /* SettingsSecurityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSecurityViewController.swift; sourceTree = "<group>"; };
+		B09C5651246C0E6B00D6615D /* BlockedContactsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedContactsTableViewController.swift; sourceTree = "<group>"; };
+		B0A612AE228B08EC00569DFE /* RichTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RichTextView.swift; sourceTree = "<group>"; };
+		B0A612B0228C85C300569DFE /* MessageViewLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageViewLayout.swift; sourceTree = "<group>"; };
+		B0A612B2228EDC7B00569DFE /* ButtonAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonAttachment.swift; sourceTree = "<group>"; };
+		B0A612B4229132CC00569DFE /* MessageBubbleDecorator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBubbleDecorator.swift; sourceTree = "<group>"; };
+		B0A612B62294288F00569DFE /* MessageViewController+SendMessageBarDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MessageViewController+SendMessageBarDelegate.swift"; sourceTree = "<group>"; };
+		B0BA208423D5D8CF00C59BD4 /* FilePreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilePreviewController.swift; sourceTree = "<group>"; };
+		B0BB539E256B14A1000FE949 /* AsyncImageTextAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncImageTextAttachment.swift; sourceTree = "<group>"; };
+		B0BB53C2256DD5C9000FE949 /* LargeFileHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeFileHelper.swift; sourceTree = "<group>"; };
+		B0BC2B5B235E0DB800BEEB4B /* Tinodios.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Tinodios.entitlements; sourceTree = "<group>"; };
+		B0BE301B27B3367E00B04631 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B0BE301D27B3378100B04631 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B0BE301E27B3388700B04631 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		B0BE301F27B3389100B04631 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		B0BE302227B771E100B04631 /* MultilineAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultilineAlertView.swift; sourceTree = "<group>"; };
+		B0BE302527B831BD00B04631 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/TagsEditDialogView.xib; sourceTree = "<group>"; };
+		B0BE302827B831D400B04631 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MultilineAlertView.xib; sourceTree = "<group>"; };
+		B0BE302A27B8A3B600B04631 /* TopicSecurityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicSecurityViewController.swift; sourceTree = "<group>"; };
+		B0BE302C27BAC90E00B04631 /* TopicGeneralViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicGeneralViewController.swift; sourceTree = "<group>"; };
+		B0C6A3C1229EDF14009B0B5D /* ImagePreviewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewController.swift; sourceTree = "<group>"; };
+		B0CEF8D726B5EC21000028C2 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Main.strings"; sourceTree = "<group>"; };
+		B0CEF8D826B5EC5D000028C2 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
+		B0CEF8D926B603E3000028C2 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Main.strings; sourceTree = "<group>"; };
+		B0CEF8DA26B603E3000028C2 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
+		B0CEF8DB26B603E4000028C2 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B0CF83DD244DFB1C00E79D22 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
+		B0CF83E3244E074E00E79D22 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B0DF03162279F027000F9492 /* RoundImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundImageView.swift; sourceTree = "<group>"; };
+		B0DF0318227C2517000F9492 /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
+		B0DF031C227C604C000F9492 /* MessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCell.swift; sourceTree = "<group>"; };
+		B0DF031E227C6898000F9492 /* PaddedLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddedLabel.swift; sourceTree = "<group>"; };
+		B0DF0322228051B4000F9492 /* MessageViewController+Keyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MessageViewController+Keyboard.swift"; sourceTree = "<group>"; };
+		B0DF032C2282EE8A000F9492 /* SendMessageBar.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SendMessageBar.xib; sourceTree = "<group>"; };
+		B0DF032E2282FF46000F9492 /* SendMessageBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMessageBar.swift; sourceTree = "<group>"; };
+		B0DF03302283FFD8000F9492 /* PlaceholderTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderTextView.swift; sourceTree = "<group>"; };
+		B0E6F5EE2DF44DFF00A8B1FF /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B0E6F5F22DF44E2C00A8B1FF /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B0E6F5F42DF44E3C00A8B1FF /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B0E6F5F62DF44E4800A8B1FF /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		B0E6F5F82DF44E5700A8B1FF /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		B0F2F0C829DA295900100B24 /* MessageViewController+MessageDisplayLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MessageViewController+MessageDisplayLogic.swift"; sourceTree = "<group>"; };
+		B0F98C8222E381C300444121 /* MessageMenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageMenuItem.swift; sourceTree = "<group>"; };
+		B33FA5FDB8E984980BADDAB2 /* Pods-TinodiosUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TinodiosUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TinodiosUITests/Pods-TinodiosUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		B36DC000235D850000724348 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
+		FA37AD23238B0D6F00301261 /* KeyboardInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardInfo.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0A0380D121B3CC8100A3FA0E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A431C032244A26200A837F7 /* TinodeSDK.framework in Frameworks */,
+				6AB6957DBFD1FB12CA01DCE4 /* libPods-Tinodios.a in Frameworks */,
+				B091BA482809048000317CDC /* AVFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0ACE9E6F23813A1D006BE575 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0ACE9E7F23814157006BE575 /* TinodiosDB.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0AE21E4828D21849008F486C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0FE526C4E14CE1F2D7FABB30 /* libPods-TinodiosUITests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0A0380CB21B3CC8100A3FA0E = {
+			isa = PBXGroup;
+			children = (
+				B052ABD22863F83500A7D550 /* audio */,
+				B0CF83E2244E074A00E79D22 /* Localizable.strings */,
+				B079062423EEA0C90019ED75 /* GoogleService-Info.plist */,
+				B01120B72357469300EFCB1F /* devel.xcconfig */,
+				B01120B8235746BF00EFCB1F /* prod.xcconfig */,
+				0A431C022244A26200A837F7 /* TinodeSDK.framework */,
+				0A0380D621B3CC8100A3FA0E /* Tinodios */,
+				0ACE9E7323813A1D006BE575 /* TinodiosNSExtension */,
+				0AE21E4C28D21849008F486C /* TinodiosUITests */,
+				0A0380D521B3CC8100A3FA0E /* Products */,
+				579A1EAE0D0B7D996BF48345 /* Pods */,
+				4805E89223B1ECF4F9F439D5 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		0A0380D521B3CC8100A3FA0E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0A0380D421B3CC8100A3FA0E /* Tinodios.app */,
+				0ACE9E7223813A1D006BE575 /* TinodiosNSExtension.appex */,
+				0AE21E4B28D21849008F486C /* TinodiosUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0A0380D621B3CC8100A3FA0E /* Tinodios */ = {
+			isa = PBXGroup;
+			children = (
+				0A4E1D3122829C52006C0912 /* account */,
+				B027E5AC2789010C00A34C17 /* format */,
+				B0C496B022787C020084FA0D /* widgets */,
+				B09C56492469362A00D6615D /* AccountGeneralSettingsViewController.swift */,
+				0A95F4D3229BD95900AEF7D3 /* AccountSettingsViewController.swift */,
+				0A2F81C5229677DD007E562C /* AddByIDViewController.swift */,
+				0A0380D721B3CC8100A3FA0E /* AppDelegate.swift */,
+				0AB5FDCD22C20D1900F44AFD /* ArchivedChatsTableViewController.swift */,
+				B09C5651246C0E6B00D6615D /* BlockedContactsTableViewController.swift */,
+				0A68703D29B5951200A6F126 /* BrandingViewController.swift */,
+				0A8A8BD921C380E80090BCBA /* Cache.swift */,
+				0A0D92D828410D4100B5B5B0 /* CallManager.swift */,
+				0A0D92D62840EFEF00B5B5B0 /* CallProviderDelegate.swift */,
+				0AEE3A32283E57230037BEC4 /* CallViewController.swift */,
+				0AD5552921C625BB0027FD16 /* ChatListInteractor.swift */,
+				0ACB5F0D22097651008FE740 /* ChatListPresenter.swift */,
+				0ACB5F0F22097665008FE740 /* ChatListRouter.swift */,
+				0A0380D921B3CC8100A3FA0E /* ChatListViewController.swift */,
+				0A8EA5AF29838E5900B116EA /* CredentialsChangeViewController.swift */,
+				7DDADC5321D5C2E6009733B5 /* CredentialsViewController.swift */,
+				0A36776822B09C1900724873 /* EditMembersViewController.swift */,
+				B0BA208423D5D8CF00C59BD4 /* FilePreviewController.swift */,
+				0AE50D4522156A4B0021F7B7 /* FindInteractor.swift */,
+				0AE50D4722156A5B0021F7B7 /* FindPresenter.swift */,
+				0AE50D4322156A250021F7B7 /* FindViewController.swift */,
+				0A57890827487B9400E77F0C /* ForwardToViewController.swift */,
+				B0C6A3C1229EDF14009B0B5D /* ImagePreviewController.swift */,
+				FA37AD23238B0D6F00301261 /* KeyboardInfo.swift */,
+				B0BB53C2256DD5C9000FE949 /* LargeFileHelper.swift */,
+				0A6F260921BE51D800B9726E /* LoginViewController.swift */,
+				B091BA49282087D700317CDC /* MediaRecorder.swift */,
+				B0A612B4229132CC00569DFE /* MessageBubbleDecorator.swift */,
+				B0DF031C227C604C000F9492 /* MessageCell.swift */,
+				B091BA432808ED6000317CDC /* MessageCell+VLCMediaPlayerDelegate.swift */,
+				0A0016E621E7236900088188 /* MessageInteractor.swift */,
+				0A0016E821E736CD00088188 /* MessagePresenter.swift */,
+				B0DF0318227C2517000F9492 /* MessageView.swift */,
+				B0A612B0228C85C300569DFE /* MessageViewLayout.swift */,
+				0A8C8A4521E5E72D00D8751E /* MessageViewController.swift */,
+				B0F2F0C829DA295900100B24 /* MessageViewController+MessageDisplayLogic.swift */,
+				B091BA452808FE8500317CDC /* MessageViewController+MessageCellDelegate.swift */,
+				B0A612B62294288F00569DFE /* MessageViewController+SendMessageBarDelegate.swift */,
+				B0DF0322228051B4000F9492 /* MessageViewController+Keyboard.swift */,
+				0A9E7148237BCC8400C1D491 /* NewChatTabController.swift */,
+				0AC33D022293C7A00060D263 /* NewGroupViewController.swift */,
+				0A68703F29B5A10C00A6F126 /* QRScanner.swift */,
+				B091BA4B2820A98B00317CDC /* RecordedMediaPlayback.swift */,
+				B05ACEB222FDAB5200276713 /* ResetPasswordViewController.swift */,
+				B09C564D246975F700D6615D /* SettingsHelpViewController.swift */,
+				B09C564B2469756B00D6615D /* SettingsNotificationsViewController.swift */,
+				B09C564F246976AC00D6615D /* SettingsSecurityViewController.swift */,
+				B01C693E22F87B5C003C0AA7 /* SignupViewController.swift */,
+				B0BE302C27BAC90E00B04631 /* TopicGeneralViewController.swift */,
+				0A69D47E22A6552300769426 /* TopicInfoViewController.swift */,
+				B0BE302A27B8A3B600B04631 /* TopicSecurityViewController.swift */,
+				0AEE8BED226456080022EC3F /* UiUtils.swift */,
+				0A35BA9F2283A37500AA5E2F /* Utils.swift */,
+				0A4BD27029568B8E00493A04 /* VideoPreviewController.swift */,
+				0A0380DB21B3CC8100A3FA0E /* Main.storyboard */,
+				B0BC2B5B235E0DB800BEEB4B /* Tinodios.entitlements */,
+				B031BE542263075E004160AE /* Settings.bundle */,
+				0A0380E921B3CCB000A3FA0E /* Supporting Files */,
+				0A0380E321B3CC8200A3FA0E /* Info.plist */,
+				B0BE301A27B3367E00B04631 /* InfoPlist.strings */,
+			);
+			path = Tinodios;
+			sourceTree = "<group>";
+		};
+		0A0380E921B3CCB000A3FA0E /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				0A0380DE21B3CC8200A3FA0E /* Assets.xcassets */,
+				0A0380E021B3CC8200A3FA0E /* LaunchScreen.storyboard */,
+			);
+			path = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		0A4E1D3122829C52006C0912 /* account */ = {
+			isa = PBXGroup;
+			children = (
+				0A4E1D2F22829C46006C0912 /* ContactsManager.swift */,
+				0A35BA9D22836CCF00AA5E2F /* ContactsSynchronizer.swift */,
+			);
+			path = account;
+			sourceTree = "<group>";
+		};
+		0ACE9E7323813A1D006BE575 /* TinodiosNSExtension */ = {
+			isa = PBXGroup;
+			children = (
+				0ACE9E8723814D6C006BE575 /* TinodiosNSExtension.entitlements */,
+				0ACE9E7423813A1D006BE575 /* NotificationService.swift */,
+				0ACE9E7623813A1D006BE575 /* Info.plist */,
+				B0E6F5ED2DF44DFF00A8B1FF /* InfoPlist.strings */,
+				B02725FA283DB3BB0055D446 /* Localizable.strings */,
+			);
+			path = TinodiosNSExtension;
+			sourceTree = "<group>";
+		};
+		0AE21E4C28D21849008F486C /* TinodiosUITests */ = {
+			isa = PBXGroup;
+			children = (
+				0A3EECCC28DA0EEF00313C35 /* TinodiosUITests.entitlements */,
+				0AE21E4D28D21849008F486C /* TinodiosUITests.swift */,
+				0AE21E4F28D21849008F486C /* TinodiosUITestsLaunchTests.swift */,
+			);
+			path = TinodiosUITests;
+			sourceTree = "<group>";
+		};
+		4805E89223B1ECF4F9F439D5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B091BA472809048000317CDC /* AVFoundation.framework */,
+				0ACE9E7E23814157006BE575 /* TinodiosDB.framework */,
+				5E30BDE2C5D7E82671DD7DE4 /* libPods-Tinodios.a */,
+				8941EC0EF6DEEA661A222467 /* libPods-TinodiosUITests.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		579A1EAE0D0B7D996BF48345 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				75BC852198885F22E865D563 /* Pods-Tinodios.debug.xcconfig */,
+				5900B7863CDFB018A86DD3AC /* Pods-Tinodios.release.xcconfig */,
+				B33FA5FDB8E984980BADDAB2 /* Pods-TinodiosUITests.debug.xcconfig */,
+				4F6E20F7F9A02F33DBC019E7 /* Pods-TinodiosUITests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		B027E5AC2789010C00A34C17 /* format */ = {
+			isa = PBXGroup;
+			children = (
+				B01D2C702794E1E0009543F2 /* AbstractFormatter.swift */,
+				B0BB539E256B14A1000FE949 /* AsyncImageTextAttachment.swift */,
+				B0A612B2228EDC7B00569DFE /* ButtonAttachment.swift */,
+				B03066422805F2AA00497EF4 /* EntityTextAttachment.swift */,
+				B01D2C6E2793915D009543F2 /* FormatNode.swift */,
+				B008593B22741B89002C5168 /* FullFormatter.swift */,
+				B03066442805FAD300497EF4 /* MultiImageTextAttachment.swift */,
+				B027E5AD278901CA00A34C17 /* PreviewFormatter.swift */,
+				B027E5B12789026200A34C17 /* SendReplyFormatter.swift */,
+				B091BA57282DA01200317CDC /* SendForwardedFormatter.swift */,
+				0AD6873C27233C0800A39486 /* QuotedAttachment.swift */,
+				B027E5AF2789020D00A34C17 /* QuoteFormatter.swift */,
+				B01D2C6C27910B1E009543F2 /* ThumbnailTransformer.swift */,
+				B03B51332803AF26006C714B /* WaveTextAttachment.swift */,
+			);
+			path = format;
+			sourceTree = "<group>";
+		};
+		B052ABD22863F83500A7D550 /* audio */ = {
+			isa = PBXGroup;
+			children = (
+				B052ABCE2863F81500A7D550 /* call-out.m4a */,
+				B052ABCC2863F7E700A7D550 /* call-end.m4a */,
+				B052ABD02863F82000A7D550 /* dialing.m4a */,
+			);
+			name = audio;
+			sourceTree = "<group>";
+		};
+		B0C496B022787C020084FA0D /* widgets */ = {
+			isa = PBXGroup;
+			children = (
+				0A8D945922BEF08100DC154E /* AvatarWithOnlineIndicator.swift */,
+				0A8D945722BEED3700DC154E /* AvatarWithOnlineIndicator.xib */,
+				0A8D945B22BF5B7F00DC154E /* AvatarWithOnlineIndicator+TypingAnimation.swift */,
+				0ADDBC8A2249F617000BD00D /* ChatListViewCell.swift */,
+				0AE7339B22C33FEF0089C8D8 /* ChatListViewCell.xib */,
+				B0125996229C982900688FCE /* ContactViewCell.swift */,
+				B0125997229C982900688FCE /* ContactViewCell.xib */,
+				B081B27E29D621380026089C /* DotSelectorImageView.swift */,
+				0A3AE3B4274CAD2500CB673E /* ForwardMessageBar.swift */,
+				0A3AE3B6274CAD5800CB673E /* ForwardMessageBar.xib */,
+				B02F5C8A22679BC80079A97E /* ImagePicker.swift */,
+				B0F98C8222E381C300444121 /* MessageMenuItem.swift */,
+				B0BE302927B831D400B04631 /* MultilineAlertView.xib */,
+				B0BE302227B771E100B04631 /* MultilineAlertView.swift */,
+				B02598422D8AD8EC00965CEA /* NoContentView.swift */,
+				B0DF031E227C6898000F9492 /* PaddedLabel.swift */,
+				B081B28029D638850026089C /* PagerView.swift */,
+				B081B28229D6512E0026089C /* PagerViewCell.swift */,
+				0A6AC321229FAA130025A4EC /* PermissionsEditView.xib */,
+				0A6AC323229FB0ED0025A4EC /* PermissionsEditViewController.swift */,
+				B00CB5F529D7461B00BFE5C2 /* PinnedMessagesView.swift */,
+				B081B28429D73EE10026089C /* PinnedMessagesView.xib */,
+				B0DF03302283FFD8000F9492 /* PlaceholderTextView.swift */,
+				B026F242257C59CA003BA14B /* ProgressView.xib */,
+				B026F246257C5EFF003BA14B /* ProgressView.swift */,
+				B0A612AE228B08EC00569DFE /* RichTextView.swift */,
+				B0DF03162279F027000F9492 /* RoundImageView.swift */,
+				B012599A229CEBE600688FCE /* SelectedMemberViewCell.swift */,
+				B012599B229CEBE600688FCE /* SelectedMemberViewCell.xib */,
+				B0133AE423D1ACBC00C813CA /* SendImageBar.swift */,
+				B0133AE223D1AADF00C813CA /* SendImageBar.xib */,
+				B0DF032E2282FF46000F9492 /* SendMessageBar.swift */,
+				B0DF032C2282EE8A000F9492 /* SendMessageBar.xib */,
+				0A11912C22F03E3100A1BBA1 /* TagsEditView.swift */,
+				B0BE302627B831BD00B04631 /* TagsEditDialogView.xib */,
+				0A4B11FD2373DC1400199310 /* TagsEditDialogView.swift */,
+				7DDADC5121D5C219009733B5 /* ValidatedCredential.swift */,
+				B091BA532824916800317CDC /* WaveImage.swift */,
+				B091BA5528272A2400317CDC /* WaveImageView.swift */,
+			);
+			path = widgets;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0A0380D321B3CC8100A3FA0E /* Tinodios */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0A0380E621B3CC8200A3FA0E /* Build configuration list for PBXNativeTarget "Tinodios" */;
+			buildPhases = (
+				46966AD24309BE3586965D61 /* [CP] Check Pods Manifest.lock */,
+				B094C9AA2315841E00C98B64 /* Assign build version from git */,
+				0A0380D021B3CC8100A3FA0E /* Sources */,
+				0A0380D121B3CC8100A3FA0E /* Frameworks */,
+				0A0380D221B3CC8100A3FA0E /* Resources */,
+				0A431C052244A26200A837F7 /* Embed Frameworks */,
+				B0BC2B5423589CE100BEEB4B /* Assign DefaultValue in app preferences */,
+				0ACE9E7A23813A1D006BE575 /* Embed Foundation Extensions */,
+				9F57E04FA7B9924948AFF5D2 /* [CP] Copy Pods Resources */,
+				E39DF56D400E4A17F40FBB09 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0ACE9E7823813A1D006BE575 /* PBXTargetDependency */,
+			);
+			name = Tinodios;
+			productName = ios;
+			productReference = 0A0380D421B3CC8100A3FA0E /* Tinodios.app */;
+			productType = "com.apple.product-type.application";
+		};
+		0ACE9E7123813A1D006BE575 /* TinodiosNSExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0ACE9E7D23813A1D006BE575 /* Build configuration list for PBXNativeTarget "TinodiosNSExtension" */;
+			buildPhases = (
+				B0DB87172383FEF0005FBBC1 /* Assign bundle version from git */,
+				0ACE9E6E23813A1D006BE575 /* Sources */,
+				0ACE9E6F23813A1D006BE575 /* Frameworks */,
+				0ACE9E7023813A1D006BE575 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TinodiosNSExtension;
+			productName = TinodiosNSExtension;
+			productReference = 0ACE9E7223813A1D006BE575 /* TinodiosNSExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		0AE21E4A28D21849008F486C /* TinodiosUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0AE21E5528D21849008F486C /* Build configuration list for PBXNativeTarget "TinodiosUITests" */;
+			buildPhases = (
+				A775F41E632ADA951685301C /* [CP] Check Pods Manifest.lock */,
+				0AE21E4728D21849008F486C /* Sources */,
+				0AE21E4828D21849008F486C /* Frameworks */,
+				0AE21E4928D21849008F486C /* Resources */,
+				A71215C9F652A1468BB98E79 /* [CP] Embed Pods Frameworks */,
+				37009181C8B2B0198CE4CBBA /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0AE21E5228D21849008F486C /* PBXTargetDependency */,
+			);
+			name = TinodiosUITests;
+			productName = TinodiosUITests;
+			productReference = 0AE21E4B28D21849008F486C /* TinodiosUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0A0380CC21B3CC8100A3FA0E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 1400;
+				LastUpgradeCheck = 1500;
+				ORGANIZATIONNAME = "Tinode LLC";
+				TargetAttributes = {
+					0A0380D321B3CC8100A3FA0E = {
+						CreatedOnToolsVersion = 10.1;
+					};
+					0ACE9E7123813A1D006BE575 = {
+						CreatedOnToolsVersion = 11.1;
+					};
+					0AE21E4A28D21849008F486C = {
+						CreatedOnToolsVersion = 14.0;
+						TestTargetID = 0A0380D321B3CC8100A3FA0E;
+					};
+				};
+			};
+			buildConfigurationList = 0A0380CF21B3CC8100A3FA0E /* Build configuration list for PBXProject "Tinodios" */;
+			compatibilityVersion = "Xcode 10.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hans",
+				es,
+				"zh-Hant",
+				ru,
+				uk,
+			);
+			mainGroup = 0A0380CB21B3CC8100A3FA0E;
+			productRefGroup = 0A0380D521B3CC8100A3FA0E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0A0380D321B3CC8100A3FA0E /* Tinodios */,
+				0ACE9E7123813A1D006BE575 /* TinodiosNSExtension */,
+				0AE21E4A28D21849008F486C /* TinodiosUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0A0380D221B3CC8100A3FA0E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B079062523EEA0C90019ED75 /* GoogleService-Info.plist in Resources */,
+				B0125999229C982900688FCE /* ContactViewCell.xib in Resources */,
+				B031BE552263075E004160AE /* Settings.bundle in Resources */,
+				B0CF83E0244E074A00E79D22 /* Localizable.strings in Resources */,
+				0AE7339C22C33FEF0089C8D8 /* ChatListViewCell.xib in Resources */,
+				B0BE301C27B3367E00B04631 /* InfoPlist.strings in Resources */,
+				B081B28529D73EE10026089C /* PinnedMessagesView.xib in Resources */,
+				0A3AE3B7274CAD5800CB673E /* ForwardMessageBar.xib in Resources */,
+				B0133AE323D1AADF00C813CA /* SendImageBar.xib in Resources */,
+				B0DF032D2282EE8A000F9492 /* SendMessageBar.xib in Resources */,
+				B052ABCF2863F81500A7D550 /* call-out.m4a in Resources */,
+				B0BE302727B831D400B04631 /* MultilineAlertView.xib in Resources */,
+				0A0380E221B3CC8200A3FA0E /* LaunchScreen.storyboard in Resources */,
+				B052ABCD2863F7E700A7D550 /* call-end.m4a in Resources */,
+				B012599D229CEBE600688FCE /* SelectedMemberViewCell.xib in Resources */,
+				0A6AC322229FAA130025A4EC /* PermissionsEditView.xib in Resources */,
+				B052ABD12863F82000A7D550 /* dialing.m4a in Resources */,
+				0A0380DF21B3CC8200A3FA0E /* Assets.xcassets in Resources */,
+				0A0380DD21B3CC8100A3FA0E /* Main.storyboard in Resources */,
+				B026F243257C59CA003BA14B /* ProgressView.xib in Resources */,
+				0A8D945822BEED3700DC154E /* AvatarWithOnlineIndicator.xib in Resources */,
+				B0BE302427B831BD00B04631 /* TagsEditDialogView.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0ACE9E7023813A1D006BE575 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B02725FC283DB3BB0055D446 /* Localizable.strings in Resources */,
+				B0E6F5EF2DF44DFF00A8B1FF /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0AE21E4928D21849008F486C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		37009181C8B2B0198CE4CBBA /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TinodiosUITests/Pods-TinodiosUITests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TinodiosUITests/Pods-TinodiosUITests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TinodiosUITests/Pods-TinodiosUITests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		46966AD24309BE3586965D61 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Tinodios-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		9F57E04FA7B9924948AFF5D2 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Tinodios/Pods-Tinodios-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Tinodios/Pods-Tinodios-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Tinodios/Pods-Tinodios-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A71215C9F652A1468BB98E79 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TinodiosUITests/Pods-TinodiosUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TinodiosUITests/Pods-TinodiosUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TinodiosUITests/Pods-TinodiosUITests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A775F41E632ADA951685301C /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-TinodiosUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B094C9AA2315841E00C98B64 /* Assign build version from git */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Assign build version from git";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "${SRCROOT}/Scripts/set_build_number.sh\n";
+		};
+		B0BC2B5423589CE100BEEB4B /* Assign DefaultValue in app preferences */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Assign DefaultValue in app preferences";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "${SRCROOT}/Scripts/set_default_preferences.sh\n";
+		};
+		B0DB87172383FEF0005FBBC1 /* Assign bundle version from git */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Assign bundle version from git";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "${SRCROOT}/Scripts/set_build_number.sh\n";
+		};
+		E39DF56D400E4A17F40FBB09 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Tinodios/Pods-Tinodios-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Tinodios/Pods-Tinodios-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Tinodios/Pods-Tinodios-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0A0380D021B3CC8100A3FA0E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B008593C22741B8A002C5168 /* FullFormatter.swift in Sources */,
+				0A0380DA21B3CC8100A3FA0E /* ChatListViewController.swift in Sources */,
+				0A2F81C6229677DD007E562C /* AddByIDViewController.swift in Sources */,
+				0A68704029B5A10C00A6F126 /* QRScanner.swift in Sources */,
+				B00CB5F629D7461B00BFE5C2 /* PinnedMessagesView.swift in Sources */,
+				0AE50D4422156A250021F7B7 /* FindViewController.swift in Sources */,
+				B0BE302B27B8A3B600B04631 /* TopicSecurityViewController.swift in Sources */,
+				B01C693F22F87B5C003C0AA7 /* SignupViewController.swift in Sources */,
+				0AEE3A33283E57230037BEC4 /* CallViewController.swift in Sources */,
+				B091BA4A282087D700317CDC /* MediaRecorder.swift in Sources */,
+				0AD5552A21C625BB0027FD16 /* ChatListInteractor.swift in Sources */,
+				0A8A8BDA21C380E80090BCBA /* Cache.swift in Sources */,
+				B027E5AE278901CA00A34C17 /* PreviewFormatter.swift in Sources */,
+				B0DF031D227C604C000F9492 /* MessageCell.swift in Sources */,
+				B0DF0323228051B4000F9492 /* MessageViewController+Keyboard.swift in Sources */,
+				B081B28329D6512E0026089C /* PagerViewCell.swift in Sources */,
+				B091BA542824916800317CDC /* WaveImage.swift in Sources */,
+				FA37AD24238B0D6F00301261 /* KeyboardInfo.swift in Sources */,
+				0AE50D4822156A5B0021F7B7 /* FindPresenter.swift in Sources */,
+				B09C5652246C0E6B00D6615D /* BlockedContactsTableViewController.swift in Sources */,
+				B09C564E246975F700D6615D /* SettingsHelpViewController.swift in Sources */,
+				B02598432D8AD8FC00965CEA /* NoContentView.swift in Sources */,
+				0A4BD27129568B8E00493A04 /* VideoPreviewController.swift in Sources */,
+				B0DF03312283FFD8000F9492 /* PlaceholderTextView.swift in Sources */,
+				B0BE302D27BAC90E00B04631 /* TopicGeneralViewController.swift in Sources */,
+				B091BA5628272A2400317CDC /* WaveImageView.swift in Sources */,
+				B027E5B22789026200A34C17 /* SendReplyFormatter.swift in Sources */,
+				0A35BA9E22836CCF00AA5E2F /* ContactsSynchronizer.swift in Sources */,
+				0A0D92D72840EFEF00B5B5B0 /* CallProviderDelegate.swift in Sources */,
+				B03066432805F2AA00497EF4 /* EntityTextAttachment.swift in Sources */,
+				B09C564A2469362A00D6615D /* AccountGeneralSettingsViewController.swift in Sources */,
+				0A11912D22F03E3100A1BBA1 /* TagsEditView.swift in Sources */,
+				B0BB53C3256DD5C9000FE949 /* LargeFileHelper.swift in Sources */,
+				0A8D945A22BEF08100DC154E /* AvatarWithOnlineIndicator.swift in Sources */,
+				B0BE302327B771E100B04631 /* MultilineAlertView.swift in Sources */,
+				0A0016E721E7236900088188 /* MessageInteractor.swift in Sources */,
+				B027E5B02789020D00A34C17 /* QuoteFormatter.swift in Sources */,
+				B081B27F29D621380026089C /* DotSelectorImageView.swift in Sources */,
+				0A36776922B09C1900724873 /* EditMembersViewController.swift in Sources */,
+				B0125998229C982900688FCE /* ContactViewCell.swift in Sources */,
+				0A8EA5B029838E5900B116EA /* CredentialsChangeViewController.swift in Sources */,
+				0ACB5F1022097665008FE740 /* ChatListRouter.swift in Sources */,
+				0A0D92D928410D4100B5B5B0 /* CallManager.swift in Sources */,
+				0A6F260A21BE51D800B9726E /* LoginViewController.swift in Sources */,
+				0A95F4D4229BD95900AEF7D3 /* AccountSettingsViewController.swift in Sources */,
+				B091BA442808ED6000317CDC /* MessageCell+VLCMediaPlayerDelegate.swift in Sources */,
+				0A4E1D3022829C46006C0912 /* ContactsManager.swift in Sources */,
+				0ACB5F0E22097651008FE740 /* ChatListPresenter.swift in Sources */,
+				0A3AE3B5274CAD2500CB673E /* ForwardMessageBar.swift in Sources */,
+				B0BB539F256B14A1000FE949 /* AsyncImageTextAttachment.swift in Sources */,
+				B026F247257C5EFF003BA14B /* ProgressView.swift in Sources */,
+				0A0380D821B3CC8100A3FA0E /* AppDelegate.swift in Sources */,
+				B05ACEB322FDAB5200276713 /* ResetPasswordViewController.swift in Sources */,
+				B0DF031F227C6898000F9492 /* PaddedLabel.swift in Sources */,
+				B091BA462808FE8500317CDC /* MessageViewController+MessageCellDelegate.swift in Sources */,
+				0A8D945C22BF5B7F00DC154E /* AvatarWithOnlineIndicator+TypingAnimation.swift in Sources */,
+				B03B51342803AF26006C714B /* WaveTextAttachment.swift in Sources */,
+				B01D2C6F2793915D009543F2 /* FormatNode.swift in Sources */,
+				B0C6A3C2229EDF14009B0B5D /* ImagePreviewController.swift in Sources */,
+				B09C564C2469756B00D6615D /* SettingsNotificationsViewController.swift in Sources */,
+				B0DF032F2282FF46000F9492 /* SendMessageBar.swift in Sources */,
+				B09C5650246976AC00D6615D /* SettingsSecurityViewController.swift in Sources */,
+				0A6AC324229FB0EE0025A4EC /* PermissionsEditViewController.swift in Sources */,
+				B02F5C8B22679BC80079A97E /* ImagePicker.swift in Sources */,
+				7DDADC5221D5C219009733B5 /* ValidatedCredential.swift in Sources */,
+				B0A612B5229132CC00569DFE /* MessageBubbleDecorator.swift in Sources */,
+				B0DF0319227C2517000F9492 /* MessageView.swift in Sources */,
+				B01D2C6D27910B1E009543F2 /* ThumbnailTransformer.swift in Sources */,
+				7DDADC5421D5C2E6009733B5 /* CredentialsViewController.swift in Sources */,
+				B0A612AF228B08EC00569DFE /* RichTextView.swift in Sources */,
+				0AD6873D27233C0800A39486 /* QuotedAttachment.swift in Sources */,
+				0AB5FDCE22C20D1900F44AFD /* ArchivedChatsTableViewController.swift in Sources */,
+				B0DF03172279F027000F9492 /* RoundImageView.swift in Sources */,
+				B0A612B72294289000569DFE /* MessageViewController+SendMessageBarDelegate.swift in Sources */,
+				B0BA208523D5D8CF00C59BD4 /* FilePreviewController.swift in Sources */,
+				0A35BAA02283A37500AA5E2F /* Utils.swift in Sources */,
+				B0A612B3228EDC7B00569DFE /* ButtonAttachment.swift in Sources */,
+				0ADDBC8B2249F617000BD00D /* ChatListViewCell.swift in Sources */,
+				0A4B11FE2373DC1400199310 /* TagsEditDialogView.swift in Sources */,
+				0A69D47F22A6552300769426 /* TopicInfoViewController.swift in Sources */,
+				B03066452805FAD300497EF4 /* MultiImageTextAttachment.swift in Sources */,
+				0A68703E29B5951200A6F126 /* BrandingViewController.swift in Sources */,
+				0A9E7149237BCC8400C1D491 /* NewChatTabController.swift in Sources */,
+				0A57890927487B9400E77F0C /* ForwardToViewController.swift in Sources */,
+				0A0016E921E736CD00088188 /* MessagePresenter.swift in Sources */,
+				B0F98C8322E381C300444121 /* MessageMenuItem.swift in Sources */,
+				B0A612B1228C85C300569DFE /* MessageViewLayout.swift in Sources */,
+				B091BA58282DA01200317CDC /* SendForwardedFormatter.swift in Sources */,
+				B0133AE523D1ACBD00C813CA /* SendImageBar.swift in Sources */,
+				B091BA4C2820A98B00317CDC /* RecordedMediaPlayback.swift in Sources */,
+				B0F2F0C929DA295900100B24 /* MessageViewController+MessageDisplayLogic.swift in Sources */,
+				B01D2C712794E1E0009543F2 /* AbstractFormatter.swift in Sources */,
+				B012599C229CEBE600688FCE /* SelectedMemberViewCell.swift in Sources */,
+				0AEE8BEE226456080022EC3F /* UiUtils.swift in Sources */,
+				0AC33D032293C7A00060D263 /* NewGroupViewController.swift in Sources */,
+				0AE50D4622156A4B0021F7B7 /* FindInteractor.swift in Sources */,
+				B081B28129D638850026089C /* PagerView.swift in Sources */,
+				0A8C8A4621E5E72D00D8751E /* MessageViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0ACE9E6E23813A1D006BE575 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0ACE9E7523813A1D006BE575 /* NotificationService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0AE21E4728D21849008F486C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0AE21E5028D21849008F486C /* TinodiosUITestsLaunchTests.swift in Sources */,
+				0AE21E4E28D21849008F486C /* TinodiosUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0ACE9E7823813A1D006BE575 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0ACE9E7123813A1D006BE575 /* TinodiosNSExtension */;
+			targetProxy = 0ACE9E7723813A1D006BE575 /* PBXContainerItemProxy */;
+		};
+		0AE21E5228D21849008F486C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0A0380D321B3CC8100A3FA0E /* Tinodios */;
+			targetProxy = 0AE21E5128D21849008F486C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		0A0380DB21B3CC8100A3FA0E /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0A0380DC21B3CC8100A3FA0E /* Base */,
+				B0CF83DD244DFB1C00E79D22 /* zh-Hans */,
+				B0941BC42487CEE100A891B7 /* es */,
+				B0CEF8D726B5EC21000028C2 /* zh-Hant */,
+				B0CEF8D926B603E3000028C2 /* ru */,
+				B093F50426C5BD4200FAA4E8 /* en */,
+				B04D95592A8A79D900558612 /* uk */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		0A0380E021B3CC8200A3FA0E /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0A0380E121B3CC8200A3FA0E /* Base */,
+				B36DC000235D850000724348 /* zh-Hans */,
+				B0941BC52487CEE100A891B7 /* es */,
+				B0CEF8D826B5EC5D000028C2 /* zh-Hant */,
+				B0CEF8DA26B603E3000028C2 /* ru */,
+				B04D955A2A8A79D900558612 /* uk */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		B02725FA283DB3BB0055D446 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B02725FB283DB3BB0055D446 /* zh-Hant */,
+				B02725FD283DB3C70055D446 /* zh-Hans */,
+				B02725FE283DB3D10055D446 /* ru */,
+				B02725FF283DB3DB0055D446 /* es */,
+				B04D95602A8A7D2000558612 /* uk */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		B0BE301A27B3367E00B04631 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B0BE301B27B3367E00B04631 /* ru */,
+				B0BE301D27B3378100B04631 /* es */,
+				B0BE301E27B3388700B04631 /* zh-Hans */,
+				B0BE301F27B3389100B04631 /* zh-Hant */,
+				B04D955F2A8A7D2000558612 /* uk */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		B0BE302627B831BD00B04631 /* TagsEditDialogView.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B0BE302527B831BD00B04631 /* Base */,
+				B0979FCC27BD99B80045FC73 /* es */,
+				B0979FCE27BD9A070045FC73 /* ru */,
+				B0979FD027BD9A2A0045FC73 /* zh-Hans */,
+				B0979FD227BD9A3B0045FC73 /* zh-Hant */,
+				B04D95582A8A79D900558612 /* uk */,
+			);
+			name = TagsEditDialogView.xib;
+			sourceTree = "<group>";
+		};
+		B0BE302927B831D400B04631 /* MultilineAlertView.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B0BE302827B831D400B04631 /* Base */,
+				B0979FCB27BD99B80045FC73 /* es */,
+				B0979FCD27BD9A070045FC73 /* ru */,
+				B0979FCF27BD9A2A0045FC73 /* zh-Hans */,
+				B0979FD127BD9A3B0045FC73 /* zh-Hant */,
+				B04D95572A8A79D800558612 /* uk */,
+			);
+			name = MultilineAlertView.xib;
+			sourceTree = "<group>";
+		};
+		B0CF83E2244E074A00E79D22 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B0CF83E3244E074E00E79D22 /* zh-Hans */,
+				B0941BC62487CEE100A891B7 /* es */,
+				B0CEF8DB26B603E4000028C2 /* ru */,
+				B093F50126C5BBF300FAA4E8 /* zh-Hant */,
+				B093F50526C5BD8800FAA4E8 /* en */,
+				B04D955B2A8A79D900558612 /* uk */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		B0E6F5ED2DF44DFF00A8B1FF /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B0E6F5EE2DF44DFF00A8B1FF /* es */,
+				B0E6F5F22DF44E2C00A8B1FF /* ru */,
+				B0E6F5F42DF44E3C00A8B1FF /* uk */,
+				B0E6F5F62DF44E4800A8B1FF /* zh-Hans */,
+				B0E6F5F82DF44E5700A8B1FF /* zh-Hant */,
+			);
+			name = InfoPlist.strings;
+			path = TinodiosNSExtension;
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		0A0380E421B3CC8200A3FA0E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B01120B72357469300EFCB1F /* devel.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1736;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_BITCODE = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.22.12;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		0A0380E521B3CC8200A3FA0E /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B01120B8235746BF00EFCB1F /* prod.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = "$(GIT_COMMIT_COUNT)";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_BITCODE = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = "$(GIT_TAG)";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0A0380E721B3CC8200A3FA0E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B01120B72357469300EFCB1F /* devel.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				APP_NAME = "BLML (dev)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Tinodios/Tinodios.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(CURRENT_PROJECT_VERSION)";
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = Tinodios/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = app.blml.chat;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		0A0380E821B3CC8200A3FA0E /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B01120B8235746BF00EFCB1F /* prod.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Tinodios/Tinodios.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(CURRENT_PROJECT_VERSION)";
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = Tinodios/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = app.blml.chat;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		0ACE9E7B23813A1D006BE575 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = TinodiosNSExtension/TinodiosNSExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(CURRENT_PROJECT_VERSION)";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				INFOPLIST_FILE = TinodiosNSExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = app.blml.chat.TinodiosNSExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		0ACE9E7C23813A1D006BE575 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = TinodiosNSExtension/TinodiosNSExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(CURRENT_PROJECT_VERSION)";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				INFOPLIST_FILE = TinodiosNSExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = app.blml.chat.TinodiosNSExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		0AE21E5328D21849008F486C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B33FA5FDB8E984980BADDAB2 /* Pods-TinodiosUITests.debug.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = TinodiosUITests/TinodiosUITests.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = co.tinode.ios.TinodiosUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Tinodios;
+			};
+			name = Debug;
+		};
+		0AE21E5428D21849008F486C /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4F6E20F7F9A02F33DBC019E7 /* Pods-TinodiosUITests.release.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = TinodiosUITests/TinodiosUITests.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = co.tinode.ios.TinodiosUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Tinodios;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0A0380CF21B3CC8100A3FA0E /* Build configuration list for PBXProject "Tinodios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A0380E421B3CC8200A3FA0E /* Debug */,
+				0A0380E521B3CC8200A3FA0E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		0A0380E621B3CC8200A3FA0E /* Build configuration list for PBXNativeTarget "Tinodios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A0380E721B3CC8200A3FA0E /* Debug */,
+				0A0380E821B3CC8200A3FA0E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		0ACE9E7D23813A1D006BE575 /* Build configuration list for PBXNativeTarget "TinodiosNSExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0ACE9E7B23813A1D006BE575 /* Debug */,
+				0ACE9E7C23813A1D006BE575 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		0AE21E5528D21849008F486C /* Build configuration list for PBXNativeTarget "TinodiosUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0AE21E5328D21849008F486C /* Debug */,
+				0AE21E5428D21849008F486C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0A0380CC21B3CC8100A3FA0E /* Project object */;
+}

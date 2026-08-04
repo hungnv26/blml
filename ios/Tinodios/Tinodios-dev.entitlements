@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Device-install entitlements for FREE personal team signing: deliberately empty.
+
+  Free teams cannot provision App Groups, push, associated domains, or iCloud.
+  The code falls back gracefully (BaseDb.kAppGroupAvailable) when the group
+  container is missing — the only loss is the notification extension's DB
+  access, which is moot without push anyway.
+
+  The production Tinodios.entitlements stays untouched for a future paid team.
+-->
+<plist version="1.0">
+<dict/>
+</plist>

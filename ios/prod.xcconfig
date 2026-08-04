@@ -1,0 +1,18 @@
+//
+// Production .xcconfig
+//
+
+// Include Pods config.
+#include "Pods/Target Support Files/Pods-Tinodios/Pods-Tinodios.release.xcconfig"
+
+// Server URL
+HOST_NAME = chat.blml.app
+// Use TLS (https, wss)
+USE_TLS = YES
+
+// App Settings
+APP_NAME = BLML
+
+// Versioning. The values are automatically updated by a build script.
+GIT_TAG = 1.24.4
+GIT_COMMIT_COUNT = 1830

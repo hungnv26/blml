@@ -1,0 +1,15 @@
+/* Class = "UITextView"; text = "Description"; ObjectID = "D3z-yf-zJA"; */
+"D3z-yf-zJA.text" = "Topic subtitle (private)";
+
+/* Class = "UILabel"; text = "Manage tags"; ObjectID = "eHa-mE-ZbY"; */
+"eHa-mE-ZbY.text" = "Manage";
+
+/* Class = "UITextView"; text = "Title"; ObjectID = "ity-bg-zqr"; */
+"ity-bg-zqr.text" = "Topic title (public)";
+
+/* Class = "UILabel"; text = "Group or user ID"; ObjectID = "RA0-dx-dSp"; */
+"RA0-dx-dSp.text" = "Topic or user ID";
+
+/* Class = "UITextField"; placeholder = "Email"; ObjectID = "zmL-3Y-R2r"; */
+"zmL-3Y-R2r.placeholder" = "Email or phone number";
+

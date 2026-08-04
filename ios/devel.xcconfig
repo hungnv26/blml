@@ -1,0 +1,14 @@
+//
+// Development .xcconfig
+//
+
+// Include Pods config.
+#include "Pods/Target Support Files/Pods-Tinodios/Pods-Tinodios.debug.xcconfig"
+
+// Server URL
+HOST_NAME = 192.168.101.108:6060
+// Use TLS (https, wss)
+USE_TLS = NO
+
+// App Settings
+APP_NAME = BLML (dev)
