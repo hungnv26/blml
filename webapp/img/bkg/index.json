@@ -1,52 +1,52 @@
 {
  "patt": [
   {
-   "name": "d00.png",
-   "size": 200
-  },
-  {
-   "name": "d01.png",
+   "name": "d10.png",
    "size": 384
   },
   {
-   "name": "d02.png",
-   "size": 400
-  },
-  {
-   "name": "d03.png",
-   "size": 256
-  },
-  {
-   "name": "d04.png",
+   "name": "d11.png",
    "size": 384
   },
   {
-   "name": "d05.png",
-   "size": 400
-  },
-  {
-   "name": "a01.jpg",
+   "name": "d12.png",
    "size": 384
   },
   {
-   "name": "a03.jpg",
+   "name": "d13.png",
    "size": 384
   },
   {
-   "name": "a05.jpg",
-   "size": 400
-  },
-  {
-   "name": "a07.jpg",
+   "name": "d14.png",
    "size": 384
   },
   {
-   "name": "a10.jpg",
-   "size": 256
+   "name": "d15.png",
+   "size": 384
   },
   {
-   "name": "a11.png",
-   "size": 200
+   "name": "l10.png",
+   "size": 384
+  },
+  {
+   "name": "l11.png",
+   "size": 384
+  },
+  {
+   "name": "l12.png",
+   "size": 384
+  },
+  {
+   "name": "l13.png",
+   "size": 384
+  },
+  {
+   "name": "l14.png",
+   "size": 384
+  },
+  {
+   "name": "l15.png",
+   "size": 384
   }
  ],
  "img": [
