@@ -162,6 +162,13 @@ extension MessageViewController: MessageCellDelegate {
             }
         }
 
+        // iOS 26 removed UIMenuController: the menu still displays through a
+        // compatibility shim, but the `sender` handed to the action selector is no
+        // longer a UIMenuController, so `sender.menuItems` raises
+        // doesNotRecognizeSelector and kills the app. Remember the target message
+        // here instead of digging it back out of the sender.
+        MessageViewController.activeMenuSeqId = cell.seqId
+
         UIMenuController.shared.menuItems = menuItems
 
         // Show the menu.
@@ -182,7 +189,7 @@ extension MessageViewController: MessageCellDelegate {
     }
 
     @objc func copyMessageContent(sender: UIMenuController) {
-        guard let menuItem = sender.menuItems?.first as? MessageMenuItem, menuItem.seqId > 0, let msgIndex = messageSeqIdIndex[menuItem.seqId] else { return }
+        guard let msgIndex = messageSeqIdIndex[MessageViewController.activeMenuSeqId] else { return }
 
         let msg = messages[msgIndex]
 
@@ -220,17 +227,17 @@ extension MessageViewController: MessageCellDelegate {
     }
 
     @objc func pinMessage(sender: UIMenuController) {
-        guard let menuItem = sender.menuItems?.first as? MessageMenuItem, menuItem.seqId > 0 else { return }
-        _ = self.topic?.pinMessage(seq: menuItem.seqId , pin: true)
+        guard MessageViewController.activeMenuSeqId > 0 else { return }
+        _ = self.topic?.pinMessage(seq: MessageViewController.activeMenuSeqId , pin: true)
     }
 
     @objc func unpinMessage(sender: UIMenuController) {
-        guard let menuItem = sender.menuItems?.first as? MessageMenuItem, menuItem.seqId > 0 else { return }
-        _ = self.topic?.pinMessage(seq: menuItem.seqId , pin: false)
+        guard MessageViewController.activeMenuSeqId > 0 else { return }
+        _ = self.topic?.pinMessage(seq: MessageViewController.activeMenuSeqId , pin: false)
     }
 
     private func showQuotedPreview(sender: UIMenuController, isReply: Bool, completion: @escaping (PendingMessage?) -> Void) {
-        guard let menuItem = sender.menuItems?.first as? MessageMenuItem, menuItem.seqId > 0, let msgIndex = messageSeqIdIndex[menuItem.seqId] else { return }
+        guard let msgIndex = messageSeqIdIndex[MessageViewController.activeMenuSeqId] else { return }
         let msg = messages[msgIndex]
         if let reply = interactor?.prepareQuoted(to: msg, isReply: isReply) {
             reply.then(onSuccess: { value in
@@ -249,7 +256,7 @@ extension MessageViewController: MessageCellDelegate {
     }
 
     @objc func showForwardSelector(sender: UIMenuController) {
-        guard let menuItem = sender.menuItems?.first as? MessageMenuItem, menuItem.seqId > 0, let msgIndex = messageSeqIdIndex[menuItem.seqId] else { return }
+        guard let msgIndex = messageSeqIdIndex[MessageViewController.activeMenuSeqId] else { return }
 
         guard let msg = interactor?.createForwardedMessage(from: messages[msgIndex]) else {
             return
@@ -279,7 +286,7 @@ extension MessageViewController: MessageCellDelegate {
     }
 
     private func deleteMessage(sender: UIMenuController, hard: Bool) {
-        guard let menuItem = sender.menuItems?.first as? MessageMenuItem, menuItem.seqId > 0, let index = messageSeqIdIndex[menuItem.seqId] else { return }
+        guard MessageViewController.activeMenuSeqId > 0, let index = messageSeqIdIndex[MessageViewController.activeMenuSeqId] else { return }
         let msg = messages[index]
         interactor?.deleteMessage(msg, hard: hard)
     }
