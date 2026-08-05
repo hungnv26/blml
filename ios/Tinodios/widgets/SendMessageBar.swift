@@ -47,7 +47,8 @@ class SendMessageBar: UIView {
     private enum Constants {
         static let maxLines: CGFloat = 4
         static let inputFieldInsetLeading: CGFloat = 4
-        static let inputFieldInsetTrailing: CGFloat = 40
+        // Clears both the send/mic button and the sticker button left of it.
+        static let inputFieldInsetTrailing: CGFloat = 76
         static let peerMessagingDisabledHeight: CGFloat = 30
         static let kPreviewCancelButtonMaxWidth: CGFloat = 36
 
@@ -99,6 +100,9 @@ class SendMessageBar: UIView {
     @IBOutlet weak var peerMessagingDisabledHeight: NSLayoutConstraint!
     @IBOutlet weak var previewView: RichTextView!
     @IBOutlet weak var previewViewHeight: NSLayoutConstraint!
+
+    /// Added in code — the nib has no slot for it.
+    private weak var stickerButton: UIButton?
 
     @IBOutlet weak var audioView: UIView!
     @IBOutlet weak var deleteAudioButton: UIButton!
@@ -352,7 +356,66 @@ class SendMessageBar: UIView {
         togglePeerMessagingDisabled(visible: false)
         togglePendingPreviewBar(withMessage: nil)
 
+        addStickerButton()
+
         showAudioBar(.hidden)
+    }
+
+    /// Sticker button, sitting inside the input pill just left of the mic, the
+    /// way Messenger and WhatsApp place theirs.
+    private func addStickerButton() {
+        guard stickerButton == nil else { return }
+
+        let button = UIButton(type: .system)
+        button.tintColor = UIColor(fromHexCode: 0xff8696a0)
+        button.setImage(UIImage(systemName: "face.smiling",
+                                withConfiguration: UIImage.SymbolConfiguration(pointSize: 22)), for: .normal)
+        button.accessibilityLabel = NSLocalizedString("Stickers", comment: "Accessibility label")
+        button.addTarget(self, action: #selector(stickerButtonClicked), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        inputField.superview?.addSubview(button)
+
+        NSLayoutConstraint.activate([
+            // Left of the send/mic button, which is centred 20pt inside the
+            // pill's trailing edge.
+            button.centerXAnchor.constraint(equalTo: inputField.trailingAnchor, constant: -56),
+            button.centerYAnchor.constraint(equalTo: sendButton.centerYAnchor),
+            button.widthAnchor.constraint(equalToConstant: 32),
+            button.heightAnchor.constraint(equalToConstant: 32)
+        ])
+        stickerButton = button
+    }
+
+    @objc private func stickerButtonClicked() {
+        if inputField.inputView != nil {
+            // Already showing stickers — go back to the keyboard.
+            inputField.inputView = nil
+            stickerButton?.setImage(UIImage(systemName: "face.smiling",
+                                            withConfiguration: UIImage.SymbolConfiguration(pointSize: 22)), for: .normal)
+        } else {
+            let picker = EmojiPickerView(frame: CGRect(x: 0, y: 0, width: bounds.width, height: 280))
+            picker.autoresizingMask = [.flexibleWidth]
+            picker.onPick = { [weak self] emoji in
+                guard let self = self else { return }
+                // insertText respects the caret and the current selection, and
+                // notifies the delegate, so the send button flips from mic to
+                // send exactly as it does for typed text.
+                self.inputField.insertText(emoji)
+            }
+            picker.onDelete = { [weak self] in
+                self?.inputField.deleteBackward()
+            }
+            inputField.inputView = picker
+            stickerButton?.setImage(UIImage(systemName: "keyboard",
+                                            withConfiguration: UIImage.SymbolConfiguration(pointSize: 22)), for: .normal)
+        }
+
+        // Swap the input view in place; becomeFirstResponder alone would not
+        // pick up the change if the field is already focused.
+        inputField.reloadInputViews()
+        if !inputField.isFirstResponder {
+            inputField.becomeFirstResponder()
+        }
     }
 
     // MARK: - Subviews handling
