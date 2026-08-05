@@ -19,6 +19,8 @@ protocol ChatListDisplayLogic: AnyObject {
 class ChatListViewController: UITableViewController, ChatListDisplayLogic {
 
     private static let kFooterHeight: CGFloat = 30
+    // 60pt in the XIB, which was tight once the separator lines came out.
+    private static let kRowHeight: CGFloat = 76
 
     @IBOutlet var chatListTableView: UITableView!
 
@@ -71,6 +73,47 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
         navigationController?.navigationBar.prefersLargeTitles = true
     }
 
+    /// Turns the plain bar-button glyph into WhatsApp's filled green circle.
+    /// Built as a custom view because a UIBarButtonItem cannot carry a
+    /// background shape of its own.
+    private func styleComposeButton() {
+        guard let item = navigationItem.rightBarButtonItem else { return }
+
+        let size: CGFloat = 36
+        let button = UIButton(type: .system)
+        button.frame = CGRect(x: 0, y: 0, width: size, height: size)
+        button.backgroundColor = UIColor(fromHexCode: 0xff25d366)
+        button.layer.cornerRadius = size / 2
+        button.tintColor = .white
+        button.setImage(UIImage(systemName: "square.and.pencil",
+                                withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)),
+                        for: .normal)
+        // The icon's own weight sits it slightly low inside a circle.
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 1, right: 1)
+        button.accessibilityLabel = NSLocalizedString("New chat", comment: "Accessibility label")
+
+        // Reuse the storyboard segue rather than re-wiring navigation here.
+        button.addTarget(self, action: #selector(composeTapped), for: .touchUpInside)
+        item.customView = button
+        NSLayoutConstraint.activate([
+            button.widthAnchor.constraint(equalToConstant: size),
+            button.heightAnchor.constraint(equalToConstant: size)
+        ])
+    }
+
+    @objc private func composeTapped() {
+        // The storyboard segue hung off the bar-button item, so replacing that
+        // item with a custom view detached it. Push the same scene by id.
+        guard let vc = storyboard?.instantiateViewController(withIdentifier: "NewChatTabController") else {
+            return
+        }
+        // New Chat carries its own tab bar (Find / New Group / By ID). Without
+        // this the main Chats/Contacts/Settings bar stays put and the two stack
+        // on top of each other.
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+    }
+
     private func toggleFooter(visible: Bool) {
         let count = numArchivedTopics > 9 ? "9+" : String(numArchivedTopics)
         let button = tableView.tableFooterView!.subviews[0] as! UIButton
@@ -88,6 +131,15 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
         // anything else on screen. 28pt keeps the hierarchy title > search > list.
         navigationController?.navigationBar.largeTitleTextAttributes =
             [.font: UIFont.systemFont(ofSize: 28, weight: .bold)]
+
+        styleComposeButton()
+
+        // Rows are separated by whitespace instead of hairlines — with only a
+        // handful of conversations the lines added visual noise without
+        // grouping anything. The extra height supplies the separation the
+        // hairlines used to give, so rows do not run together.
+        tableView.separatorStyle = .none
+        tableView.rowHeight = ChatListViewController.kRowHeight
 
         // WhatsApp-style search box under the "Chats" title. A slim
         // UISearchTextField in the table header rather than a UISearchController:
