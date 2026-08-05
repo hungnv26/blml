@@ -1116,13 +1116,8 @@
                     </tableView>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="BLML" id="Rgo-YL-uPZ">
-                        <barButtonItem key="leftBarButtonItem" title="Profile" id="rlG-v4-QUc">
-                            <connections>
-                                <segue destination="Pnk-9m-ZVg" kind="show" id="fsg-RJ-g97"/>
-                            </connections>
-                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="New Chat" id="LVG-dB-flA">
-                            <imageReference key="image" image="plus.bubble" catalog="system" symbolScale="large"/>
+                            <imageReference key="image" image="square.and.pencil" catalog="system" symbolScale="large"/>
                             <connections>
                                 <segue destination="qBo-ye-avT" kind="show" id="PRK-dk-KAe"/>
                             </connections>
@@ -2463,7 +2458,7 @@
         <!--NewChat-->
         <scene sceneID="REJ-Dq-O5O">
             <objects>
-                <tabBarController title="New chat" automaticallyAdjustsScrollViewInsets="NO" id="qBo-ye-avT" userLabel="NewChat" customClass="NewChatTabController" customModule="Tinodios" customModuleProvider="target" sceneMemberID="viewController">
+                <tabBarController storyboardIdentifier="NewChatTabController" title="New chat" automaticallyAdjustsScrollViewInsets="NO" id="qBo-ye-avT" userLabel="NewChat" customClass="NewChatTabController" customModule="Tinodios" customModuleProvider="target" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="New Chat" id="hZA-k4-xku"/>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
