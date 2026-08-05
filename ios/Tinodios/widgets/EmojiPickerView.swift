@@ -17,9 +17,23 @@ class EmojiPickerView: UIView {
     private struct Category {
         let symbol: String
         let emoji: [String]
+        /// Items per row. The first page shows fewer, larger stickers; the
+        /// browse-everything pages pack them tighter.
+        var perRow: Int = 6
     }
 
     private static let categories: [Category] = [
+        // The page the picker opens on: the handful of things people actually
+        // send — a like, a heart, congratulations, a birthday, thanks, sure.
+        // Paired emoji where one alone reads ambiguously (🎂 could be "cake",
+        // 🎂🎉 is unmistakably "happy birthday").
+        Category(symbol: "star.fill", emoji: [
+            "👍", "❤️", "🎉", "🎂🎉", "🙏", "👌",
+            "😂", "😍", "👏", "🔥", "💯", "✅",
+            "👋", "🤝", "🥰", "😮", "😢", "🤔",
+            "💪", "🙌", "🎁", "💐", "🍀", "⭐",
+            "😅", "🤷", "😴", "☕", "🌹", "🎊"
+        ], perRow: 5),
         Category(symbol: "face.smiling", emoji: [
             "😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "🙃",
             "😉", "😊", "😇", "🥰", "😍", "🤩", "😘", "😗", "😚", "😙",
@@ -184,14 +198,18 @@ extension EmojiPickerView: UICollectionViewDataSource, UICollectionViewDelegateF
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "emoji", for: indexPath) as! EmojiCell
-        cell.label.text = EmojiPickerView.categories[currentCategory].emoji[indexPath.item]
+        let cat = EmojiPickerView.categories[currentCategory]
+        cell.label.text = cat.emoji[indexPath.item]
+        // Bigger cells on the first page deserve a bigger glyph.
+        cell.label.font = .systemFont(ofSize: cat.perRow <= 5 ? 40 : 32)
         return cell
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
-        // Six per row on any width, so the grid never leaves a ragged edge.
-        let side = floor((collectionView.bounds.width - 16) / 6)
+        // Fixed count per row on any width, so the grid never leaves a ragged edge.
+        let perRow = CGFloat(EmojiPickerView.categories[currentCategory].perRow)
+        let side = floor((collectionView.bounds.width - 16) / perRow)
         return CGSize(width: side, height: side)
     }
 
@@ -207,6 +225,10 @@ private class EmojiCell: UICollectionViewCell {
         super.init(frame: frame)
         label.font = .systemFont(ofSize: 32)
         label.textAlignment = .center
+        // A paired entry is twice as wide as a single glyph; shrink rather
+        // than clip it.
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.5
         label.frame = contentView.bounds
         label.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         contentView.addSubview(label)
