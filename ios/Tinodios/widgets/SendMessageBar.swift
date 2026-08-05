@@ -310,6 +310,16 @@ class SendMessageBar: UIView {
         let fieldBg = UIColor(fromHexCode: 0xff2a3942)
         backgroundColor = barBg
         inputField.backgroundColor = fieldBg
+
+        // The nib covers the whole bar with a UIVisualEffectView carrying a
+        // *light* blur. Over a dark chat that renders as a milky grey-blue slab
+        // sitting on top of the intended bar colour — the composer looked like
+        // two layers stacked. Drop the effect and let the bar colour show.
+        for sub in subviews.first?.subviews ?? [] {
+            guard let blur = sub as? UIVisualEffectView else { continue }
+            blur.effect = nil
+            blur.backgroundColor = barBg
+        }
         inputField.textColor = UIColor(fromHexCode: 0xffe9edef)
         // Setting the bar's own tint makes every child icon inherit it, overriding
         // the app-wide green window tint. Individual setImage() calls elsewhere
