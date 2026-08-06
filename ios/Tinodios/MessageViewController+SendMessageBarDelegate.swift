@@ -19,20 +19,89 @@ extension MessageViewController: SendMessageBarDelegate {
     static let kMaxAttachmentSize: Int64 = 1 << 23
 
     func sendMessageBar(sendText: String) {
-        let content = Drafty(content: sendText)
-        if !pendingMentions.isEmpty {
-            attachMentions(to: content)
-            pendingMentions = [:]
+        let mentions = pendingMentions
+        pendingMentions = [:]
+
+        let sendNow: (String) -> Void = { [weak self] text in
+            guard let self = self else { return }
+            let content = Drafty(content: text)
+            if !mentions.isEmpty {
+                self.attachMentions(to: content, mentions: mentions)
+            }
+            self.interactor?.sendMessage(content: content)
         }
-        interactor?.sendMessage(content: content)
+
+        // A message with a bare link gets the page title appended, so the
+        // family sees "— Video Title" instead of guessing at a naked URL. The
+        // lookup goes through our own server (which enforces the SSRF policy);
+        // on any failure or after 3s the message just sends as typed.
+        if let url = MessageViewController.firstBareLink(in: sendText) {
+            MessageViewController.fetchLinkTitle(for: url) { title in
+                DispatchQueue.main.async {
+                    if let title = title, !sendText.contains(title) {
+                        sendNow(sendText + "\n— " + title)
+                    } else {
+                        sendNow(sendText)
+                    }
+                }
+            }
+        } else {
+            sendNow(sendText)
+        }
+    }
+
+    /// First http(s) URL in the text, if any.
+    static func firstBareLink(in text: String) -> URL? {
+        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) else {
+            return nil
+        }
+        let range = NSRange(text.startIndex..., in: text)
+        for match in detector.matches(in: text, options: [], range: range) {
+            // Lowercased: the iOS keyboard autocapitalizes a leading URL to
+            // "HTTPS://…", which is a valid scheme spelling but failed the
+            // exact-case comparison and silently skipped the title lookup.
+            if let url = match.url, let scheme = url.scheme?.lowercased(),
+               scheme == "http" || scheme == "https" {
+                return url
+            }
+        }
+        return nil
+    }
+
+    /// Asks our server for the page title. Never blocks the send longer than 3s.
+    static func fetchLinkTitle(for url: URL, completion: @escaping (String?) -> Void) {
+        let tinode = Cache.tinode
+        guard var comps = URLComponents(url: tinode.baseURL(useWebsocketProtocol: false) ?? URL(fileURLWithPath: "/"),
+                                        resolvingAgainstBaseURL: false) else {
+            completion(nil)
+            return
+        }
+        comps.path = "/v0/urlpreview"
+        comps.queryItems = [URLQueryItem(name: "url", value: url.absoluteString)]
+        guard let endpoint = comps.url else {
+            completion(nil)
+            return
+        }
+        var req = URLRequest(url: endpoint, timeoutInterval: 3)
+        req.setValue(tinode.apiKey, forHTTPHeaderField: "X-Tinode-APIKey")
+        URLSession.shared.dataTask(with: req) { data, resp, _ in
+            guard let data = data, (resp as? HTTPURLResponse)?.statusCode == 200,
+                  let parsed = try? JSONSerialization.jsonObject(with: data) as? [String: String],
+                  let title = parsed["title"], !title.isEmpty else {
+                completion(nil)
+                return
+            }
+            // A kilometre-long <title> would bloat the bubble.
+            completion(String(title.prefix(120)))
+        }.resume()
     }
 
     /// Convert "@Name" tokens for picked members into Drafty MN mention spans.
     /// Runs over the parsed document's text, not the raw input, because the
     /// markdown parser may have shifted offsets.
-    private func attachMentions(to d: Drafty) {
+    private func attachMentions(to d: Drafty, mentions: [String: String]) {
         let chars = Array(d.txt)
-        for (name, uid) in pendingMentions {
+        for (name, uid) in mentions {
             let token = Array("@" + name)
             guard !token.isEmpty, chars.count >= token.count else { continue }
             var i = 0
