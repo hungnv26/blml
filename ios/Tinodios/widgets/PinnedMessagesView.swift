@@ -88,7 +88,10 @@ class PinnedMessagesView: UICollectionReusableView {
                     if let promise = self.preparePreview(msg) {
                         promise.thenApply { [weak self] content in
                             guard let pmv = self else { return nil }
-                            let text = SendReplyFormatter(defaultAttributes: [:]).toAttributed(content!, fitIn: CGSize(width: pmv.pagerView.bounds.width, height: pmv.pagerView.bounds.height))
+                            // .label, explicitly: with no default foreground the
+                            // preview rendered black-on-black in dark mode — the
+                            // pinned banner showed as an empty pill.
+                            let text = SendReplyFormatter(defaultAttributes: [.foregroundColor: UIColor.label]).toAttributed(content!, fitIn: CGSize(width: pmv.pagerView.bounds.width, height: pmv.pagerView.bounds.height))
                             pmv.assignPinText(toView: tv, text: text)
                             return nil
                         }
