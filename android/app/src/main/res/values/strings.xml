@@ -412,4 +412,5 @@
     <string name="invite_message_no_code">You\'ll need an invite code \u2014 ask me for it.</string>
     <string name="invite_share_via">Invite a friend</string>
     <string name="hint_search_chats">Search</string>
+    <string name="stickers_hint">Stickers</string>
 </resources>

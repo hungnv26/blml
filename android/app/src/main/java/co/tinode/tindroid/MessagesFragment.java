@@ -454,6 +454,54 @@ public class MessagesFragment extends Fragment implements MenuProvider {
         EditText editor = view.findViewById(R.id.editMessage);
         ViewCompat.setOnReceiveContentListener(editor, SUPPORTED_MIME_TYPES, new StickerReceiver());
 
+        // Sticker panel: shown in place of the soft keyboard, toggled by the
+        // smiley button. Mirrors the iOS composer.
+        final co.tinode.tindroid.widgets.StickerPanelView stickerPanel = view.findViewById(R.id.stickerPanel);
+        final AppCompatImageButton stickerButton = view.findViewById(R.id.stickerButton);
+        stickerPanel.setListener(new co.tinode.tindroid.widgets.StickerPanelView.Listener() {
+            @Override
+            public void onSticker(String emoji) {
+                // Insert at the caret, replacing any selection — the same
+                // behaviour as typing.
+                int start = Math.max(0, editor.getSelectionStart());
+                int end = Math.max(0, editor.getSelectionEnd());
+                editor.getText().replace(Math.min(start, end), Math.max(start, end), emoji);
+            }
+
+            @Override
+            public void onBackspace() {
+                editor.dispatchKeyEvent(new android.view.KeyEvent(
+                        android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DEL));
+            }
+        });
+        stickerButton.setOnClickListener(v -> {
+            android.view.inputmethod.InputMethodManager imm =
+                    (android.view.inputmethod.InputMethodManager)
+                            activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (stickerPanel.getVisibility() == View.VISIBLE) {
+                stickerPanel.setVisibility(View.GONE);
+                stickerButton.setImageResource(R.drawable.ic_smiley);
+                editor.requestFocus();
+                if (imm != null) {
+                    imm.showSoftInput(editor, 0);
+                }
+            } else {
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(editor.getWindowToken(), 0);
+                }
+                stickerPanel.setVisibility(View.VISIBLE);
+                stickerButton.setImageResource(R.drawable.ic_keyboard);
+            }
+        });
+        // Tapping the text field brings the keyboard back; the panel must not
+        // sit underneath it.
+        editor.setOnClickListener(v -> {
+            if (stickerPanel.getVisibility() == View.VISIBLE) {
+                stickerPanel.setVisibility(View.GONE);
+                stickerButton.setImageResource(R.drawable.ic_smiley);
+            }
+        });
+
         // Send notification on key presses
         editor.addTextChangedListener(new TextWatcher() {
             @Override

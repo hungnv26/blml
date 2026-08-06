@@ -85,6 +85,18 @@
             android:minHeight="?attr/listPreferredItemHeightSmall"
             android:textColor="?android:textColorPrimary" />
 
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/stickerButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/stickers_hint"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            app:srcCompat="@drawable/ic_smiley"
+            app:tint="?attr/colorAccent" />
+
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -130,4 +142,10 @@
                 app:tint="?attr/colorAccent" />
         </FrameLayout>
     </LinearLayout>
+
+    <co.tinode.tindroid.widgets.StickerPanelView
+        android:id="@+id/stickerPanel"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:visibility="gone" />
 </LinearLayout>
