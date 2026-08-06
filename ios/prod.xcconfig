@@ -14,5 +14,5 @@ USE_TLS = YES
 APP_NAME = BLML
 
 // Versioning. The values are automatically updated by a build script.
-GIT_TAG = c560d7ac93365bdc4fb6182e38a55fce4f146c8
-GIT_COMMIT_COUNT = 35
+GIT_TAG = 6e7025c5898b126ddf278c6dd5230705469c24f
+GIT_COMMIT_COUNT = 36
