@@ -113,9 +113,21 @@ extension MessageViewController: SendMessageBarDelegate {
                     if boundaryBefore && boundaryAfter {
                         if d.ent == nil { d.ent = [] }
                         if d.fmt == nil { d.fmt = [] }
-                        let key = d.ent!.count
-                        d.ent!.append(Entity(tp: "MN", data: ["val": .string(uid)]))
-                        d.fmt!.append(Style(at: i, len: token.count, key: key))
+                        // Drafty's parser already turns "@Name" into an MN
+                        // entity, but fills it with the literal text instead of
+                        // a user id. Appending a second entity left two
+                        // overlapping mentions on the same span, the first of
+                        // which pointed at nobody — so replace its value.
+                        if let existing = d.fmt!.first(where: {
+                            $0.at == i && $0.len == token.count && $0.key != nil
+                                && $0.key! < d.ent!.count && d.ent![$0.key!].tp == "MN"
+                        }) {
+                            d.ent![existing.key!].data?["val"] = .string(uid)
+                        } else {
+                            let key = d.ent!.count
+                            d.ent!.append(Entity(tp: "MN", data: ["val": .string(uid)]))
+                            d.fmt!.append(Style(at: i, len: token.count, key: key))
+                        }
                         i = after
                         continue
                     }
