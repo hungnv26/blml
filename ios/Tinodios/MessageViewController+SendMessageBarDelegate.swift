@@ -100,7 +100,71 @@ extension MessageViewController: SendMessageBarDelegate {
             imagePicker?.present(source: .camera, from: self.view)
         case .gallery:
             imagePicker?.present(source: .photoLibrary, from: self.view)
+        case .poll:
+            presentPollComposer()
         }
+    }
+
+    /// Question + up to four options, sent as a Drafty form whose options are
+    /// pub buttons. A tap sends the option text back into the chat — chatbot
+    /// mechanics every client already implements, so votes work on Android and
+    /// the web with no server or renderer changes.
+    private func presentPollComposer() {
+        let alert = UIAlertController(
+            title: NSLocalizedString("New poll", comment: "Alert title"),
+            message: NSLocalizedString("Ask a question with up to 4 answers. Votes are posted as replies.", comment: "Alert message"),
+            preferredStyle: .alert)
+        alert.addTextField { $0.placeholder = NSLocalizedString("Question", comment: "Placeholder") }
+        for i in 1...4 {
+            alert.addTextField {
+                $0.placeholder = String(format: NSLocalizedString("Option %d%@", comment: "Placeholder"),
+                                        i, i > 2 ? " (optional)" : "")
+            }
+        }
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "Alert action"), style: .cancel))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Send", comment: "Alert action"), style: .default) { [weak self] _ in
+            guard let self = self, let fields = alert.textFields else { return }
+            let question = (fields[0].text ?? "").trimmingCharacters(in: .whitespaces)
+            let options = fields.dropFirst().compactMap {
+                ($0.text ?? "").trimmingCharacters(in: .whitespaces)
+            }.filter { !$0.isEmpty }
+            guard !question.isEmpty, options.count >= 2 else {
+                UiUtils.showToast(message: NSLocalizedString("A poll needs a question and at least 2 options.", comment: "Toast"))
+                return
+            }
+            self.interactor?.sendMessage(content: MessageViewController.makePollDrafty(question: question, options: options))
+        })
+        present(alert, animated: true)
+    }
+
+    /// Builds: bold question, then one pub-button per option, wrapped in a form.
+    static func makePollDrafty(question: String, options: [String]) -> Drafty {
+        let d = Drafty(plainText: "")
+        var text = "📊 " + question
+        var spans: [(at: Int, len: Int, option: String)] = []
+        for option in options {
+            // Each option on its own line; the whole line is the button.
+            let at = text.count + 1
+            text += "\n" + option
+            spans.append((at: at, len: option.count, option: option))
+        }
+        d.txt = text
+        d.fmt = []
+        d.ent = []
+        // Bold the question line (after the emoji prefix).
+        d.fmt!.append(Style(tp: "ST", at: 2, len: question.count))
+        for span in spans {
+            let key = d.ent!.count
+            d.ent!.append(Entity(tp: "BN", data: [
+                "act": .string("pub"),
+                "name": .string("poll"),
+                "val": .string(span.option)
+            ]))
+            d.fmt!.append(Style(at: span.at, len: span.len, key: key))
+        }
+        // The form wrapper makes renderers lay the buttons out as a card.
+        d.fmt!.append(Style(tp: "FM", at: 0, len: text.count))
+        return d
     }
 
     private func attachFile(ofTypes types: [UTType]) {

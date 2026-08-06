@@ -15,6 +15,7 @@ public enum AttachmentKind {
     case camera
     case gallery
     case audio
+    case poll
 }
 
 /// WhatsApp-style attachment sheet: a grid of coloured circles sliding up from
@@ -30,8 +31,7 @@ public class AttachmentSheetViewController: UIViewController {
         let color: UIColor
     }
 
-    // Only capabilities the app actually has. No Location/Contact/Poll rows
-    // that would open nothing.
+    // Only capabilities the app actually has — no rows that would open nothing.
     private let items: [Item] = [
         Item(kind: .document, title: NSLocalizedString("Document", comment: "Attachment type"),
              systemImage: "doc.fill", color: UIColor(fromHexCode: 0xff7f66ff)),
@@ -40,7 +40,9 @@ public class AttachmentSheetViewController: UIViewController {
         Item(kind: .gallery, title: NSLocalizedString("Gallery", comment: "Attachment type"),
              systemImage: "photo.fill", color: UIColor(fromHexCode: 0xffc042f5)),
         Item(kind: .audio, title: NSLocalizedString("Audio", comment: "Attachment type"),
-             systemImage: "headphones", color: UIColor(fromHexCode: 0xffff7a1a))
+             systemImage: "headphones", color: UIColor(fromHexCode: 0xffff7a1a)),
+        Item(kind: .poll, title: NSLocalizedString("Poll", comment: "Attachment type"),
+             systemImage: "chart.bar.fill", color: UIColor(fromHexCode: 0xff00b3a4))
     ]
 
     private let panel = UIView()
