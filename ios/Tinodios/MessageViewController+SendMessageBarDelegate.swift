@@ -19,7 +19,75 @@ extension MessageViewController: SendMessageBarDelegate {
     static let kMaxAttachmentSize: Int64 = 1 << 23
 
     func sendMessageBar(sendText: String) {
-        interactor?.sendMessage(content: Drafty(content: sendText))
+        let content = Drafty(content: sendText)
+        if !pendingMentions.isEmpty {
+            attachMentions(to: content)
+            pendingMentions = [:]
+        }
+        interactor?.sendMessage(content: content)
+    }
+
+    /// Convert "@Name" tokens for picked members into Drafty MN mention spans.
+    /// Runs over the parsed document's text, not the raw input, because the
+    /// markdown parser may have shifted offsets.
+    private func attachMentions(to d: Drafty) {
+        let chars = Array(d.txt)
+        for (name, uid) in pendingMentions {
+            let token = Array("@" + name)
+            guard !token.isEmpty, chars.count >= token.count else { continue }
+            var i = 0
+            while i <= chars.count - token.count {
+                if Array(chars[i..<(i + token.count)]) == token {
+                    let boundaryBefore = i == 0 || chars[i - 1] == " " || chars[i - 1] == "\n"
+                    let after = i + token.count
+                    let boundaryAfter = after == chars.count || !(chars[after].isLetter || chars[after].isNumber)
+                    if boundaryBefore && boundaryAfter {
+                        if d.ent == nil { d.ent = [] }
+                        if d.fmt == nil { d.fmt = [] }
+                        let key = d.ent!.count
+                        d.ent!.append(Entity(tp: "MN", data: ["val": .string(uid)]))
+                        d.fmt!.append(Style(at: i, len: token.count, key: key))
+                        i = after
+                        continue
+                    }
+                }
+                i += 1
+            }
+        }
+    }
+
+    /// Shows the member picker when "@" starts a word in a group chat.
+    func maybeShowMentionPicker(for text: String) {
+        guard let topic = topic, topic.isGrpType, presentedViewController == nil else { return }
+        guard text.hasSuffix("@") else { return }
+        if text.count >= 2 {
+            // Mid-word @ (an email address, say) must not trigger the picker.
+            let prev = text[text.index(text.endIndex, offsetBy: -2)]
+            guard prev == " " || prev == "\n" else { return }
+        }
+        guard let subs = topic.getSubscriptions(), !subs.isEmpty else { return }
+
+        let me = Cache.tinode.myUid
+        let sheet = UIAlertController(title: NSLocalizedString("Mention", comment: "Mention picker title"),
+                                      message: nil, preferredStyle: .actionSheet)
+        var added = 0
+        for sub in subs {
+            guard let uid = sub.user, uid != me, let name = sub.pub?.fn, !name.isEmpty else { continue }
+            sheet.addAction(UIAlertAction(title: name, style: .default) { [weak self] _ in
+                guard let self = self else { return }
+                self.pendingMentions[name] = uid
+                // The field already holds the "@"; complete the token.
+                self.sendMessageBar.inputField.insertText(name + " ")
+            })
+            added += 1
+        }
+        guard added > 0 else { return }
+        sheet.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "Alert action"), style: .cancel))
+        if let popover = sheet.popoverPresentationController {
+            popover.sourceView = sendMessageBar
+            popover.sourceRect = sendMessageBar.bounds
+        }
+        present(sheet, animated: true)
     }
 
     func sendMessageBar(attachment: AttachmentKind) {
@@ -46,6 +114,7 @@ extension MessageViewController: SendMessageBarDelegate {
         if self.sendTypingNotifications {
             interactor?.sendTypingNotification()
         }
+        maybeShowMentionPicker(for: text)
     }
 
     func sendMessageBar(enablePeersMessaging: Bool) {
