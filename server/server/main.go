@@ -790,6 +790,7 @@ func main() {
 	}
 
 	// Handle websocket clients.
+	mux.HandleFunc(config.ApiPath+"v0/urlpreview", serveURLPreview)
 	mux.HandleFunc(config.ApiPath+"v0/channels", serveWebSocket)
 	// Handle long polling clients. Enable compression.
 	mux.Handle(config.ApiPath+"v0/channels/lp", gh.CompressHandler(http.HandlerFunc(serveLongPoll)))
