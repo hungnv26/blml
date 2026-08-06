@@ -266,6 +266,43 @@ Verified end-to-end: phone attached and confirmed through the same `{set}` on
 number found by search — `+61412345678` always, and the local `0412345678` too
 as long as the client sends its locale, which both apps do.
 
+## Admin dashboard
+
+One read-only page for the operator: member list with join date, last-seen and
+tags; per-topic message counts; upload and database size; the current invite
+code.
+
+```bash
+cd deploy && set -a && source secrets.env && set +a && docker compose up -d admin
+open "http://localhost:6061/?token=$ADMIN_TOKEN"
+```
+
+It reads Postgres directly, because last-seen and storage totals are not
+exposed over the chat protocol at all. Two guards, deliberately overlapping:
+a token in the query string, and a **127.0.0.1 port binding** in
+docker-compose.yml so the service is unreachable from the network even by
+someone holding the token. On a VPS keep that binding and tunnel in:
+
+```bash
+ssh -L 6061:localhost:6061 <vps>
+```
+
+`ADMIN_TOKEN` lives in `secrets.env` (gitignored). Rotate it by editing that
+file and re-running `docker compose up -d admin`.
+
+## Link titles
+
+Sending a message containing a link appends the page title as a second line, so
+a bare URL arrives as "https://… — Example Domain".
+
+The lookup is server-side (`GET /v0/urlpreview?url=…`), so phones never contact
+third-party sites and the SSRF policy lives in one place: http/https only,
+resolved addresses may not be loopback/private/link-local, redirect hops are
+re-checked, 5s timeout, 512KB cap, HTML content-types only, API key required.
+
+Enrichment is plain text, so Android and web display it with no changes. Any
+failure — or 3 seconds without an answer — sends the message exactly as typed.
+
 ## Finding people by username
 
 Searching a bare username works: typing `alice` in Contacts finds the user whose
