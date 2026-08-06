@@ -131,6 +131,8 @@ public class MessagesFragment extends Fragment implements MenuProvider {
     static final int MAX_DURATION = 600_000;
 
     private ComTopic<VxCard> mTopic;
+    // @mentions, polls and link titles at compose time; mirrors iOS.
+    private final ComposeExtras mCompose = new ComposeExtras();
 
     private LinearLayoutManager mMessageViewLayoutManager;
     private RecyclerView mRecyclerView;
@@ -446,6 +448,8 @@ public class MessagesFragment extends Fragment implements MenuProvider {
 
         // Send file button
         view.findViewById(R.id.attachFile).setOnClickListener(v -> openFileSelector(activity, true));
+        view.findViewById(R.id.pollButton).setOnClickListener(v ->
+                ComposeExtras.showPollComposer(activity, content -> sendMessage(content, -1, false)));
 
         // Cancel reply preview button.
         view.findViewById(R.id.cancelPreview).setOnClickListener(v -> cancelPreview(activity));
@@ -512,6 +516,12 @@ public class MessagesFragment extends Fragment implements MenuProvider {
             public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
                 if (count > 0 || before > 0) {
                     activity.sendKeyPress();
+                }
+
+                // A typed (not deleted) "@" at a word boundary offers the
+                // member picker.
+                if (count == 1 && before == 0) {
+                    mCompose.maybeShowMentionPicker(activity, editor, mTopic);
                 }
 
                 // Show either [send] or [record audio] or [done editing] button.
@@ -1423,7 +1433,30 @@ public class MessagesFragment extends Fragment implements MenuProvider {
 
         String message = inputField.getText().toString().trim();
         if (!message.isEmpty()) {
+            // A bare link gets the page title appended as a second line. The
+            // lookup runs on our own server; any failure or 3s of silence sends
+            // the message exactly as typed.
+            String link = ComposeExtras.firstLink(message);
+            if (link != null && mTextAction != UiUtils.MsgAction.EDIT) {
+                final String original = message;
+                ComposeExtras.fetchLinkTitle(activity, link, title -> activity.runOnUiThread(() -> {
+                    String enriched = (title != null && !original.contains(title))
+                            ? original + "\n— " + title : original;
+                    sendComposed(activity, inputField, enriched);
+                }));
+                return;
+            }
+            sendComposed(activity, inputField, message);
+        }
+    }
+
+    /** Final leg of sending: parse, attach mentions, publish, clear the field. */
+    private void sendComposed(@NonNull Activity activity, @NonNull EditText inputField, String message) {
+        {
             Drafty msg = Drafty.parse(message);
+            if (mCompose.hasMentions()) {
+                msg = mCompose.attachMentions(msg);
+            }
             boolean isReplacement = false;
             if (mTextAction == UiUtils.MsgAction.EDIT) {
                 isReplacement = true;
@@ -1431,6 +1464,7 @@ public class MessagesFragment extends Fragment implements MenuProvider {
                 msg = mQuote.append(msg);
             }
             if (sendMessage(msg, mQuotedSeqID, isReplacement)) {
+                mCompose.clearMentions();
                 // Message is successfully queued, clear text from the input field and redraw the list.
                 inputField.getText().clear();
                 if (mQuotedSeqID > 0) {

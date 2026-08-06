@@ -44,6 +44,11 @@ public class Cache {
     // server running a non-default salt — see SETUP.md, "The API key chain".
     private static final String API_KEY = "AQAAAAABAAC-d-KsShjNeHzNi7myV36_";
 
+    /** The API key, for BLML's own endpoints (e.g. /v0/urlpreview). */
+    static String getApiKey() {
+        return API_KEY;
+    }
+
     private static final Cache sInstance = new Cache();
 
     private Tinode mTinode = null;

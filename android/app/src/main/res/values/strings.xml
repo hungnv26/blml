@@ -265,7 +265,7 @@
     <string name="just_now">just now</string>
 
     <string name="image_too_small">Image is too small</string>
-    <string name="this_is_channel">This is a channel</string>
+    <string name="this_is_channel">Broadcast channel (only admins can post)</string>
     <string name="channel_explained">Channels allow unlimited read-only subscribers. This selection is permanent.</string>
     <string name="channel">channel</string>
     <string name="unavailable">unavailable</string>
@@ -413,4 +413,12 @@
     <string name="invite_share_via">Invite a friend</string>
     <string name="hint_search_chats">Search</string>
     <string name="stickers_hint">Stickers</string>
+    <string name="mention_title">Mention</string>
+    <string name="poll_title">New poll</string>
+    <string name="poll_explained">Ask a question with up to 4 answers. Votes are posted as replies.</string>
+    <string name="poll_question_hint">Question</string>
+    <string name="poll_option_hint">Option %1$d</string>
+    <string name="poll_send">Send</string>
+    <string name="poll_needs_more">A poll needs a question and at least 2 options.</string>
+    <string name="action_poll">Poll</string>
 </resources>
