@@ -98,8 +98,9 @@ Point the apps at your server: iOS via `dev.xcconfig` / `prod.xcconfig`, Android
 via `TindroidApp.getDefaultHostName()`, web via `webapp/src/config.js`.
 
 `ios/install-devices.sh` builds and installs on every paired device at once.
-With a free Apple developer account the signature expires after 7 days, so
-rerun it weekly.
+With a free Apple developer account the signature expires after 7 days;
+`ios/install-resign-agent.sh` installs a launchd job that reruns it every
+Monday and Thursday, skipping devices that are offline.
 
 ## Going to production
 
