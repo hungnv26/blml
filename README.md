@@ -31,6 +31,9 @@ address and the code in one message.
 **Finding people** — search by username, scan a QR code in person, or match
 against your phone's address book once members add a phone number.
 
+**Group extras** — @mentions, pinned messages, polls (tap-to-vote), broadcast
+channels where only admins post, and link titles resolved by your own server.
+
 **Voice and video calls** over WebRTC, direct between devices.
 
 **Appearance** — light/dark/system theme and a chat wallpaper gallery served
@@ -123,7 +126,7 @@ server/    Go server and database adapters
 ios/       iOS client (Swift)
 android/   Android client (Java)
 webapp/    Web client (React) and static assets
-deploy/    Docker Compose stack and config generator
+deploy/    Docker Compose stack, config generator, admin dashboard
 brand/     Icons, logo, wallpapers and their generator scripts
 ```
 

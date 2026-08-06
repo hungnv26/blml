@@ -59,6 +59,23 @@ services:
       blml-init:
         condition: service_completed_successfully
 
+  # Operator dashboard: member list, last-seen, storage, invite code. Read-only,
+  # token-guarded, and published on loopback ONLY — even someone on the home
+  # wifi cannot reach it. On a VPS keep the 127.0.0.1 binding and reach it
+  # through an SSH tunnel: ssh -L 6061:localhost:6061 <vps>.
+  admin:
+    build: ./admin
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6061:6061"
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?set in secrets.env}
+      REGISTRATION_CODE: ${REGISTRATION_CODE:-}
+    depends_on:
+      db:
+        condition: service_healthy
+
   # Local SMTP catcher for developing/verifying the email-verification flow
   # without real mail credentials. Web UI on :8025 shows every sent message.
   # In production, point SMTP_SERVER at a real provider and drop this service.
