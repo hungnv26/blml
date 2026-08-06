@@ -211,6 +211,10 @@ class MessageViewController: UIViewController {
     // is shown; read by the menu actions. Replaces reading it back from the
     // sender, which iOS 26 no longer supports (UIMenuController was removed).
     static var activeMenuSeqId: Int = -1
+
+    /// Mentions picked for the message being composed: display name -> uid.
+    /// Consumed (and cleared) on send, when @Name tokens become MN entities.
+    var pendingMentions: [String: String] = [:]
     // For updating individual messages, we need:
     // * Tinode sequence id -> messages offset.
     var messageSeqIdIndex: [Int: Int] = [:]
