@@ -1,0 +1,41 @@
+# TLS front end for BLML. Caddy obtains and renews a Let's Encrypt certificate
+# for BLML_DOMAIN on its own; there is no certbot step and no renewal cron.
+#
+# Websockets need no special handling here — reverse_proxy upgrades them.
+
+{
+	email {$ACME_EMAIL}
+}
+
+{$BLML_DOMAIN} {
+	encode zstd gzip
+
+	# Uploads are the largest thing clients send. The server enforces its own
+	# limit from blml.conf; this only stops Caddy buffering something absurd.
+	request_body {
+		max_size 100MB
+	}
+
+	# The admin dashboard is deliberately not proxied. It stays on loopback and
+	# is reached over an SSH tunnel:  ssh -L 6061:localhost:6061 <vps>
+	reverse_proxy blml:6060 {
+		# Long-lived websockets: do not cut an idle chat connection.
+		transport http {
+			read_timeout 0
+			write_timeout 0
+		}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	log {
+		output file /data/access.log {
+			roll_size 10MB
+			roll_keep 5
+		}
+	}
+}

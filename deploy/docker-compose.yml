@@ -49,7 +49,11 @@ services:
       dockerfile: deploy/Dockerfile
     restart: unless-stopped
     ports:
-      - "6060:6060"
+      # Locally this is reachable from phones on the same wifi, so it binds to
+      # every interface. Production sets BLML_BIND=127.0.0.1: Caddy terminates
+      # TLS and reaches the server over the compose network, and nothing but
+      # 80/443 is exposed. See docker-compose.prod.yml.
+      - "${BLML_BIND:-0.0.0.0}:6060:6060"
     volumes:
       - ./blml.conf:/etc/blml/blml.conf:ro
       - uploads:/var/blml/uploads

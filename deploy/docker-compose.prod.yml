@@ -1,0 +1,53 @@
+# Production overlay. Use together with the base file:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# What this adds on top of the base stack:
+#   caddy   - terminates TLS for BLML_DOMAIN, gets and renews Let's Encrypt
+#             certificates automatically, and proxies everything to the server.
+#   coturn  - the TURN relay. Without it, calls only connect when at least one
+#             side is not behind symmetric NAT, which is why calls have only
+#             worked from home wifi so far.
+#
+# The base file publishes the server on ${BLML_BIND}, which production sets to
+# 127.0.0.1: Caddy reaches it over the compose network, so the only ports open
+# to the internet are 80, 443 and the TURN ports.
+
+name: blml
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"     # required: ACME HTTP-01 challenge and the HTTPS redirect
+      - "443:443"
+    environment:
+      BLML_DOMAIN: ${BLML_DOMAIN:?set BLML_DOMAIN in secrets.env, e.g. chat.blml.app}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in secrets.env — Let's Encrypt expiry notices}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data      # certificates live here; losing this re-issues them
+      - caddy_config:/config
+    depends_on:
+      - blml
+
+  # Host networking on purpose. TURN hands out the relay address it sees, and
+  # allocates from a range of UDP ports; behind Docker's NAT it would advertise
+  # a container address and the media would never arrive.
+  coturn:
+    image: coturn/coturn:4.6-alpine
+    restart: unless-stopped
+    network_mode: host
+    command: ["-c", "/etc/coturn/turnserver.conf"]
+    volumes:
+      - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
+
+  # Nothing should reach the mail catcher from outside. In production either
+  # point SMTP_SERVER at a real provider, or leave email verification off.
+  mailpit:
+    ports: !override []
+
+volumes:
+  caddy_data:
+  caddy_config:
