@@ -122,6 +122,13 @@ class FindViewController: UITableViewController, FindDisplayLogic {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setup()
+        // This tab carries no title: "Find Controller" was Xcode's storyboard
+        // scene name leaking into the navigation bar. The tab is already
+        // labelled "Contacts" in the bottom bar, so a heading would only repeat
+        // it. Suppress the large title too, otherwise the bar reserves the
+        // empty space where the title used to be.
+        navigationItem.title = nil
+        navigationItem.largeTitleDisplayMode = .never
     }
 
     private func scrollToTop() {

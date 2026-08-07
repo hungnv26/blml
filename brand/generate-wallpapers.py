@@ -6,7 +6,8 @@ distracting behind message bubbles.
 
 Outputs:
   brand/chat-wallpaper-{light,dark}.png       default app tiles
-  webapp/img/bkg/d1*.png, l1*.png             gallery: 6 dark + 6 light
+  webapp/img/bkg/d1*.png, l1*.png             gallery: 7 dark + 7 light
+                                              (d16/l16 carry the BLML wordmark)
 
 Run from anywhere; paths resolve relative to this file. Deterministic: same
 seeds -> same pixels, so regeneration does not churn git.
@@ -14,7 +15,7 @@ seeds -> same pixels, so regeneration does not churn git.
 import math
 import os
 import random
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 TILE = 512
@@ -118,6 +119,97 @@ def make_tile(kinds, count, bg, line, seed, size=TILE, rmin=8, rmax=18, width=2)
     return im
 
 
+# ── Branded tile ────────────────────────────────────────────────────────────
+# A geometric sans keeps the wordmark reading as texture rather than as a
+# logo stamped on the chat. The first font that exists wins; PIL's bitmap
+# default is a legible last resort, so generation never hard-fails on a host
+# without these installed.
+WORDMARK_FONTS = [
+    ('/System/Library/Fonts/Avenir Next.ttc', 2),
+    ('/System/Library/Fonts/Supplemental/Futura.ttc', 0),
+    ('/System/Library/Fonts/HelveticaNeue.ttc', 0),
+    ('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 0),
+]
+
+
+def wordmark_font(px):
+    for path, index in WORDMARK_FONTS:
+        if os.path.exists(path):
+            try:
+                return ImageFont.truetype(path, px, index=index)
+            except Exception:
+                continue
+    return ImageFont.load_default()
+
+
+def wordmark_sprite(text, font, line, tracking):
+    """Render `text` letter by letter so we can letter-space it. Wide tracking
+    is what stops a repeated four-letter word from reading as a logo."""
+    glyphs = []
+    for ch in text:
+        box = font.getbbox(ch)
+        glyphs.append((ch, box))
+    width = sum(b[2] - b[0] for _, b in glyphs) + tracking * (len(glyphs) - 1)
+    top = min(b[1] for _, b in glyphs)
+    height = max(b[3] for _, b in glyphs) - top
+    sprite = Image.new('RGBA', (max(1, int(width)) + 4, max(1, int(height)) + 4), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(sprite)
+    x = 2
+    for ch, box in glyphs:
+        sd.text((x - box[0], 2 - top), ch, font=font, fill=line + (255,))
+        x += (box[2] - box[0]) + tracking
+    return sprite
+
+
+def make_wordmark_tile(bg, line, seed, size=TILE, rows=3, px=27, tracking=6):
+    """The gallery's branded tile.
+
+    Placement is by even vertical rhythm rather than the scatter the other
+    tiles use. The tile is 384px on screen against a ~430px-wide phone, so a
+    wordmark repeats roughly once per row: scattering puts two of them in the
+    same band often enough to read as a paragraph of repeated text. Fixed rows
+    with jittered x keep the spacing calm and deliberate.
+
+    The wordmark is also mixed halfway back toward the background — quieter
+    than the dots around it, so the brand is legible without competing with
+    the messages sitting on top of it."""
+    rng = random.Random(seed)
+    im = Image.new('RGB', (size, size), bg)
+    d = ImageDraw.Draw(im)
+    soft = tuple(round(b + (l - b) * 0.72) for b, l in zip(bg, line))
+    sprite = wordmark_sprite('BLML', wordmark_font(px), soft, tracking)
+    sw, sh = sprite.size
+
+    marks = []
+    for i in range(rows):
+        y = (i + 0.5) / rows * size + rng.uniform(-size * 0.045, size * 0.045)
+        x = rng.uniform(0, size)
+        marks.append((x, y))
+        for dx in (-size, 0, size):
+            for dy in (-size, 0, size):
+                im.paste(sprite, (int(x - sw / 2) + dx, int(y - sh / 2) + dy), sprite)
+
+    # Dots fill the gaps without introducing a second shape language. Keep them
+    # clear of the wordmarks so nothing collides with a letter.
+    dots, attempts = 0, 0
+    while dots < 6 and attempts < 600:
+        attempts += 1
+        x, y = rng.uniform(0, size), rng.uniform(0, size)
+        ok = True
+        for mx, my in marks:
+            ddx = min(abs(x - mx), size - abs(x - mx))
+            ddy = min(abs(y - my), size - abs(y - my))
+            if ddx < sw * 0.75 and ddy < sh * 2.2:
+                ok = False
+                break
+        if not ok:
+            continue
+        marks.append((x, y))
+        dots += 1
+        wrap_draw(lambda c: motif_dot(d, c, 9, line, 2), (x, y), size)
+    return im
+
+
 def save(im, *path):
     out = os.path.join(ROOT, *path)
     os.makedirs(os.path.dirname(out), exist_ok=True)
@@ -146,3 +238,9 @@ for suffix, kinds, count in DESIGNS:
          '..', 'webapp', 'img', 'bkg', 'd1%s.png' % suffix)
     save(make_tile(kinds, count, LIGHT_BG, LIGHT_LINE, seed=seed),
          '..', 'webapp', 'img', 'bkg', 'l1%s.png' % suffix)
+
+# ── Branded pair, one dark one light ────────────────────────────────────────
+save(make_wordmark_tile(DARK_BG, DARK_LINE, seed=206),
+     '..', 'webapp', 'img', 'bkg', 'd16.png')
+save(make_wordmark_tile(LIGHT_BG, LIGHT_LINE, seed=206),
+     '..', 'webapp', 'img', 'bkg', 'l16.png')
