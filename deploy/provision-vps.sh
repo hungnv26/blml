@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Prepares a fresh Ubuntu 24.04 VPS to run BLML. Run it once, as root, on the
+# Prepares a fresh Ubuntu VPS (24.04 or 26.04) to run BLML. Run it once, as
+# root, on the
 # new server:
 #
 #   ssh root@<vps-ip> 'bash -s' < provision-vps.sh
@@ -69,13 +70,28 @@ if [ -s /root/.ssh/authorized_keys ]; then
     -e 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' \
     -e 's/^#\?PermitRootLogin.*/PermitRootLogin prohibit-password/' \
     /etc/ssh/sshd_config
-  # Cloud images often re-enable passwords from a drop-in that wins over the
-  # main file, so override it there too.
+  # sshd takes the FIRST occurrence of a keyword, and sshd_config Includes the
+  # drop-in directory near the top, reading it in alphabetical order. Cloud
+  # images ship 50-cloud-init.conf with "PasswordAuthentication yes", so a
+  # 99- file is silently dead: it is read after cloud-init's and ignored.
+  # Sort ahead of everything instead.
   mkdir -p /etc/ssh/sshd_config.d
-  printf 'PasswordAuthentication no\nPermitRootLogin prohibit-password\n' \
-    > /etc/ssh/sshd_config.d/99-blml.conf
+  rm -f /etc/ssh/sshd_config.d/99-blml.conf
+  printf 'PasswordAuthentication no\nPermitRootLogin prohibit-password\nKbdInteractiveAuthentication no\n' \
+    > /etc/ssh/sshd_config.d/00-blml.conf
   systemctl reload ssh 2>/dev/null || systemctl reload sshd
-  echo "  password login disabled"
+
+  # Verify against the effective config rather than trusting the write. This
+  # check is the whole point: the previous version reported success while
+  # password login was still wide open.
+  eff=$(sshd -T 2>/dev/null | awk '/^passwordauthentication /{print $2}')
+  if [ "$eff" = "no" ]; then
+    echo "  password login disabled (verified: sshd -T reports no)"
+  else
+    warn "password login is STILL ENABLED (sshd -T says '$eff')."
+    warn "Check for another drop-in in /etc/ssh/sshd_config.d/ that sorts before 00-blml.conf."
+    exit 1
+  fi
 else
   warn "no /root/.ssh/authorized_keys — leaving password login ENABLED."
   warn "Add your key, then re-run this script to disable it."
