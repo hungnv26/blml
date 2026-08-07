@@ -1126,7 +1126,6 @@ extension MessageViewController: MessageViewLayoutDelegate {
         for message: Message, at indexPath: IndexPath, containerHeight: CGFloat,
         avatarsVisible hasAvatars: Bool, progressVisible: Bool) -> CGFloat {
 
-        let senderNameLabelHeight: CGFloat = shouldShowAvatar(for: message, at: indexPath) ? Constants.kSenderNameLabelHeight : 0
         let newDateLabelHeight: CGFloat = calcNewDateLabelHeight(at: indexPath)
         let avatarHeight = hasAvatars ? Constants.kAvatarSize : 0
 

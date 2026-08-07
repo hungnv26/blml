@@ -352,7 +352,11 @@ func replyUpdateUser(s *Session, msg *ClientComMessage, rec *auth.Rec) {
 		})
 		_, _, err := addCreds(uid, msg.Acc.Cred, nil, s.lang, tmpToken)
 		if err == nil {
-			if allCreds, err := store.Users.GetAllCreds(uid, "", true); err != nil {
+			// err == nil, not != nil: the branch computes which credentials are
+			// still unvalidated, so it has to run when the query SUCCEEDS.
+			// Inverted, it only ran on failure and then ranged over a nil
+			// slice, so the client was never told what was still missing.
+			if allCreds, err := store.Users.GetAllCreds(uid, "", true); err == nil {
 				var validated []string
 				for i := range allCreds {
 					validated = append(validated, allCreds[i].Method)

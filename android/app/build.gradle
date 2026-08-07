@@ -71,6 +71,13 @@ android {
         }
     }
 
+    lint {
+        // BLML-added strings intentionally ship in English (with Vietnamese to
+        // come) and fall back cleanly in upstream's other locales. Untranslated
+        // strings must not fail the build.
+        warning 'MissingTranslation'
+    }
+
     buildFeatures {
         buildConfig = true
         resValues = true

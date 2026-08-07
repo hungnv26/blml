@@ -207,6 +207,8 @@
 		0A2F81C5229677DD007E562C /* AddByIDViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddByIDViewController.swift; sourceTree = "<group>"; };
 		0A35BA9D22836CCF00AA5E2F /* ContactsSynchronizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsSynchronizer.swift; sourceTree = "<group>"; };
 		0A35BA9F2283A37500AA5E2F /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		B0AA5CF2260000F20079A97E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B0AA5CF1260000F10079A97E /* PrivacyInfo.xcprivacy */; };
+		B0AA5CF1260000F10079A97E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B0AA5C18260000180079A97E /* WallpaperViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperViewController.swift; sourceTree = "<group>"; };
 		B0AA5C17260000170079A97E /* AppearanceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceViewController.swift; sourceTree = "<group>"; };
 		B0AA5C16260000160079A97E /* AppearanceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettings.swift; sourceTree = "<group>"; };
@@ -500,6 +502,7 @@
 				B0BE302A27B8A3B600B04631 /* TopicSecurityViewController.swift */,
 				0AEE8BED226456080022EC3F /* UiUtils.swift */,
 				0A35BA9F2283A37500AA5E2F /* Utils.swift */,
+				B0AA5CF1260000F10079A97E /* PrivacyInfo.xcprivacy */,
 				B0AA5C18260000180079A97E /* WallpaperViewController.swift */,
 				B0AA5C17260000170079A97E /* AppearanceViewController.swift */,
 				B0AA5C16260000160079A97E /* AppearanceSettings.swift */,
@@ -776,6 +779,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B0AA5CF2260000F20079A97E /* PrivacyInfo.xcprivacy in Resources */,
 				B079062523EEA0C90019ED75 /* GoogleService-Info.plist in Resources */,
 				B0125999229C982900688FCE /* ContactViewCell.xib in Resources */,
 				B031BE552263075E004160AE /* Settings.bundle in Resources */,

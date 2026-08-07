@@ -32,7 +32,13 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<key>NSAllowsArbitraryLoads</key>
+		<!-- NSAllowsLocalNetworking, not NSAllowsArbitraryLoads: the blanket
+		     exception disables TLS enforcement for every host and draws an App
+		     Review justification request. Local networking covers the only real
+		     need — debug builds talking to a dev server on a private LAN
+		     address — while production (https/wss to the configured host) is
+		     held to normal ATS rules. -->
+		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
