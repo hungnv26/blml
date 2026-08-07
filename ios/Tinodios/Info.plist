@@ -42,15 +42,15 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Tinode takes photos with the camera to use as avatar or to send them to your contacts</string>
+	<string>BLML uses the camera to take a profile picture or to send photos to your chats</string>
 	<key>NSContactsUsageDescription</key>
-	<string>Tinode sends only emails and phone numbers to the Tinode server to help you connect with other users</string>
+	<string>BLML sends only email addresses and phone numbers to your BLML server, so you can find people you already know</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Tinode uses microphone to record audio messages you send to your contacts</string>
+	<string>BLML uses the microphone to record the voice messages you send</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Images and pictures from Tinode can be saved in the photo library</string>
+	<string>Photos and images from BLML can be saved to your photo library</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Tinode needs access to your photos to let you you send them to your contacts</string>
+	<string>BLML needs access to your photos so you can send them in your chats</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
