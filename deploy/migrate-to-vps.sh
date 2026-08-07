@@ -98,40 +98,21 @@ rsync -az --delete \
 scp -q secrets.env "$TARGET:$REMOTE_DIR/deploy/secrets.env"
 scp -q "$STAGE/tinode.sql" "$STAGE/uploads.tar" "$TARGET:/tmp/"
 
-# ── Bring it up ──────────────────────────────────────────────────────────────
-log "Building and starting the stack"
-ssh "$TARGET" bash -s <<REMOTE
-set -euo pipefail
-cd $REMOTE_DIR/deploy
-set -a; source ./secrets.env; set +a
-export BLML_BIND=127.0.0.1
-
-# Renders blml.conf and turnserver.conf; picks up this machine's public IP for
-# the TURN external address.
-./gen-config.sh
-
-COMPOSE="docker compose -f docker-compose.yml -f docker-compose.prod.yml"
-\$COMPOSE up -d --build db
-until \$COMPOSE exec -T db pg_isready -U postgres >/dev/null 2>&1; do sleep 2; done
-
-echo "restoring database"
-\$COMPOSE exec -T db psql -U postgres -d postgres -c \
-  "SELECT 'CREATE DATABASE tinode' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname='tinode')\gexec" >/dev/null
-\$COMPOSE exec -T db psql -U postgres -d tinode -q < /tmp/tinode.sql
-
-echo "restoring media"
-docker run --rm -v blml_uploads:/u -w /u -v /tmp:/in alpine \
-  sh -c 'tar xf /in/uploads.tar'
-
-\$COMPOSE up -d --build
-rm -f /tmp/tinode.sql /tmp/uploads.tar
-REMOTE
+# ── Bring it up ────────────────────────────────────────────────────────────--
+# Executed as a file on the server, never piped to `ssh bash -s`: `docker
+# compose exec -T` attaches stdin, so a script arriving on stdin gets eaten
+# mid-run and the deploy stops silently while still exiting 0.
+log "Building and starting the stack (the Go build takes a few minutes)"
+ssh "$TARGET" "cd $REMOTE_DIR/deploy && chmod +x remote-deploy.sh && ./remote-deploy.sh"
 
 # ── Verify ───────────────────────────────────────────────────────────────────
 log "Verifying"
 sleep 12
-users="$(ssh "$TARGET" "cd $REMOTE_DIR/deploy && docker compose exec -T db \
-  psql -U postgres -d tinode -tAc 'SELECT count(*) FROM users'" 2>/dev/null || echo '?')"
+# secrets.env has to be sourced for compose to interpolate POSTGRES_PASSWORD;
+# </dev/null so exec -T does not swallow this script's own stdin.
+users="$(ssh "$TARGET" "cd $REMOTE_DIR/deploy && set -a && . ./secrets.env && set +a && \
+  docker compose exec -T db psql -U postgres -d tinode -tAc 'SELECT count(*) FROM users'" \
+  </dev/null 2>/dev/null | tr -d '[:space:]' || echo '?')"
 echo "  accounts on server: $users"
 
 code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 "https://$BLML_DOMAIN/" || echo 000)"

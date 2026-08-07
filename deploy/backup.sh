@@ -29,8 +29,20 @@ if [ "${1:-}" = "--install" ]; then
   exit 0
 fi
 
+# Compose needs these to interpolate the service definitions; without them it
+# refuses to run and pg_dump writes nothing. The old version then gzipped that
+# nothing into a valid 20-byte archive that passed every check.
+set -a
+# shellcheck disable=SC1091
+source ./secrets.env
+set +a
+
 mkdir -p "$DEST"
 stamp=$(date +%Y%m%d-%H%M%S)
+
+# Never leave a half-written archive looking like a real backup.
+cleanup_partial() { rm -f "$DEST/db-$stamp.sql.gz" "$DEST/uploads-$stamp.tar.gz"; }
+trap 'cleanup_partial' ERR
 
 # --clean --if-exists so the dump can be replayed onto a populated database
 # without hand-dropping anything first.
@@ -40,10 +52,23 @@ docker compose exec -T db pg_dump -U postgres --clean --if-exists tinode \
 docker run --rm -v blml_uploads:/u -w /u alpine tar czf - . \
   > "$DEST/uploads-$stamp.tar.gz"
 
-# Verify rather than trust: a zero-length or truncated dump is worse than no
-# backup, because it looks like one.
-gzip -t "$DEST/db-$stamp.sql.gz" || { echo "database dump is corrupt" >&2; exit 1; }
+# Verify rather than trust. gzip -t alone is not enough: an empty dump gzips
+# into a perfectly valid ~20-byte archive, so check the content too.
+gzip -t "$DEST/db-$stamp.sql.gz"     || { echo "database dump is corrupt" >&2; exit 1; }
 gzip -t "$DEST/uploads-$stamp.tar.gz" || { echo "media archive is corrupt" >&2; exit 1; }
+
+# Count rather than grep -q: -q exits on the first match, which SIGPIPEs the
+# gzip feeding it, and under `set -o pipefail` that reads as a failed check on
+# a dump that was actually fine.
+tables=$(gzip -dc "$DEST/db-$stamp.sql.gz" | grep -c '^CREATE TABLE' || true)
+[ "${tables:-0}" -ge 1 ] || {
+  echo "database dump contains no schema — refusing to keep it" >&2
+  cleanup_partial; exit 1; }
+
+users=$(gzip -dc "$DEST/db-$stamp.sql.gz" | grep -c '^COPY public.users' || true)
+[ "${users:-0}" -ge 1 ] || {
+  echo "database dump has no users table data — refusing to keep it" >&2
+  cleanup_partial; exit 1; }
 
 find "$DEST" -name 'db-*.sql.gz' -mtime "+$KEEP_DAYS" -delete
 find "$DEST" -name 'uploads-*.tar.gz' -mtime "+$KEEP_DAYS" -delete
