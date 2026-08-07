@@ -1302,8 +1302,9 @@ class TinodeWeb extends React.Component {
 
   applyColorSchema(schema, systemSchema, size) {
     const effectiveSchema = schema == 'auto' ? systemSchema : schema;
-    document.documentElement.style.setProperty('--wallpaper-invert', effectiveSchema == 'dark' && size ? '1' : '0');
-    document.documentElement.style.setProperty('--wallpaper-brightness', effectiveSchema == 'dark' && !size ? '0.5' : '1');
+    // Re-run the full wallpaper pass: the tile itself changes with the scheme
+    // now, not just the filters applied to it.
+    this.applyWallpaperSettings(this.state.wallpaper, size, this.state.wallpaperBlur, effectiveSchema);
   }
 
   handleSelectWallpapers() {
@@ -1311,14 +1312,42 @@ class TinodeWeb extends React.Component {
     HashNavigation.navigateTo(HashNavigation.setUrlSidePanel(window.location.hash, 'wallpapers'));
   }
 
+  // BLML ships the gallery patterns as matched pairs: d1N.png drawn for dark
+  // backgrounds, l1N.png for light. Given a chosen tile, return the one that
+  // suits the active scheme. Anything not following that naming (a photo, or an
+  // upstream pattern) is returned untouched.
+  static matchWallpaperToSchema(wallpaper, effectiveSchema) {
+    if (!wallpaper) {
+      return wallpaper;
+    }
+    const want = effectiveSchema == 'dark' ? 'd' : 'l';
+    return wallpaper.replace(/(^|\/)([dl])(1\d\.png)$/, `$1${want}$3`);
+  }
+
   applyWallpaperSettings(wallpaper, size, blur, effectiveSchema) {
-    document.documentElement.style.setProperty('--wallpaper-url', `url('${wallpaper}')`);
+    // Swapping to the matching tile beats inverting the light one. Upstream
+    // applies invert(1) in dark mode, which turns a pattern drawn for a pale
+    // background into a washed-out negative rather than something designed to
+    // sit behind dark bubbles. Only fall back to invert for tiles that have no
+    // dark counterpart.
+    const matched = TinodeWeb.matchWallpaperToSchema(wallpaper, effectiveSchema);
+    const paired = matched !== wallpaper || /(^|\/)[dl]1\d\.png$/.test(wallpaper || '');
+
+    if (matched) {
+      document.documentElement.style.setProperty('--wallpaper-url', `url('${matched}')`);
+    } else {
+      // No wallpaper chosen: clear the override so the stylesheet default wins.
+      // Setting url('undefined') here left the chat with no wallpaper at all.
+      document.documentElement.style.removeProperty('--wallpaper-url');
+    }
     document.documentElement.style.setProperty('--wallpaper-repeat', size ? 'repeat' : 'no-repeat');
     document.documentElement.style.setProperty('--wallpaper-blur', size ? '0px' : `${blur}px`);
     document.documentElement.style.setProperty('--wallpaper-size', size ? `${size}px` : 'cover');
     document.documentElement.style.setProperty('--wallpaper-position', size ? 'unset' : 'center');
-    document.documentElement.style.setProperty('--wallpaper-invert', effectiveSchema == 'dark' && size ? '1' : '0');
-    document.documentElement.style.setProperty('--wallpaper-brightness', effectiveSchema == 'dark' && !size ? '0.5' : '1');
+    document.documentElement.style.setProperty('--wallpaper-invert',
+      effectiveSchema == 'dark' && size && !paired ? '1' : '0');
+    document.documentElement.style.setProperty('--wallpaper-brightness',
+      effectiveSchema == 'dark' && !size ? '0.5' : '1');
   }
 
   handleWallpaperSelected(wallpaper, size, blur) {

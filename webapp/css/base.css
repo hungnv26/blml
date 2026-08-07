@@ -3896,3 +3896,113 @@ div.toast.show {
     border-radius: unset;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BLML theme
+   ═══════════════════════════════════════════════════════════════════════════
+   Appended deliberately as one block rather than edited into the rules above,
+   so it stays easy to read, revert, or carry across an upstream merge.
+
+   It fixes three things that made the web client hard to read:
+
+   1. The wallpaper never followed the colour scheme. Upstream has dark-mode
+      wallpaper handling, but a malformed comment (`/* ... *` with no closing
+      slash) swallowed the whole block, so a light 233/255-luminance image sat
+      behind dark bubbles. That mismatch is most of why it looked broken.
+
+   2. The two headers were unrelated colours: the sidebar used the bright green
+      accent while the chat header used a slate grey.
+
+   3. Several text tokens failed WCAG AA. The author name under each bubble was
+      the worst at 2.49:1 — measured, not guessed. Every value below was chosen
+      by computing its contrast against the surface it actually sits on.
+
+   Palette follows WhatsApp's, which the bubble colours already came from, so
+   the result is coherent rather than a third style bolted on.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Chat canvas, distinct from the incoming bubble so bubbles keep an edge.
+     In dark mode the canvas and the bubble were both #202c33 — bubbles had no
+     boundary at all except the wallpaper showing through. */
+  --clr-chat-canvas: light-dark(#efeae2, #0b141a);
+
+  /* One header surface for both panels. */
+  --clr-header-bg: light-dark(#008069, #202c33);
+  --clr-header-text: light-dark(#ffffff, #e9edef);        /* 4.89:1 / 12.13:1 */
+  --clr-header-muted: light-dark(#d9f2ea, #aebac1);       /* 4.16:1 /  7.21:1 */
+
+  /* Bubble meta needs two values: one colour cannot serve both bubbles.
+     #8696a0 reads 4.68:1 on the incoming bubble but only 2.61:1 on the green
+     outgoing one, so the outgoing side gets its own lighter tone. */
+  --clr-bubble-meta-left: light-dark(#667781, #9aabb5);   /* 4.65:1 / 6.03:1 */
+  --clr-bubble-meta-right: light-dark(#4d6b5b, #c5ddd6);  /* 5.12:1 / 5.58:1 */
+
+  --clr-bubble-timestamp-text: var(--clr-bubble-meta-left);
+  --clr-bubble-author-text: var(--clr-bubble-meta-left);
+
+  /* Were 4.02:1 and 2.38:1 in dark mode. */
+  --clr-text-tertiary: light-dark(#767676, #949494);      /* 4.54:1 / 5.85:1 */
+  --clr-text-placeholder: light-dark(#767676, #8d8d8d);   /* 4.54:1 / 5.35:1 */
+
+  /* Default wallpaper: the light tile. The dark one is swapped in below. */
+  --wallpaper-url: url('../img/bkg/l10.png');
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* A light tile behind dark bubbles was the single worst offender. CSS
+       light-dark() only interpolates colours, never url(), so the image has to
+       be swapped through a media query. */
+    --wallpaper-url: url('../img/bkg/d10.png');
+  }
+}
+
+/* The canvas behind the messages. */
+#messages-container::before {
+  background-color: var(--clr-chat-canvas);
+}
+
+/* Both headers, same surface. */
+#side-caption-panel,
+#topic-caption-panel {
+  background-color: var(--clr-header-bg);
+  color: var(--clr-header-text);
+}
+
+#side-caption-panel a,
+#topic-caption-panel a {
+  color: var(--clr-header-muted);
+}
+
+#side-caption-panel :hover,
+#topic-caption-panel :hover {
+  color: var(--clr-header-text);
+}
+
+/* Icons in the headers inherit the header colours rather than the old
+   light-blue-on-green, which was both off-palette and low contrast. */
+#side-caption-panel .material-icons,
+#topic-caption-panel .material-icons {
+  color: var(--clr-header-muted);
+}
+
+#side-caption-panel .material-icons:hover,
+#topic-caption-panel .material-icons:hover {
+  color: var(--clr-header-text);
+}
+
+/* Meta text inside the outgoing bubble needs the lighter tone.
+   Scoped under .chat-box to outrank `.chat-box .timestamp` (two classes);
+   `li.right .timestamp` alone loses that specificity contest and does nothing.
+   The author label only ever renders on incoming messages, so it keeps the
+   left tone and needs no override here. */
+.chat-box li.right .timestamp {
+  color: var(--clr-bubble-meta-right);
+}
+
+/* Bubbles get a soft edge so they read as cards against the wallpaper instead
+   of floating. Kept very low so it does not turn into a drop shadow. */
+.bubble {
+  box-shadow: 0 1px 0.5px var(--clr-shadow-panel-divider);
+}
