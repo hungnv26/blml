@@ -6,6 +6,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -3375,7 +3376,12 @@ func (a *adapter) FileGet(fid string) (*t.FileDef, error) {
 	}
 	var fd t.FileDef
 	var ID int64
-	var userId int64
+	// Nullable: an avatar uploaded during signup has no owner yet, because the
+	// account does not exist when the upload starts. Scanning that NULL into a
+	// plain int64 fails, and the handler turns the error into a 500 — so those
+	// files became permanently unservable and every client silently fell back
+	// to the tiny inline thumbnail.
+	var userId sql.NullInt64
 	err := a.db.QueryRow(ctx, "SELECT id,createdat,updatedat,userid AS user,status,mimetype,size,etag,location "+
 		"FROM fileuploads WHERE id=$1", store.DecodeUid(id)).Scan(&ID, &fd.CreatedAt, &fd.UpdatedAt, &userId, &fd.Status,
 		&fd.MimeType, &fd.Size, &fd.ETag, &fd.Location)
@@ -3387,7 +3393,9 @@ func (a *adapter) FileGet(fid string) (*t.FileDef, error) {
 	}
 
 	fd.Id = common.EncodeUidString(fd.Id).String()
-	fd.User = store.EncodeUid(userId).String()
+	if userId.Valid {
+		fd.User = store.EncodeUid(userId.Int64).String()
+	}
 
 	return &fd, nil
 }

@@ -3408,7 +3408,10 @@ func (a *adapter) FileGet(fid string) (*t.FileDef, error) {
 		defer cancel()
 	}
 	var fd t.FileDef
-	err := a.db.GetContext(ctx, &fd, "SELECT id,createdat,updatedat,userid AS user,status,mimetype,size,IFNULL(etag,'') AS etag,location "+
+	// IFNULL on userid: an avatar uploaded during signup has no owner yet, because
+	// the account does not exist when the upload starts. Without this the scan of a
+	// NULL into fd.User fails and the file becomes permanently unservable.
+	err := a.db.GetContext(ctx, &fd, "SELECT id,createdat,updatedat,IFNULL(userid,0) AS user,status,mimetype,size,IFNULL(etag,'') AS etag,location "+
 		"FROM fileuploads WHERE id=?", store.DecodeUid(id))
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -3418,7 +3421,11 @@ func (a *adapter) FileGet(fid string) (*t.FileDef, error) {
 	}
 
 	fd.Id = common.EncodeUidString(fd.Id).String()
-	fd.User = common.EncodeUidString(fd.User).String()
+	if fd.User == "0" {
+		fd.User = ""
+	} else {
+		fd.User = common.EncodeUidString(fd.User).String()
+	}
 
 	return &fd, nil
 }
