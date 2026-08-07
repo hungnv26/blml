@@ -32,6 +32,33 @@
 		Referrer-Policy "strict-origin-when-cross-origin"
 	}
 
+	# The server sends max-age=39600 (11 hours) for everything, and the bundle
+	# filenames carry no content hash — so after a deploy people keep running
+	# the previous CSS and JS for up to half a day, with no way to tell that is
+	# what they are looking at. It made a fixed theme look unfixed.
+	#
+	# "no-cache" does not mean "do not store": the file is still cached, the
+	# browser just revalidates before using it. With ETag/Last-Modified already
+	# present that is a 304 and no body transfer, so the cost is one small
+	# round trip per asset.
+	# `defer` matters: without it Caddy writes the header before proxying and the
+	# upstream then adds its own, leaving two conflicting Cache-Control values on
+	# the same response. Deferring applies it after the proxy has replied, so it
+	# replaces rather than duplicates.
+	@code path *.js *.css *.json /
+	header @code {
+		Cache-Control "no-cache"
+		defer
+	}
+
+	# Media is immutable in practice: wallpapers and icons change name when they
+	# change, and uploads are content-addressed. Let those cache properly.
+	@media path *.png *.jpg *.jpeg *.svg *.webp *.woff2 *.mp3
+	header @media {
+		Cache-Control "public, max-age=604800"
+		defer
+	}
+
 	log {
 		output file /data/access.log {
 			roll_size 10MB
