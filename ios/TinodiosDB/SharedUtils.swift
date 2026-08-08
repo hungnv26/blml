@@ -14,6 +14,7 @@ public class SharedUtils {
     static public let kNotificationBrandingConfigAvailable = "BrandingConfigAvailable"
 
     static public let kTinodeMetaVersion = "tinodeMetaVersion"
+    static public let kPrefHostSeedVersion = "hostSeedVersion"
 
     static public let kTinodePrefLastLogin = "tinodeLastLogin"
     static public let kTinodePrefReadReceipts = "tinodePrefSendReadReceipts"
@@ -54,14 +55,21 @@ public class SharedUtils {
     // this new application version.
     static let kAppMetaVersion = 1
 
+    // The server host is seeded into UserDefaults on first launch and read from
+    // there forever after, so a reinstall never picks up a changed default —
+    // every existing install kept pointing at whatever host it first saw. Bump
+    // this whenever the bundled host changes and installs re-seed on next
+    // launch. (Was 192.168.101.108:6060, a development Mac on the LAN, which is
+    // why the apps went offline whenever that machine was shut down.)
+    static let kHostSeedVersion = 2
+
     // Default connection params.
-    #if DEBUG
-        public static let kDefaultHostName = "127.0.0.1:6060" // localhost
-        public static let kDefaultUseTLS = false
-    #else
-        public static let kDefaultHostName = "api.tinode.co" // production cluster
-        public static let kDefaultUseTLS = true
-    #endif
+    // Both configurations point at BLML's own server. The release branch used to
+    // fall back to api.tinode.co, which would have sent a BLML build to Tinode's
+    // public cluster whenever no host was stored. To develop against a local
+    // stack, override the host in iOS Settings rather than changing this.
+    public static let kDefaultHostName = "chat.blml.app"
+    public static let kDefaultUseTLS = true
 
     // Returns true if the app is being launched for the first time.
     public static var isFirstLaunch: Bool {
@@ -208,14 +216,25 @@ public class SharedUtils {
             kTinodePrefTypingNotifications: true
         ])
 
+        // Seed BEFORE syncing, not after. syncUserDefaults copies the app-domain
+        // values into the group suite, so re-seeding first and letting the sync
+        // run over the fresh values keeps the two stores agreeing. Done the
+        // other way round, a stale host in the app domain overwrites the newly
+        // seeded one on the very next launch and the fix silently undoes itself.
+        let (hostName, _) = getConnectionSettings()
+        let seeded = kAppDefaults.integer(forKey: kPrefHostSeedVersion)
+        if hostName == nil || seeded < kHostSeedVersion {
+            // Seed on first launch, and re-seed when the bundled host has moved
+            // on. Anyone who set a host by hand can set it again in Settings;
+            // silently leaving a whole family pointed at a dead address is the
+            // worse failure. setConnectionSettings writes both stores.
+            setConnectionSettings(Bundle.main.object(forInfoDictionaryKey: "HOST_NAME") as? String,
+                                  Bundle.main.object(forInfoDictionaryKey: "USE_TLS") as? String)
+            kAppDefaults.set(kHostSeedVersion, forKey: kPrefHostSeedVersion)
+        }
+
         // Make sure changes are copied.
         syncUserDefaults()
-
-        let (hostName, _) = getConnectionSettings()
-        if hostName == nil {
-            // If hostname is nil, sync values to defaults
-            setConnectionSettings(Bundle.main.object(forInfoDictionaryKey: "HOST_NAME") as? String, Bundle.main.object(forInfoDictionaryKey: "USE_TLS") as? String)
-        }
         if !appMetaVersionUpToDate() {
             BaseDb.log.info("App started for the first time.")
         }

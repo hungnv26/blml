@@ -6,9 +6,9 @@
 #include "Pods/Target Support Files/Pods-Tinodios/Pods-Tinodios.debug.xcconfig"
 
 // Server URL
-HOST_NAME = 192.168.101.108:6060
+HOST_NAME = chat.blml.app
 // Use TLS (https, wss)
-USE_TLS = NO
+USE_TLS = YES
 
 // App Settings
 APP_NAME = BLML (dev)
