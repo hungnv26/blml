@@ -122,6 +122,10 @@ public class TindroidApp extends Application implements DefaultLifecycleObserver
         return sAppBuild;
     }
 
+    /** Bump to re-seed the server host on installs that already have one. */
+    private static final int HOST_SEED_VERSION = 2;
+    private static final String PREFS_HOST_SEED_VERSION = "pref_hostSeedVersion";
+
     public static String getDefaultHostName() {
         return sContext.getResources().getString(isEmulator() ?
                 R.string.emulator_host_name :
@@ -247,13 +251,17 @@ public class TindroidApp extends Application implements DefaultLifecycleObserver
 
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
 
-        // Check if preferences already exist. If not, create them.
+        // The host is seeded once and read from preferences forever after, so a
+        // reinstall never picks up a changed default. HOST_SEED_VERSION forces a
+        // re-seed when the bundled host moves, which is the only way an existing
+        // install stops pointing at whatever address it first saw.
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        if (TextUtils.isEmpty(pref.getString(Utils.PREFS_HOST_NAME, null))) {
-            // No preferences found. Save default values.
+        if (TextUtils.isEmpty(pref.getString(Utils.PREFS_HOST_NAME, null))
+                || pref.getInt(PREFS_HOST_SEED_VERSION, 0) < HOST_SEED_VERSION) {
             SharedPreferences.Editor editor = pref.edit();
             editor.putString(Utils.PREFS_HOST_NAME, getDefaultHostName());
             editor.putBoolean(Utils.PREFS_USE_TLS, getDefaultTLS());
+            editor.putInt(PREFS_HOST_SEED_VERSION, HOST_SEED_VERSION);
             editor.apply();
         }
 

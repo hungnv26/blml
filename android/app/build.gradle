@@ -40,7 +40,10 @@ android {
 
     buildTypes {
         debug {
-            resValue "string", "default_host_name", '"sandbox.tinode.co"'
+            // Was sandbox.tinode.co — Tinode's public demo server. A BLML debug
+            // build has no business talking to it, and these are the builds that
+            // actually end up on family phones.
+            resValue "string", "default_host_name", '"chat.blml.app"'
         }
         release {
             resValue "string", "default_host_name", '"chat.blml.app"'
