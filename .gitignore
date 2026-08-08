@@ -32,6 +32,8 @@ brand/screenshots/*.png
 # this folder is working material and may contain personal data. These five
 # are captured from throwaway demo accounts, never from the real server's
 # conversations.
+!brand/screenshots/ios-splash.png
+!brand/screenshots/ios-welcome.png
 !brand/screenshots/ios-chats.png
 !brand/screenshots/ios-conversation.png
 !brand/screenshots/android-chats.png

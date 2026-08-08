@@ -16,12 +16,18 @@ address anyone can reach is not a room anyone can walk into.
 ### On your phone
 
 <p align="center">
-  <img src="brand/screenshots/ios-chats.png" width="215" alt="iOS chat list">
-  <img src="brand/screenshots/ios-conversation.png" width="215" alt="iOS conversation">
+  <img src="brand/screenshots/ios-splash.png" width="192" alt="BLML opening on iPhone">
+  <img src="brand/screenshots/ios-welcome.png" width="192" alt="iPhone sign-in screen">
+  <img src="brand/screenshots/ios-chats.png" width="192" alt="iPhone chat list">
+  <img src="brand/screenshots/ios-conversation.png" width="192" alt="iPhone conversation">
+</p>
+<p align="center"><sub>On iPhone</sub></p>
+
+<p align="center">
   <img src="brand/screenshots/android-chats.png" width="215" alt="Android chat list">
   <img src="brand/screenshots/android-conversation.png" width="215" alt="Android conversation">
 </p>
-<p align="center"><sub>iPhone (left two) and Android (right two)</sub></p>
+<p align="center"><sub>On Android</sub></p>
 
 ### In your browser
 
