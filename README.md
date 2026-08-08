@@ -7,6 +7,9 @@ machine. No third-party accounts, no ads, no analytics.
 Native apps for iOS and Android, plus a web client, all talking to a single Go
 server backed by PostgreSQL.
 
+**Live instance: [chat.blml.app](https://chat.blml.app)** — invite-only, so
+sign-up needs a code from the operator.
+
 <p align="center">
   <img src="brand/screenshots/01-chats.png" width="230" alt="Chat list with search">
   <img src="brand/screenshots/02-chat.png" width="230" alt="Conversation">
@@ -107,17 +110,26 @@ Monday and Thursday, skipping devices that are offline.
 
 ## Going to production
 
-1. A VPS with 2 vCPU / 4 GB / 40 GB and Docker installed.
-2. Point a domain at it.
-3. Copy the repo and `secrets.env` (which is **not** in git) to the server.
-4. Terminate TLS with Caddy or nginx in front of port 6060, or enable the
-   server's built-in ACME.
-5. `docker compose up -d --build`.
-6. Calls need ICE servers. Public STUN is enough when one side is on home wifi;
-   add a TURN relay for calls that always connect.
+Deployment is scripted end to end. On a fresh Ubuntu VPS:
 
-Backups, phone and email verification, and push notifications are covered in
-[SETUP.md](SETUP.md).
+```bash
+ssh root@<vps-ip> 'bash -s' < deploy/provision-vps.sh   # Docker, firewall, SSH hardening
+./deploy/migrate-to-vps.sh root@<vps-ip>                # code, secrets, database, media
+ssh root@<vps-ip> 'cd /opt/blml/deploy && ./backup.sh --install'
+```
+
+That brings up the server behind Caddy, which obtains and renews its TLS
+certificate automatically, plus coturn for the call relay. `secrets.env` is
+never in git and is copied across explicitly.
+
+Sizing is smaller than it looks: the whole stack idles around 110 MB of RAM, so
+1 vCPU / 2 GB is comfortable for ~100 users. Disk is what grows, from shared
+photos and video. Note that the Go build needs roughly 1.5 GB — it will be
+OOM-killed on a 1 GB instance unless you build the image elsewhere.
+
+The full runbook, including the DNS record, TURN, and what to verify
+afterwards, is in [deploy/DEPLOY.md](deploy/DEPLOY.md). Phone and email
+verification and push notifications are covered in [SETUP.md](SETUP.md).
 
 ## Repository layout
 
@@ -126,7 +138,8 @@ server/    Go server and database adapters
 ios/       iOS client (Swift)
 android/   Android client (Java)
 webapp/    Web client (React) and static assets
-deploy/    Docker Compose stack, config generator, admin dashboard
+deploy/    Docker Compose stack, provisioning and deploy scripts, backups,
+           config generator, admin dashboard
 brand/     Icons, logo, wallpapers and their generator scripts
 ```
 
@@ -135,8 +148,12 @@ Design notes are in [REDESIGN-PLAN.md](REDESIGN-PLAN.md), operational detail in
 
 ## Security notes
 
-- `deploy/secrets.env`, the generated `blml.conf` and signing keystores are
-  gitignored. Keep them that way.
+- `deploy/secrets.env`, the generated `blml.conf` and `turnserver.conf`, and
+  signing keystores are gitignored. Keep them that way — the TURN config holds
+  the relay password.
+- `UID_ENCRYPTION_KEY` derives every user ID and `API_KEY_SALT` derives the key
+  compiled into the clients. Never rotate either on a server with live users:
+  it invalidates the accounts and every installed app.
 - Phone verification ships in a no-SMS debug mode: the server accepts a fixed
   code, so a member could claim a number that is not theirs. Fine for a closed
   group, not for a public one — configure Twilio credentials for real
