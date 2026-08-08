@@ -24,8 +24,8 @@ address anyone can reach is not a room anyone can walk into.
 <p align="center"><sub>On iPhone</sub></p>
 
 <p align="center">
-  <img src="brand/screenshots/android-chats.png" width="215" alt="Android chat list">
-  <img src="brand/screenshots/android-conversation.png" width="215" alt="Android conversation">
+  <img src="brand/screenshots/android-chats.png" width="192" alt="Android chat list">
+  <img src="brand/screenshots/android-conversation.png" width="192" alt="Android conversation">
 </p>
 <p align="center"><sub>On Android</sub></p>
 
