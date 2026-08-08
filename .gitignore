@@ -36,6 +36,8 @@ brand/screenshots/*.png
 !brand/screenshots/ios-welcome.png
 !brand/screenshots/ios-chats.png
 !brand/screenshots/ios-conversation.png
+!brand/screenshots/android-splash.png
+!brand/screenshots/android-welcome.png
 !brand/screenshots/android-chats.png
 !brand/screenshots/android-conversation.png
 !brand/screenshots/web-conversation.png

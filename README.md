@@ -24,6 +24,8 @@ address anyone can reach is not a room anyone can walk into.
 <p align="center"><sub>On iPhone</sub></p>
 
 <p align="center">
+  <img src="brand/screenshots/android-splash.png" width="192" alt="BLML opening on Android">
+  <img src="brand/screenshots/android-welcome.png" width="192" alt="Android sign-in screen">
   <img src="brand/screenshots/android-chats.png" width="192" alt="Android chat list">
   <img src="brand/screenshots/android-conversation.png" width="192" alt="Android conversation">
 </p>
