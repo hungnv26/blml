@@ -13,14 +13,20 @@ It opens in any browser, no install needed. Creating an account needs an invite
 code from whoever runs the server — BLML is invite-only on purpose, so an
 address anyone can reach is not a room anyone can walk into.
 
+### On your phone
+
 <p align="center">
-  <img src="brand/screenshots/01-chats.png" width="230" alt="Chat list with search">
-  <img src="brand/screenshots/02-chat.png" width="230" alt="Conversation">
-  <img src="brand/screenshots/03-attachments.png" width="230" alt="Attachment sheet">
+  <img src="brand/screenshots/ios-chats.png" width="215" alt="iOS chat list">
+  <img src="brand/screenshots/ios-conversation.png" width="215" alt="iOS conversation">
+  <img src="brand/screenshots/android-chats.png" width="215" alt="Android chat list">
+  <img src="brand/screenshots/android-conversation.png" width="215" alt="Android conversation">
 </p>
+<p align="center"><sub>iPhone (left two) and Android (right two)</sub></p>
+
+### In your browser
+
 <p align="center">
-  <img src="brand/screenshots/04-appearance.png" width="230" alt="Appearance settings">
-  <img src="brand/screenshots/05-wallpapers.png" width="230" alt="Chat wallpapers">
+  <img src="brand/screenshots/web-conversation.png" width="760" alt="BLML web client">
 </p>
 
 ## What you can do with it
