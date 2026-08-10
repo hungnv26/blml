@@ -76,12 +76,16 @@ anywhere else, and it is not used for advertising or recommendations.</p>
 <p>Two categories of data leave your group's server. We would rather list them
 plainly than claim they do not exist.</p>
 <ul>
-  <li><strong>Google Firebase</strong> — the iOS and Android apps include
-      Firebase for crash reporting, usage analytics and push notifications. If
-      the app crashes, a technical report describing the crash is sent to
-      Google. Push notifications, where enabled, are delivered through Google
-      and Apple’s notification services, which necessarily see that a message
-      is waiting for your device.</li>
+  <li><strong>Google Firebase</strong> — the iOS and Android apps use Firebase
+      for crash reporting and push notifications. If the app crashes, a
+      technical report describing the crash is sent to Google. Push
+      notifications, where enabled, are delivered through Google and Apple’s
+      notification services, which necessarily see that a message is waiting
+      for your device.
+      <br><br>
+      <strong>Usage analytics are switched off.</strong> The analytics
+      component ships as part of Firebase, but BLML disables it explicitly on
+      both platforms, so no usage or advertising identifiers are collected.</li>
   <li><strong>Content delivery networks (web version only)</strong> — the
       browser version loads some shared code and fonts from
       <code>cdn.jsdelivr.net</code>, <code>fonts.googleapis.com</code> and
