@@ -51,6 +51,11 @@
 		defer
 	}
 
+	# Serve the privacy policy at a clean /privacy as well as /privacy.html.
+	# App Store Connect and the Play Console both want a bare URL, and a link
+	# with a file extension in it looks like an afterthought.
+	rewrite /privacy /privacy.html
+
 	# Media is immutable in practice: wallpapers and icons change name when they
 	# change, and uploads are content-addressed. Let those cache properly.
 	@media path *.png *.jpg *.jpeg *.svg *.webp *.woff2 *.mp3
