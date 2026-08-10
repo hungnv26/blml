@@ -41,3 +41,6 @@ brand/screenshots/*.png
 !brand/screenshots/android-chats.png
 !brand/screenshots/android-conversation.png
 !brand/screenshots/web-conversation.png
+
+# App Store Connect API key identifiers (the .p8 itself lives outside the repo)
+ios/.testflight.env
