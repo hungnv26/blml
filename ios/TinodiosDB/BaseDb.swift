@@ -43,7 +43,12 @@ public class BaseDb {
     // Meta-status: object should be visible in the UI.
     public static let kStatusVisible = Status.synced
 
-    public static let kBundleId = "co.tinode.tinodios.db"
+    // App group identifiers are globally unique across Apple developer teams,
+    // and group.co.tinode.tinodios.db belongs to upstream Tinode's team — it
+    // cannot be claimed by this one, so signing fails against it. This also
+    // rebrands the log subsystem and dispatch queue label, which still said
+    // tinode.
+    public static let kBundleId = "app.blml.chat"
     public static let kAppGroupId = "group." + BaseDb.kBundleId
     // False when the App Group container is not provisioned (e.g. the app is
     // signed with a free personal team, which cannot register App Groups).

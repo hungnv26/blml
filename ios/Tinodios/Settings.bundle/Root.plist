@@ -3,37 +3,37 @@
 <plist version="1.0">
 <dict>
 	<key>ApplicationGroupContainerIdentifier</key>
-	<string>group.co.tinode.tinodios.db</string>
-	<key>StringsTable</key>
-	<string>Root</string>
+	<string>group.app.blml.chat</string>
 	<key>PreferenceSpecifiers</key>
 	<array>
 		<dict>
-			<key>Type</key>
-			<string>PSTitleValueSpecifier</string>
-			<key>Title</key>
-			<string>Bundle Version</string>
-			<key>Key</key>
-			<string>bundle_version</string>
 			<key>DefaultValue</key>
 			<string>0</string>
+			<key>Key</key>
+			<string>bundle_version</string>
+			<key>Title</key>
+			<string>Bundle Version</string>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
 		</dict>
 		<dict>
-			<key>Type</key>
-			<string>PSChildPaneSpecifier</string>
-			<key>Title</key>
-			<string>Acknowledgements</string>
 			<key>File</key>
 			<string>Acknowledgements</string>
-		</dict>
-		<dict>
+			<key>Title</key>
+			<string>Acknowledgements</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
-			<key>Title</key>
-			<string>Connection settings</string>
+		</dict>
+		<dict>
 			<key>File</key>
 			<string>ConnectionSettings</string>
+			<key>Title</key>
+			<string>Connection settings</string>
+			<key>Type</key>
+			<string>PSChildPaneSpecifier</string>
 		</dict>
 	</array>
+	<key>StringsTable</key>
+	<string>Root</string>
 </dict>
 </plist>
