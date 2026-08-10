@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 #
-# Build the BLML iOS app (free-team signed) and install it on every reachable
-# paired device. Run this to push app updates — and weekly, because free-team
-# signatures expire after 7 days.
+# Build the BLML iOS app and install it on every reachable paired device.
+# Run this to push app updates.
+#
+# Signed with the paid developer team, so profiles last a year rather than the
+# seven days a free personal team gave. The weekly re-signing agent installed by
+# install-resign-agent.sh is no longer needed to keep apps alive; it is only
+# useful now as a way to push updates on a schedule.
 #
 # A device is "reachable" when it's on this Mac via USB or same-network Wi-Fi,
 # unlocked at least once recently. Unreachable devices are skipped — rerun
@@ -12,13 +16,16 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 echo "── building ──"
-xcodebuild -workspace Tinodios.xcworkspace -scheme Tinodios -configuration Debug \
+# Release, not Debug: Release reads prod.xcconfig, so the app points at
+# chat.blml.app over TLS. The entitlements override is gone too — a free team
+# could not sign push or associated domains, so the build had to be stripped to
+# an empty entitlements file. The paid team signs them properly.
+xcodebuild -workspace Tinodios.xcworkspace -scheme Tinodios -configuration Release \
   -destination 'generic/platform=iOS' -derivedDataPath build-device ARCHS=arm64 \
   DEVELOPMENT_TEAM=Y9T5MPV87F CODE_SIGN_STYLE=Automatic \
-  CODE_SIGN_ENTITLEMENTS="$PWD/Tinodios/Tinodios-dev.entitlements" \
   -allowProvisioningUpdates build 2>&1 | grep -E "BUILD (SUCCEEDED|FAILED)"
 
-APP="build-device/Build/Products/Debug-iphoneos/Tinodios.app"
+APP="build-device/Build/Products/Release-iphoneos/Tinodios.app"
 
 echo "── installing ──"
 # name:identifier pairs of the family devices
