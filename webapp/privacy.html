@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BLML — Privacy Policy</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    max-width: 44rem; margin: 0 auto; padding: 2.5rem 1.25rem 5rem;
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: light-dark(#111b21, #e9edef);
+    background: light-dark(#ffffff, #0b141a);
+  }
+  h1 { font-size: 1.9rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1.2rem; margin: 2.25rem 0 .5rem; }
+  .updated { color: light-dark(#667781, #8696a0); margin: 0 0 2rem; font-size: .95rem; }
+  a { color: light-dark(#008069, #25d366); }
+  code { background: light-dark(#f0f2f5, #202c33); padding: .1rem .35rem; border-radius: 4px; }
+  ul { padding-left: 1.25rem; }
+  li { margin: .35rem 0; }
+  .note {
+    border-left: 3px solid light-dark(#008069, #25d366);
+    background: light-dark(#f6f8f9, #182229);
+    padding: .85rem 1rem; margin: 1.25rem 0; border-radius: 0 6px 6px 0;
+  }
+  footer { margin-top: 3rem; font-size: .9rem; color: light-dark(#667781, #8696a0); }
+</style>
+</head>
+<body>
+
+<h1>BLML Privacy Policy</h1>
+<p class="updated">Last updated: 11 August 2026</p>
+
+<p>BLML is a private chat app for a family or small group. It is
+<strong>self-hosted</strong>: your messages live on a server run by the person
+who invited you, not on a service owned by a large company. This policy
+describes what that means for your data.</p>
+
+<div class="note">
+  <strong>The short version.</strong> Your conversations stay on your group's
+  own server. We do not sell your data, show you ads, or read your messages to
+  build a profile of you. The two things that do leave the server are described
+  under “Third-party services” below, and you can see exactly what those are.
+</div>
+
+<h2>Who is responsible for your data</h2>
+<p>Each BLML server is run independently. The person or family operating the
+server you use is responsible for the data on it. For the server at
+<code>chat.blml.app</code>, that is Hung Ngo, reachable at
+<a href="mailto:hungnv26@gmail.com">hungnv26@gmail.com</a>.</p>
+
+<h2>What is stored on the server</h2>
+<ul>
+  <li><strong>Your account</strong> — the username you chose, your display name,
+      your profile picture, and a cryptographically hashed version of your
+      password. The password itself is never stored.</li>
+  <li><strong>Your messages and media</strong> — text, photos, videos,
+      documents and voice notes you send, kept so they can be delivered and so
+      you can scroll back through a conversation.</li>
+  <li><strong>Optional contact details</strong> — a phone number or email
+      address, only if you add one. These are used so people who already have
+      your number can find you, and to recover your account.</li>
+  <li><strong>Basic technical logs</strong> — connection times and IP addresses,
+      kept briefly so the operator can keep the server running and diagnose
+      problems.</li>
+</ul>
+
+<h2>Your address book</h2>
+<p>If you allow the app to access your contacts, it checks which of them
+already use your BLML server so it can show them in your contact list. This
+check happens against your own server. Your address book is not uploaded
+anywhere else, and it is not used for advertising or recommendations.</p>
+
+<h2>Third-party services</h2>
+<p>Two categories of data leave your group's server. We would rather list them
+plainly than claim they do not exist.</p>
+<ul>
+  <li><strong>Google Firebase</strong> — the iOS and Android apps include
+      Firebase for crash reporting, usage analytics and push notifications. If
+      the app crashes, a technical report describing the crash is sent to
+      Google. Push notifications, where enabled, are delivered through Google
+      and Apple’s notification services, which necessarily see that a message
+      is waiting for your device.</li>
+  <li><strong>Content delivery networks (web version only)</strong> — the
+      browser version loads some shared code and fonts from
+      <code>cdn.jsdelivr.net</code>, <code>fonts.googleapis.com</code> and
+      <code>polyfill-fastly.io</code>. Those providers see your IP address when
+      the page loads. The mobile apps do not do this.</li>
+</ul>
+<p>The content of your messages is never sent to any of these services.</p>
+
+<h2>What we do not do</h2>
+<ul>
+  <li>No advertising, and no advertising identifiers.</li>
+  <li>No selling or renting of your data to anyone.</li>
+  <li>No profiling of you to decide what you see. Conversations appear in the
+      order they happened.</li>
+  <li>No data brokers, and no cross-app tracking.</li>
+</ul>
+
+<h2>Who can see your messages</h2>
+<p>Messages are protected in transit with TLS. On the server they are stored so
+they can be delivered and re-read, which means the operator of your server has
+the technical ability to read them, in the same way that anyone running a mail
+server could. BLML does not currently offer end-to-end encryption. Choose a
+server run by someone you trust.</p>
+
+<h2>Keeping and deleting your data</h2>
+<ul>
+  <li>Messages stay until you or the server operator delete them.</li>
+  <li>You can delete your entire account from inside the app, under
+      <em>Settings → Account and Security → Delete account</em>. This removes
+      your account and your messages from the server.</li>
+  <li>Backups of the server may hold a copy for up to 14 days before rotating
+      out.</li>
+</ul>
+
+<h2>Children</h2>
+<p>BLML is invite-only and intended for private groups such as families.
+Children may be members of a family group. No data is collected from anyone for
+advertising, and no profiles are built.</p>
+
+<h2>Changes to this policy</h2>
+<p>If this policy changes in a way that affects you, the date at the top will be
+updated. Material changes will be mentioned in the app.</p>
+
+<h2>Contact</h2>
+<p>Questions about your data, or a request to delete it:
+<a href="mailto:hungnv26@gmail.com">hungnv26@gmail.com</a>.</p>
+
+<footer>
+  BLML is open source. You can read exactly what it does at
+  <a href="https://github.com/hungnv26/blml">github.com/hungnv26/blml</a>.
+</footer>
+
+</body>
+</html>

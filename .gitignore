@@ -44,3 +44,6 @@ brand/screenshots/*.png
 
 # App Store Connect API key identifiers (the .p8 itself lives outside the repo)
 ios/.testflight.env
+
+# App Store listing screenshots, regenerated from the demo account
+brand/appstore/

@@ -48,7 +48,7 @@ COPY server/server/templ ./templ
 # it when passed --data, but shipping it at all invites an accident.
 
 # The built web app, served at "/" via static_mount.
-COPY webapp/index.html webapp/manifest.json webapp/service-worker.js \
+COPY webapp/index.html webapp/privacy.html webapp/manifest.json webapp/service-worker.js \
      webapp/version.js webapp/firebase-init.js ./static/
 COPY webapp/umd   ./static/umd
 COPY webapp/css   ./static/css
