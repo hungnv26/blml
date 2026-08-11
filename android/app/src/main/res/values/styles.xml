@@ -67,8 +67,13 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <!-- WhatsApp-weight list names: medium (500) instead of regular, and 17sp.
+         The default TextAppearance.Medium regular read as too thin against a
+         light background - same complaint the iOS list had. -->
     <style name="contactListTextPrimary" parent="@android:style/TextAppearance.Medium">
         <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">17sp</item>
     </style>
 
     <style name="textPrimarySmall" parent="@android:style/TextAppearance.Small">
