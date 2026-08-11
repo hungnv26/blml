@@ -38,6 +38,14 @@ class ChatListViewCell: UITableViewCell {
 
     override func awakeFromNib() {
         super.awakeFromNib()
+        // WhatsApp-weight list typography: semibold names, and a subtitle gray
+        // picked per theme. The XIB had an 18pt regular title over a fixed 33%
+        // gray subtitle — reported as "too thin, hard to read" in light mode.
+        title.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        subtitle.font = UIFont.systemFont(ofSize: 15)
+        subtitle.textColor = UIColor { $0.userInterfaceStyle == .dark
+            ? UIColor(fromHexCode: 0xff8696a0) : UIColor(fromHexCode: 0xff667781) }
+
         iconMuted.tintColor = UIColor.init(fromHexCode: 0xFFCCCCCC)
         iconBlocked.tintColor = iconMuted.tintColor
 

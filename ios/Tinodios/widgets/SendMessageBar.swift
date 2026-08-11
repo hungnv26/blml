@@ -286,13 +286,64 @@ class SendMessageBar: UIView {
         return CGSize.zero
     }
 
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) else { return }
+        applyPalette(for: traitCollection)
+    }
+
+    /// Repaints the bar for the given appearance, with every color resolved by
+    /// hand. Assigning dynamic colors once is not enough here: the bar lives in
+    /// the keyboard's accessory window, where a live light/dark switch neither
+    /// reliably re-resolves the UITextView's colors nor, on some paths, delivers
+    /// traitCollectionDidChange at all. The owning view controller therefore
+    /// calls this from its own trait-change handler, which does always fire.
+    func applyPalette(for traits: UITraitCollection) {
+        let bar = SendMessageBar.barBg.resolvedColor(with: traits)
+        backgroundColor = bar
+        subviews.first?.backgroundColor = bar
+        for sub in subviews.first?.subviews ?? [] {
+            guard let blur = sub as? UIVisualEffectView else { continue }
+            blur.backgroundColor = bar
+        }
+        inputField.backgroundColor = SendMessageBar.fieldBg.resolvedColor(with: traits)
+        inputField.setFixedColors(
+            text: SendMessageBar.fieldText.resolvedColor(with: traits),
+            placeholder: SendMessageBar.fieldPlaceholder.resolvedColor(with: traits))
+        tintColor = SendMessageBar.icon.resolvedColor(with: traits)
+        attachButton.tintColor = tintColor
+        stickerButton?.tintColor = tintColor
+        let send = SendMessageBar.sendIcon.resolvedColor(with: traits)
+        sendButton.tintColor = send
+        if #available(iOS 15.0, *), var cfg = sendButton.configuration {
+            cfg.baseForegroundColor = send
+            sendButton.configuration = cfg
+        }
+    }
+
     // MARK: - Configuration
+
+    // WhatsApp composer palette, resolved per theme. Light mode is a pale gray
+    // bar with a white input pill and dark text; dark mode is the near-black
+    // bar with a slate pill. Dynamic colors mean a theme switch mid-session
+    // recolors the bar without any traitCollectionDidChange bookkeeping.
+    static let barBg = UIColor { $0.userInterfaceStyle == .dark
+        ? UIColor(fromHexCode: 0xff1f2c33) : UIColor(fromHexCode: 0xfff0f2f5) }
+    static let fieldBg = UIColor { $0.userInterfaceStyle == .dark
+        ? UIColor(fromHexCode: 0xff2a3942) : UIColor.white }
+    static let fieldText = UIColor { $0.userInterfaceStyle == .dark
+        ? UIColor(fromHexCode: 0xffe9edef) : UIColor(fromHexCode: 0xff111b21) }
+    static let fieldPlaceholder = UIColor { $0.userInterfaceStyle == .dark
+        ? UIColor(fromHexCode: 0xff8696a0) : UIColor(fromHexCode: 0xff667781) }
+    static let icon = UIColor { $0.userInterfaceStyle == .dark
+        ? UIColor(fromHexCode: 0xff8696a0) : UIColor(fromHexCode: 0xff54656f) }
+    static let sendIcon = UIColor { $0.userInterfaceStyle == .dark
+        ? UIColor(fromHexCode: 0xffe9edef) : UIColor(fromHexCode: 0xff008069) }
 
     private func loadNib() {
         let nib = UINib(nibName: "SendMessageBar", bundle: Bundle(for: type(of: self)))
         let nibView = nib.instantiate(withOwner: self, options: nil).first as! UIView
-        // WhatsApp dark composer bar (self.backgroundColor is covered by this view).
-        nibView.backgroundColor = UIColor(fromHexCode: 0xff1f2c33)
+        nibView.backgroundColor = SendMessageBar.barBg
         nibView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(nibView)
         NSLayoutConstraint.activate([
@@ -308,12 +359,8 @@ class SendMessageBar: UIView {
         horizontalSliderView.alpha = 0.9
         verticalSliderView.alpha = 0.9
 
-        // WhatsApp dark composer: near-black bar, gray rounded input pill,
-        // monochrome white wireframe icons (no colored controls).
-        let barBg = UIColor(fromHexCode: 0xff1f2c33)
-        let fieldBg = UIColor(fromHexCode: 0xff2a3942)
-        backgroundColor = barBg
-        inputField.backgroundColor = fieldBg
+        backgroundColor = SendMessageBar.barBg
+        inputField.backgroundColor = SendMessageBar.fieldBg
 
         // The nib covers the whole bar with a UIVisualEffectView carrying a
         // *light* blur. Over a dark chat that renders as a milky grey-blue slab
@@ -322,23 +369,23 @@ class SendMessageBar: UIView {
         for sub in subviews.first?.subviews ?? [] {
             guard let blur = sub as? UIVisualEffectView else { continue }
             blur.effect = nil
-            blur.backgroundColor = barBg
+            blur.backgroundColor = SendMessageBar.barBg
         }
-        // The pill is dark in both themes, so its text must be light in both.
-        // Setting textColor alone is not enough: PlaceholderTextView recomputes
-        // it from the system trait on every change and on theme switches, which
-        // produced dark-on-dark — invisible typing — in light mode.
-        inputField.setFixedColors(text: UIColor(fromHexCode: 0xffe9edef),
-                                  placeholder: UIColor(fromHexCode: 0xff8696a0))
+        // The pill's own background is set above, so its text must be chosen to
+        // match IT, not the system trait defaults PlaceholderTextView would pick.
+        // The colors are dynamic, so a theme switch re-resolves them; the fixed
+        // part is only that the widget must not fall back to its own guesses.
+        inputField.setFixedColors(text: SendMessageBar.fieldText,
+                                  placeholder: SendMessageBar.fieldPlaceholder)
         // Setting the bar's own tint makes every child icon inherit it, overriding
         // the app-wide green window tint. Individual setImage() calls elsewhere
         // would otherwise re-inherit green.
-        tintColor = UIColor(fromHexCode: 0xffe9edef)
-        attachButton.tintColor = UIColor(fromHexCode: 0xff8696a0)
-        sendButton.tintColor = UIColor(fromHexCode: 0xffe9edef)
+        tintColor = SendMessageBar.icon
+        attachButton.tintColor = SendMessageBar.icon
+        sendButton.tintColor = SendMessageBar.sendIcon
         // buttonConfiguration (set in the XIB) takes precedence over tintColor.
         if #available(iOS 15.0, *), var cfg = sendButton.configuration {
-            cfg.baseForegroundColor = UIColor(fromHexCode: 0xffe9edef)
+            cfg.baseForegroundColor = SendMessageBar.sendIcon
             sendButton.configuration = cfg
         }
 
@@ -372,7 +419,7 @@ class SendMessageBar: UIView {
         guard stickerButton == nil else { return }
 
         let button = UIButton(type: .system)
-        button.tintColor = UIColor(fromHexCode: 0xff8696a0)
+        button.tintColor = SendMessageBar.icon
         button.setImage(UIImage(systemName: "face.smiling",
                                 withConfiguration: UIImage.SymbolConfiguration(pointSize: 22)), for: .normal)
         button.accessibilityLabel = NSLocalizedString("Stickers", comment: "Accessibility label")

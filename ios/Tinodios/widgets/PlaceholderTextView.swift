@@ -92,10 +92,10 @@ import UIKit
         }
     }
 
-    /// Set when the field sits on a background that does not follow the system
-    /// light/dark trait — the composer pill is deliberately dark in both themes.
-    /// Without this, setColors() picks dark text for light mode and paints it on
-    /// a dark field, so the user cannot see what they are typing.
+    /// Set when the owner styles this field's background itself and supplies
+    /// matching text colors via setFixedColors(). Without it, setColors() picks
+    /// text from the system trait, which can land dark-on-dark against an
+    /// owner-styled field — invisible typing.
     var usesFixedColors = false
 
     private func setColors() {

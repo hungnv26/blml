@@ -159,7 +159,15 @@ extension WallpaperViewController: UICollectionViewDataSource, UICollectionViewD
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        AppearanceSettings.wallpaper = names[indexPath.item]
+        let name = names[indexPath.item]
+        AppearanceSettings.wallpaper = name
+        // The chat paints whichever of the l/d pair matches the active theme,
+        // so pull the counterpart down now while the user is still here —
+        // otherwise the first theme switch briefly falls back to the default.
+        let counterpart = MessageViewController.themedWallpaperName(name, darkMode: name.hasPrefix("l"))
+        if counterpart != name {
+            MessageViewController.fetchWallpaper(named: counterpart) {}
+        }
         collectionView.reloadData()
         UiUtils.showToast(message: NSLocalizedString("Wallpaper applied", comment: "Toast"), level: .info)
     }
