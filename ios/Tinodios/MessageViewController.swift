@@ -648,16 +648,66 @@ class MessageViewController: UIViewController {
     }
 
     private static var wallpaperCache: [String: UIImage] = [:]
+    private static var wallpaperFetchesInFlight = Set<String>()
+
+    /// Gallery wallpapers come in matched pairs: "l14.png" for light mode,
+    /// "d14.png" for dark. Whichever one the user tapped in the picker, the
+    /// chat shows the variant matching the active theme — otherwise picking a
+    /// dark tile leaves a dark canvas in light mode with dark-on-dark text
+    /// around it. The web client does the same swap.
+    static func themedWallpaperName(_ name: String, darkMode: Bool) -> String {
+        guard let first = name.first, first == "l" || first == "d",
+              name.dropFirst().first?.isNumber == true else {
+            return name    // Not a paired name; use as-is.
+        }
+        return (darkMode ? "d" : "l") + name.dropFirst()
+    }
+
+    /// Downloads a wallpaper the picker never fetched (the counterpart of the
+    /// one the user tapped). Stored like any other so future opens hit disk.
+    static func fetchWallpaper(named name: String, onSuccess: @escaping () -> Void) {
+        guard !wallpaperFetchesInFlight.contains(name),
+              let url = AppearanceSettings.wallpaperURL(for: name) else {
+            return
+        }
+        wallpaperFetchesInFlight.insert(name)
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            DispatchQueue.main.async {
+                wallpaperFetchesInFlight.remove(name)
+                guard let data = data, UIImage(data: data) != nil else { return }
+                storeWallpaper(data, named: name)
+                onSuccess()
+            }
+        }.resume()
+    }
 
     private func setInterfaceColors() {
-        // WhatsApp-style chat canvas: our own subtle doodle tile (light/dark
-        // variants resolve automatically via the asset catalog), with the flat
-        // color as fallback. Collection view stays transparent over it.
-        if let chosen = AppearanceSettings.wallpaper, let tile = MessageViewController.cachedWallpaper(named: chosen) {
+        // The composer sits in the keyboard's accessory window, which cannot be
+        // trusted to hear about a theme switch on its own — push it from here,
+        // where trait changes reliably arrive.
+        sendMessageBar.applyPalette(for: traitCollection)
+
+        // WhatsApp-style chat canvas: doodle tile over the flat color fallback.
+        // Collection view stays transparent over it.
+        let darkMode = traitCollection.userInterfaceStyle == .dark
+        if let chosen = AppearanceSettings.wallpaper {
+            let themed = MessageViewController.themedWallpaperName(chosen, darkMode: darkMode)
+            if let tile = MessageViewController.cachedWallpaper(named: themed) {
+                view.backgroundColor = UIColor(patternImage: tile)
+                collectionView?.backgroundColor = .clear
+                return
+            }
+            // The matching variant was never downloaded (the picker only fetched
+            // the tapped one). Paint the built-in canvas now so nothing is ever
+            // mismatched, and repaint when the right tile lands.
+            MessageViewController.fetchWallpaper(named: themed) { [weak self] in
+                self?.setInterfaceColors()
+            }
+        }
+        if let tile = UIImage(named: "chat-wallpaper")?
+            .imageAsset?.image(with: traitCollection) {
             view.backgroundColor = UIColor(patternImage: tile)
-        } else if let tile = UIImage(named: "chat-wallpaper") {
-            view.backgroundColor = UIColor(patternImage: tile)
-        } else if traitCollection.userInterfaceStyle == .dark {
+        } else if darkMode {
             view.backgroundColor = UIColor(fromHexCode: 0xff0b141a)
         } else {
             view.backgroundColor = UIColor(fromHexCode: 0xffece5dd)
