@@ -324,7 +324,12 @@ class SendMessageBar: UIView {
             blur.effect = nil
             blur.backgroundColor = barBg
         }
-        inputField.textColor = UIColor(fromHexCode: 0xffe9edef)
+        // The pill is dark in both themes, so its text must be light in both.
+        // Setting textColor alone is not enough: PlaceholderTextView recomputes
+        // it from the system trait on every change and on theme switches, which
+        // produced dark-on-dark — invisible typing — in light mode.
+        inputField.setFixedColors(text: UIColor(fromHexCode: 0xffe9edef),
+                                  placeholder: UIColor(fromHexCode: 0xff8696a0))
         // Setting the bar's own tint makes every child icon inherit it, overriding
         // the app-wide green window tint. Individual setImage() calls elsewhere
         // would otherwise re-inherit green.

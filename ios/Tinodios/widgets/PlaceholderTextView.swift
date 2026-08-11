@@ -92,7 +92,16 @@ import UIKit
         }
     }
 
+    /// Set when the field sits on a background that does not follow the system
+    /// light/dark trait — the composer pill is deliberately dark in both themes.
+    /// Without this, setColors() picks dark text for light mode and paints it on
+    /// a dark field, so the user cannot see what they are typing.
+    var usesFixedColors = false
+
     private func setColors() {
+        if usesFixedColors {
+            return
+        }
         if traitCollection.userInterfaceStyle == .dark {
             self.mainTextColor = Constants.defaultTextColorDark
             self.placeholderColor = Constants.defaultPlaceholderColorDark
@@ -105,6 +114,16 @@ import UIKit
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         setColors()
         textColor = isShowingPlaceholder ? placeholderColor : mainTextColor
+    }
+
+    /// Pin the text and placeholder colours so a light/dark switch cannot undo
+    /// them. Callers own the contrast decision when the field's own background
+    /// is fixed.
+    func setFixedColors(text: UIColor, placeholder: UIColor) {
+        usesFixedColors = true
+        mainTextColor = text
+        placeholderColor = placeholder
+        textColor = isShowingPlaceholder ? placeholder : text
     }
 
     // MARK: initializers
