@@ -14,7 +14,7 @@
 
     <string name="app_version">Version</string>
 
-    <string name="login_hint">Login</string>
+    <string name="login_hint">User name</string>
     <string name="password_hint">Password</string>
     <string name="new_message_hint">New message</string>
     <string name="send_message_button_hint">Send message</string>
@@ -22,10 +22,10 @@
     <string name="send_file_button_hint">Send file</string>
 
     <string name="sign_in">Sign In</string>
-    <string name="app_description" translatable="false">BLML group chat</string>
+    <string name="app_description" translatable="false">Welcome to BLML</string>
     <string name="action_signup">Sign Up</string>
     <string name="sign_up">Sign Up</string>
-    <string name="login_new">Login</string>
+    <string name="login_new">User name</string>
     <string name="password_new">Password</string>
     <string name="full_name">Full name, e.g. John Doe</string>
     <string name="tinode_logo" translatable="false">BLML Logo</string>
@@ -358,7 +358,7 @@
     <string name="scan_code">Scan code</string>
     <string name="hint_enter_code">Configuration code</string>
     <string name="code_required">Code required</string>
-    <string name="configure_connection">Configure connection</string>
+    <string name="configure_connection">Configure Connection</string>
     <string name="calling_not_supported">Calling not supported</string>
     <string name="display_code">Show QR code</string>
     <string name="action_pin">Pin</string>
