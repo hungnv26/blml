@@ -8,6 +8,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -122,6 +123,21 @@ public class MessagesFragment extends Fragment implements MenuProvider {
 
     static final int ZONE_CANCEL = 0;
     static final int ZONE_LOCK = 1;
+
+    // Gallery wallpapers come in matched pairs: "l14.png" for light mode,
+    // "d14.png" for dark. Whichever one was tapped in the picker, show the
+    // variant matching the active theme — otherwise picking a dark tile leaves
+    // a dark canvas inside an otherwise light app. iOS and web do the same.
+    static String themedWallpaperName(String name, boolean nightMode) {
+        if (name == null || name.length() < 2) {
+            return name;
+        }
+        char first = name.charAt(0);
+        if ((first != 'l' && first != 'd') || !Character.isDigit(name.charAt(1))) {
+            return name;    // Not a paired name; use as-is.
+        }
+        return (nightMode ? 'd' : 'l') + name.substring(1);
+    }
 
     // Number of milliseconds between audio samples for recording visualization.
     static final int AUDIO_SAMPLING = 100;
@@ -321,7 +337,10 @@ public class MessagesFragment extends Fragment implements MenuProvider {
         mGoToLatest.setOnClickListener(v -> scrollToBottom(true));
 
         final ImageView backgroundImage = view.findViewById(R.id.background);
-        final String wallpaper = pref.getString(Utils.PREFS_WALLPAPER, "");
+        final String wallpaper = themedWallpaperName(
+                pref.getString(Utils.PREFS_WALLPAPER, ""),
+                (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                        == Configuration.UI_MODE_NIGHT_YES);
         if (TextUtils.isEmpty(wallpaper)) {
             backgroundImage.setImageResource(R.drawable.message_view_bkg);
         } else {
