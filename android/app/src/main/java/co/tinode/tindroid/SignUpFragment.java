@@ -361,7 +361,18 @@ public class SignUpFragment extends Fragment
                                                 Toast.LENGTH_SHORT).show();
                                     }
                                 });
-                                parent.reportError(err, signUp, 0, R.string.error_new_account_failed);
+                                // A 403 here means the invite code was missing or wrong —
+                                // nothing else about sign-up is permission checked. Report
+                                // that rather than appending an HTTP status to a generic
+                                // failure, which told the reader nothing actionable.
+                                boolean badInvite = err != null && err.getMessage() != null
+                                        && (err.getMessage().contains("403")
+                                            || err.getMessage().toLowerCase().contains("permission denied"));
+                                if (badInvite) {
+                                    parent.reportError(null, signUp, 0, R.string.error_invite_code_invalid);
+                                } else {
+                                    parent.reportError(err, signUp, 0, R.string.error_new_account_failed);
+                                }
                                 return null;
                             }
                         });

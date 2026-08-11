@@ -3426,7 +3426,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="43.666667938232422"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Invite code" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="bca-bT-6Tn">
+                                                <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Invite code (required)" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="bca-bT-6Tn">
                                                     <rect key="frame" x="20" y="10.333333333333336" width="374" height="23"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                                     <textInputTraits key="textInputTraits" textContentType="name"/>

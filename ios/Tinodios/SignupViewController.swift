@@ -21,6 +21,22 @@ class SignupViewController: UITableViewController {
     @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var descriptionTextField: UITextField!
+
+    /// Turns the server's raw "permission denied (403)" into something the person
+    /// signing up can act on. Nothing else in signup is permission-checked, so a
+    /// 403 here means the invite code was missing or wrong — and showing an HTTP
+    /// status taught the reader nothing about the one field they left blank.
+    private static func signupErrorMessage(_ error: Error) -> String {
+        let text = error.localizedDescription
+        if text.contains("403") || text.lowercased().contains("permission denied") {
+            return NSLocalizedString(
+                "Sign-up needs a valid invite code. Ask whoever invited you for the current one.",
+                comment: "Sign-up rejected because the invite code was missing or wrong")
+        }
+        return String(format: NSLocalizedString("Failed to create account: %@",
+                                                comment: "Error message"), text)
+    }
+
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var telTextField: PhoneNumberTextField!
     @IBOutlet weak var signUpButton: UIButton!
@@ -160,7 +176,7 @@ class SignupViewController: UITableViewController {
                     .thenCatch { err in
                         Cache.log.error("Failed to create account: %@", err.localizedDescription)
                         DispatchQueue.main.async {
-                            UiUtils.showToast(message: String(format: NSLocalizedString("Failed to create account: %@", comment: "Error message"), err.localizedDescription))
+                            UiUtils.showToast(message: SignupViewController.signupErrorMessage(err))
                         }
                         Cache.tinode.disconnect()
                         return nil
@@ -175,7 +191,7 @@ class SignupViewController: UITableViewController {
             } catch {
                 Cache.tinode.disconnect()
                 DispatchQueue.main.async {
-                    UiUtils.showToast(message: String(format: NSLocalizedString("Failed to create account: %@", comment: "Error message"), error.localizedDescription))
+                    UiUtils.showToast(message: SignupViewController.signupErrorMessage(error))
                     self.signUpButton.isUserInteractionEnabled = true
                     UiUtils.toggleProgressOverlay(in: self, visible: false)
                 }
