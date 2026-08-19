@@ -25,7 +25,10 @@ import javax.net.ssl.SSLSocket;
 public class Connection extends WebSocketClient {
     private static final String TAG = "Connection";
 
-    private static final int CONNECTION_TIMEOUT = 3000; // in milliseconds
+    // 3s was too tight for a TLS handshake on a slow cellular link: the socket
+    // came back null and the SNI check below crashed with an NPE instead of a
+    // "timed out". 15s matches what the iOS client allows.
+    private static final int CONNECTION_TIMEOUT = 15000; // in milliseconds
 
     // Connection states
     // TODO: consider extending ReadyState
@@ -110,10 +113,16 @@ public class Connection extends WebSocketClient {
     private void connectSocket(final boolean reconnect) {
         new Thread(() -> {
             try {
+                boolean connected;
                 if (reconnect) {
-                    reconnectBlocking();
+                    connected = reconnectBlocking();
                 } else {
-                    connectBlocking(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+                    connected = connectBlocking(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+                }
+                if (!connected) {
+                    // Say what actually happened. Falling through used to NPE on
+                    // the null socket in the SNI check, hiding the timeout.
+                    throw new java.net.SocketTimeoutException("Connection timed out: " + uri.getHost());
                 }
 
                 if ("wss".equals(uri.getScheme())) {
