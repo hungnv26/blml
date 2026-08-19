@@ -367,7 +367,8 @@ public class SignUpFragment extends Fragment
                                 // failure, which told the reader nothing actionable.
                                 boolean badInvite = err != null && err.getMessage() != null
                                         && (err.getMessage().contains("403")
-                                            || err.getMessage().toLowerCase().contains("permission denied"));
+                                            || err.getMessage().toLowerCase(java.util.Locale.ROOT)
+                                                    .contains("permission denied"));
                                 if (badInvite) {
                                     parent.reportError(null, signUp, 0, R.string.error_invite_code_invalid);
                                 } else {
