@@ -160,6 +160,11 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".QRScanActivity"
+            android:label="@string/scan_qr_code"
+            android:theme="@style/AppTheme" />
+
+        <activity
             android:name=".SendToActivity"
             android:theme="@style/AppTheme"
             android:exported="true">
