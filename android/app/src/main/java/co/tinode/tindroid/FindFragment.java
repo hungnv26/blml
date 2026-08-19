@@ -315,13 +315,9 @@ public class FindFragment extends Fragment implements UiUtils.ProgressIndicator,
         Intent intent;
         int id = item.getItemId();
         if (id == R.id.action_add_contact) {
-            intent = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
-            try {
-                startActivity(intent);
-            } catch (ActivityNotFoundException ignored) {
-                Log.w(TAG, "No application can add contact");
-                Toast.makeText(activity, R.string.action_failed, Toast.LENGTH_LONG).show();
-            }
+            // The Zalo-style Add friend screen: QR card, phone/email search,
+            // code scanner and suggestions — not the system contacts app.
+            startActivity(new Intent(activity, AddFriendActivity.class));
             return true;
         } else if (id == R.id.action_invite) {
             ShareActionProvider provider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
