@@ -27,8 +27,9 @@ public class Connection: WebSocketConnectionDelegate {
         }
     }
 
-    // Connection timeout in seconds.
-    fileprivate let kConnectionTimeout: TimeInterval = 3.0
+    // Connection timeout in seconds. 3s was too tight for a full TCP + TLS +
+    // websocket upgrade on a weak cellular link; matches Android's 15s.
+    fileprivate let kConnectionTimeout: TimeInterval = 15.0
 
     var isConnected: Bool {
         guard let conn = webSocketConnection else { return false }
