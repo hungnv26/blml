@@ -363,6 +363,16 @@
     <string name="image_read_failed">Could not read that image</string>
     <string name="action_add_friend">Add friend</string>
     <string name="action_create_group">Create group</string>
+    <string name="add_by_phone">Add by phone number</string>
+    <string name="by_email">By email</string>
+    <string name="hint_phone_number">Phone number</string>
+    <string name="hint_email">Email address</string>
+    <string name="people_you_may_know">People you may know</string>
+    <string name="my_qr_caption">Scan this code to chat with me on BLML</string>
+    <string name="no_member_found">No member found with that phone number or email</string>
+    <string name="in_group_with_you">In a group with you</string>
+    <string name="enter_full_phone">Enter a full phone number with country code, like +61…</string>
+    <string name="invalid_email">That does not look like an email address</string>
     <string name="hint_enter_code">Configuration code</string>
     <string name="code_required">Code required</string>
     <string name="configure_connection">Configure Connection</string>

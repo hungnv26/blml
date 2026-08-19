@@ -165,6 +165,12 @@
             android:theme="@style/AppTheme" />
 
         <activity
+            android:name=".AddFriendActivity"
+            android:label="@string/action_add_friend"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".SendToActivity"
             android:theme="@style/AppTheme"
             android:exported="true">

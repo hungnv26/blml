@@ -22,12 +22,14 @@
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="ifRoom|collapseActionView"/>
 
+    <!-- Opens the Zalo-style Add friend screen (QR card, phone/email search,
+         scanner, suggestions) rather than the system contacts app. -->
     <item
         android:id="@+id/action_add_contact"
         android:icon="@drawable/ic_person_add"
         android:orderInCategory="101"
-        android:title="@string/action_add_contact"
-        app:showAsAction="never"/>
+        android:title="@string/action_add_friend"
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/action_invite"
