@@ -129,6 +129,21 @@ class FindViewController: UITableViewController, FindDisplayLogic {
         // empty space where the title used to be.
         navigationItem.title = nil
         navigationItem.largeTitleDisplayMode = .never
+
+        // Zalo-style "+" opening the Add friend screen: QR card, phone/email
+        // search, code scanner, and people-you-may-know.
+        let addItem = UIBarButtonItem(
+            image: UIImage(systemName: "person.badge.plus",
+                           withConfiguration: UIImage.SymbolConfiguration(pointSize: 19, weight: .medium)),
+            style: .plain, target: self, action: #selector(addFriendTapped))
+        addItem.accessibilityLabel = NSLocalizedString("Add friend", comment: "Accessibility label")
+        navigationItem.leftBarButtonItem = addItem
+    }
+
+    @objc private func addFriendTapped() {
+        let vc = AddFriendViewController()
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
     }
 
     private func scrollToTop() {
