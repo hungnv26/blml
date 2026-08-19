@@ -135,7 +135,9 @@ class AddByIDViewController: UIViewController {
 
     func scanQRCode() {
         if qrScanner == nil {
-            qrScanner = QRScanner(embedIn: self.cameraPreviewView, expectedCodePrefix: Utils.kTopicUriPrefix, delegate: self)
+            // No prefix filter: the delegate accepts the canonical prefix and
+            // the legacy Android "tinode:id/" form.
+            qrScanner = QRScanner(embedIn: self.cameraPreviewView, expectedCodePrefix: nil, delegate: self)
             qrScanner?.start()
         }
     }
@@ -143,7 +145,7 @@ class AddByIDViewController: UIViewController {
 
 extension AddByIDViewController: QRScannerDelegate {
     func qrScanner(didScanCode codeValue: String?) {
-        guard let code = codeValue else {
+        guard let code = Utils.topicFromQrCode(codeValue) else {
             Cache.log.error("Invalid Tinode topic QR code")
             DispatchQueue.main.async {
                 UiUtils.showToast(message: "Invalid Tinode topic QR code")

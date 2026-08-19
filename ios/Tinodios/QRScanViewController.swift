@@ -49,7 +49,9 @@ class QRScanViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if qrScanner == nil {
-            qrScanner = QRScanner(embedIn: cameraPreviewView, expectedCodePrefix: Utils.kTopicUriPrefix, delegate: self)
+            // No prefix filter here: handleScanned() accepts both the canonical
+            // prefix and the legacy Android "tinode:id/" form.
+            qrScanner = QRScanner(embedIn: cameraPreviewView, expectedCodePrefix: nil, delegate: self)
         }
         qrScanner?.start()
     }
@@ -92,16 +94,16 @@ class QRScanViewController: UIViewController {
     // MARK: - Handling a code from either source
 
     private func handleScanned(raw: String?) {
-        // Same prefix rule the live scanner applies: our codes are
-        // "tinode:topic/<id>"; anything else is not a BLML code.
-        guard let raw = raw, raw.hasPrefix(Utils.kTopicUriPrefix) else {
+        // Accepts "tinode:topic/<id>" (canonical, shared with web) and
+        // "tinode:id/<id>" (codes from older Android builds).
+        guard let id = Utils.topicFromQrCode(raw) else {
             UiUtils.showToast(message: NSLocalizedString("Not a valid BLML QR code", comment: "Toast error"))
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) { [weak self] in
                 self?.qrScanner?.start()
             }
             return
         }
-        openTopic(id: String(raw.dropFirst(Utils.kTopicUriPrefix.count)))
+        openTopic(id: id)
     }
 
     private func openTopic(id: String) {
@@ -150,12 +152,9 @@ class QRScanViewController: UIViewController {
 
 extension QRScanViewController: QRScannerDelegate {
     func qrScanner(didScanCode codeValue: String?) {
-        // QRScanner already validated and stripped the prefix.
-        guard let code = codeValue else {
-            handleScanned(raw: nil)
-            return
-        }
-        openTopic(id: code)
+        // The scanner has no prefix filter, so the raw payload arrives here and
+        // goes through the same validation as photo-library scans.
+        handleScanned(raw: codeValue)
     }
 }
 

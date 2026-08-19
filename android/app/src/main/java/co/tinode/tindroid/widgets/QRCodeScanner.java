@@ -107,11 +107,12 @@ public class QRCodeScanner {
                         if (rawValue == null) {
                             return;
                         }
-                        if (rawValue.startsWith(mPrefix)) {
-                            String id = rawValue.substring(mPrefix.length());
-                            if (!TextUtils.isEmpty(id)) {
-                                mSuccessListener.onScanSuccessful(id);
-                            }
+                        // Codes from iOS carry "tinode:topic/", ones from older
+                        // Android builds "tinode:id/"; mPrefix stays as the
+                        // caller's canonical form for anything it prepends.
+                        String id = co.tinode.tindroid.UiUtils.topicFromQrCode(rawValue);
+                        if (!TextUtils.isEmpty(id)) {
+                            mSuccessListener.onScanSuccessful(id);
                         }
                     }
                 })
