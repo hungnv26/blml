@@ -16,6 +16,33 @@
     </group>
 
     <group android:id="@+id/not_archive">
+        <!-- Zalo-style top bar: QR scan plus an "add" dropdown. The submenu is
+             the place new entries slot into as the app grows. -->
+        <item
+            android:id="@+id/action_scan_qr"
+            android:orderInCategory="90"
+            android:title="@string/scan_qr_code"
+            android:icon="@drawable/ic_qr_code"
+            app:showAsAction="always" />
+
+        <item
+            android:id="@+id/action_add_menu"
+            android:orderInCategory="91"
+            android:title="@string/action_add_friend"
+            android:icon="@drawable/ic_add_plain"
+            app:showAsAction="always">
+            <menu>
+                <item
+                    android:id="@+id/action_add_friend"
+                    android:title="@string/action_add_friend"
+                    android:icon="@drawable/ic_person_add" />
+                <item
+                    android:id="@+id/action_create_group"
+                    android:title="@string/action_create_group"
+                    android:icon="@drawable/ic_group_2" />
+            </menu>
+        </item>
+
         <item
             android:id="@+id/action_show_archive"
             android:orderInCategory="101"

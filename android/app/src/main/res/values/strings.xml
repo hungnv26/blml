@@ -357,6 +357,12 @@
     <string name="password_changed">Password changed</string>
     <string name="my_code">My Code</string>
     <string name="scan_code">Scan code</string>
+    <string name="scan_qr_code">Scan QR code</string>
+    <string name="scan_from_photo">Scan from photo</string>
+    <string name="qr_code_not_found">No BLML QR code found in that image</string>
+    <string name="image_read_failed">Could not read that image</string>
+    <string name="action_add_friend">Add friend</string>
+    <string name="action_create_group">Create group</string>
     <string name="hint_enter_code">Configuration code</string>
     <string name="code_required">Code required</string>
     <string name="configure_connection">Configure Connection</string>
