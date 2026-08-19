@@ -73,43 +73,64 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
         navigationController?.navigationBar.prefersLargeTitles = true
     }
 
-    /// Turns the plain bar-button glyph into WhatsApp's filled green circle.
-    /// Built as a custom view because a UIBarButtonItem cannot carry a
-    /// background shape of its own.
+    /// Zalo-style top-right controls: a QR scan button and a "+" menu.
+    /// The green circle carries the menu; the storyboard's original compose
+    /// bar-button is fully replaced here.
     private func styleComposeButton() {
-        guard let item = navigationItem.rightBarButtonItem else { return }
-
         let size: CGFloat = 36
         let button = UIButton(type: .system)
         button.frame = CGRect(x: 0, y: 0, width: size, height: size)
         button.backgroundColor = UIColor(fromHexCode: 0xff25d366)
         button.layer.cornerRadius = size / 2
         button.tintColor = .white
-        button.setImage(UIImage(systemName: "square.and.pencil",
+        button.setImage(UIImage(systemName: "plus",
                                 withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)),
                         for: .normal)
-        // The icon's own weight sits it slightly low inside a circle.
-        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 1, right: 1)
-        button.accessibilityLabel = NSLocalizedString("New chat", comment: "Accessibility label")
+        button.accessibilityLabel = NSLocalizedString("Add", comment: "Accessibility label for the add menu")
 
-        // Reuse the storyboard segue rather than re-wiring navigation here.
-        button.addTarget(self, action: #selector(composeTapped), for: .touchUpInside)
-        item.customView = button
+        // Pull-down menu; new entries slot in here as the list grows.
+        button.menu = UIMenu(children: [
+            UIAction(title: NSLocalizedString("Add friend", comment: "Menu item"),
+                     image: UIImage(systemName: "person.badge.plus")) { [weak self] _ in
+                self?.openNewChat(tab: 0)      // Find: search the directory
+            },
+            UIAction(title: NSLocalizedString("Create group", comment: "Menu item"),
+                     image: UIImage(systemName: "person.2.badge.plus")) { [weak self] _ in
+                self?.openNewChat(tab: 1)      // New Group
+            }
+        ])
+        button.showsMenuAsPrimaryAction = true
+
+        let plusItem = UIBarButtonItem(customView: button)
         NSLayoutConstraint.activate([
             button.widthAnchor.constraint(equalToConstant: size),
             button.heightAnchor.constraint(equalToConstant: size)
         ])
+
+        let qrItem = UIBarButtonItem(
+            image: UIImage(systemName: "qrcode.viewfinder",
+                           withConfiguration: UIImage.SymbolConfiguration(pointSize: 19, weight: .medium)),
+            style: .plain, target: self, action: #selector(qrScanTapped))
+        qrItem.accessibilityLabel = NSLocalizedString("Scan QR code", comment: "Accessibility label")
+
+        // Rightmost first: "+" hugs the edge, QR sits to its left, as in Zalo.
+        navigationItem.rightBarButtonItems = [plusItem, qrItem]
     }
 
-    @objc private func composeTapped() {
-        // The storyboard segue hung off the bar-button item, so replacing that
-        // item with a custom view detached it. Push the same scene by id.
-        guard let vc = storyboard?.instantiateViewController(withIdentifier: "NewChatTabController") else {
+    private func openNewChat(tab: Int) {
+        guard let vc = storyboard?.instantiateViewController(withIdentifier: "NewChatTabController") as? UITabBarController else {
             return
         }
         // New Chat carries its own tab bar (Find / New Group / By ID). Without
         // this the main Chats/Contacts/Settings bar stays put and the two stack
         // on top of each other.
+        vc.hidesBottomBarWhenPushed = true
+        vc.selectedIndex = tab
+        navigationController?.pushViewController(vc, animated: true)
+    }
+
+    @objc private func qrScanTapped() {
+        let vc = QRScanViewController()
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
