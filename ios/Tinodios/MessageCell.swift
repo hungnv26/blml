@@ -132,12 +132,26 @@ class MessageCell: UICollectionViewCell {
 
     var progressView = ProgressView()
 
+    /// Zalo-style reaction pill overlapping the bubble's bottom corner: "❤️ 2".
+    /// An overlay, so it never changes the bubble's laid-out height.
+    var reactionsPill: PaddedLabel = {
+        let label = PaddedLabel()
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.textAlignment = .center
+        label.layer.cornerRadius = 11
+        label.layer.masksToBounds = true
+        label.layer.borderWidth = 0.5
+        label.isHidden = true
+        return label
+    }()
+
     /// The `MessageCellDelegate` for the cell.
     weak var delegate: MessageCellDelegate?
 
     func setupSubviews() {
         contentView.addSubview(newDateLabel)
         contentView.addSubview(containerView)
+        contentView.addSubview(reactionsPill)
         // Sender name lives INSIDE the bubble (WhatsApp-style). As a sibling of
         // containerView it was painted over by the bubble and invisible.
         containerView.addSubview(senderNameLabel)
@@ -166,6 +180,8 @@ class MessageCell: UICollectionViewCell {
         deliveryMarker.image = nil
         avatarView.image = nil
         progressView.isHidden = true
+        reactionsPill.isHidden = true
+        reactionsPill.text = nil
 
         isDeleted = false
 
@@ -175,6 +191,37 @@ class MessageCell: UICollectionViewCell {
         mediaEntityKey = nil
 
         timeStamp = nil
+    }
+
+    /// Fills and shows the reaction pill, or hides it when summary is nil.
+    /// Positioning happens in layoutSubviews once the bubble frame is known.
+    func showReactions(_ summary: String?) {
+        guard let summary = summary else {
+            reactionsPill.isHidden = true
+            return
+        }
+        reactionsPill.text = summary
+        reactionsPill.isHidden = false
+        reactionsPill.backgroundColor = .systemBackground
+        reactionsPill.textColor = .label
+        reactionsPill.layer.borderColor = UIColor.separator.cgColor
+        setNeedsLayout()
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard !reactionsPill.isHidden else { return }
+        // Zalo-style: the pill hangs off the bubble's bottom-trailing corner.
+        // Cells must not clip, or the overhang is cut off.
+        clipsToBounds = false
+        contentView.clipsToBounds = false
+        let size = CGSize(width: reactionsPill.intrinsicContentSize.width + 16, height: 22)
+        let bubble = containerView.frame
+        reactionsPill.frame = CGRect(
+            x: max(bubble.minX + 8, bubble.maxX - size.width - 8),
+            y: bubble.maxY - size.height / 2,
+            width: size.width, height: size.height)
+        contentView.bringSubviewToFront(reactionsPill)
     }
 
     /// Handle tap gesture on contentView and its subviews.

@@ -13,7 +13,88 @@ import TinodeSDK
 
 extension MessageViewController: MessageCellDelegate {
     func didLongTap(in cell: MessageCell) {
-        createPopupMenu(in: cell)
+        presentActionsSheet(for: cell)
+    }
+
+    /// Zalo-style hold menu: quick reactions on top, then the actions that
+    /// apply to this message. Reuses the UIMenuController-era handlers, which
+    /// all read the target from `activeMenuSeqId`.
+    func presentActionsSheet(for cell: MessageCell) {
+        guard !cell.isDeleted, let topic = topic else { return }
+        MessageViewController.activeMenuSeqId = cell.seqId
+        let mc = UIMenuController.shared    // handlers ignore it; kept for their signatures
+
+        var actions: [MessageActionsSheet.Action] = []
+        let synced = messageSeqIdIndex[cell.seqId].map { messages[$0].isSynced } ?? false
+        if synced {
+            actions.append(.init(NSLocalizedString("Reply", comment: "Menu item"), "arrowshape.turn.up.left") { [weak self] in
+                self?.showReplyPreview(sender: mc)
+            })
+            actions.append(.init(NSLocalizedString("Forward", comment: "Menu item"), "arrowshape.turn.up.right") { [weak self] in
+                self?.showForwardSelector(sender: mc)
+            })
+        }
+        actions.append(.init(NSLocalizedString("Copy", comment: "Menu item"), "doc.on.doc") { [weak self] in
+            self?.copyMessageContent(sender: mc)
+        })
+        if synced, canEditMessage(seq: cell.seqId) {
+            actions.append(.init(NSLocalizedString("Edit", comment: "Menu item"), "pencil") { [weak self] in
+                self?.showEditPreview(sender: mc)
+            })
+        }
+        if synced, topic.isAdmin {
+            if topic.pinned.contains(cell.seqId) {
+                actions.append(.init(NSLocalizedString("Unpin", comment: "Menu item for un-pinning message"), "pin.slash") { [weak self] in
+                    self?.unpinMessage(sender: mc)
+                })
+            } else {
+                actions.append(.init(NSLocalizedString("Pin", comment: "Menu item for pinning message"), "pin") { [weak self] in
+                    self?.pinMessage(sender: mc)
+                })
+            }
+        }
+        // Deletion tiers mirror the old menu exactly.
+        if topic.isSlfType {
+            actions.append(.init(NSLocalizedString("Delete", comment: "Menu item"), "trash", destructive: true) { [weak self] in
+                self?.deleteMessageHard(sender: mc)
+            })
+        } else if !topic.isChannel {
+            actions.append(.init(NSLocalizedString("Delete for me", comment: "Menu item"), "trash", destructive: true) { [weak self] in
+                self?.deleteMessageSoft(sender: mc)
+            })
+            if topic.isDeleter {
+                let maxDelAge = Cache.tinode.getServerLimit(for: Tinode.kMessageDeleteAge, withDefault: 0)
+                let canDelete = topic.isOwner || maxDelAge == 0 || (maxDelAge > 0 && (cell.timeStamp?.timeIntervalSince1970 ?? -1) > (Date().timeIntervalSince1970 - Double(maxDelAge)))
+                if canDelete {
+                    // "Recall" in Zalo terms: the message disappears for everyone.
+                    actions.append(.init(NSLocalizedString("Recall for everyone", comment: "Menu item: delete the message for all members"), "arrow.uturn.backward.circle", destructive: true) { [weak self] in
+                        self?.deleteMessageHard(sender: mc)
+                    })
+                }
+            }
+        }
+
+        let seq = cell.seqId
+        let sheet = MessageActionsSheet(actions: actions) { [weak self] emoji in
+            self?.toggleReaction(emoji, for: seq)
+        }
+        present(sheet, animated: true)
+    }
+
+    /// The edit rules the old menu applied, extracted so the sheet can reuse them.
+    private func canEditMessage(seq: Int) -> Bool {
+        guard let msgIndex = messageSeqIdIndex[seq] else { return false }
+        let msg = messages[msgIndex]
+        guard isFromCurrentSender(message: msg), let content = msg.content else { return false }
+        let prohibitedTypes: Set = ["AU", "EX", "FM", "IM", "VC", "VD"]
+        for e in content.entities ?? [] where prohibitedTypes.contains(e.tp ?? "") {
+            return false
+        }
+        let prohibitedStyles: Set = ["QQ"]
+        for f in content.fmt ?? [] where prohibitedStyles.contains(f.tp ?? "") {
+            return false
+        }
+        return true
     }
 
     func didTapContent(in cell: MessageCell, url: URL?) {

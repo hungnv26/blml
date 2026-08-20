@@ -101,7 +101,33 @@ extension MessageViewController: MessageDisplayLogic {
         assert(Thread.isMainThread)
         guard collectionView != nil else { return }
         let oldData = self.messages
-        let newData: [StoredMessage] = messages
+        // Reaction messages never render as bubbles: they are pulled out here
+        // and drawn as pills on the messages they refer to.
+        let (visibleMessages, byTarget) = MessageReactions.split(messages)
+        // A new reaction changes a pill but not the visible message list, so
+        // the array diff below sees nothing to do. Track which targets' pills
+        // changed and reload those cells explicitly at the end.
+        var changedPillSeqs = Set<Int>()
+        for key in Set(self.reactionsByTarget.keys).union(byTarget.keys)
+        where MessageReactions.summary(for: self.reactionsByTarget[key]) != MessageReactions.summary(for: byTarget[key]) {
+            changedPillSeqs.insert(key)
+        }
+        self.reactionsByTarget = byTarget
+        defer {
+            if !changedPillSeqs.isEmpty {
+                let paths = changedPillSeqs.compactMap { self.messageSeqIdIndex[$0] }
+                    .filter { $0 < self.messages.count }
+                    .map { IndexPath(item: $0, section: 0) }
+                if !paths.isEmpty {
+                    // Next runloop tick: never inside the batch updates above.
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self, self.collectionView != nil else { return }
+                        self.collectionView.reloadItems(at: paths.filter { $0.item < self.messages.count })
+                    }
+                }
+            }
+        }
+        let newData: [StoredMessage] = visibleMessages
 
         // Both empty: no change.
         guard !oldData.isEmpty || !newData.isEmpty else { return }

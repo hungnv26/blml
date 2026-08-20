@@ -23,6 +23,8 @@
 		B0AA5C34260000340079A97E /* WallpaperViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C18260000180079A97E /* WallpaperViewController.swift */; };
 		B0AA5C51260000510079A97E /* QRScanViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C50260000500079A97E /* QRScanViewController.swift */; };
 		B0AA5C53260000530079A97E /* AddFriendViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C52260000520079A97E /* AddFriendViewController.swift */; };
+		B0AA5C57260000570079A97E /* MessageActionsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C56260000560079A97E /* MessageActionsSheet.swift */; };
+		B0AA5C55260000550079A97E /* MessageReactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C54260000540079A97E /* MessageReactions.swift */; };
 		B0AA5C33260000330079A97E /* AppearanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C17260000170079A97E /* AppearanceViewController.swift */; };
 		B0AA5C32260000320079A97E /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C16260000160079A97E /* AppearanceSettings.swift */; };
 		B0AA5C06260000060079A97E /* InviteHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C05260000050079A97E /* InviteHelper.swift */; };
@@ -214,6 +216,8 @@
 		B0AA5C18260000180079A97E /* WallpaperViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperViewController.swift; sourceTree = "<group>"; };
 		B0AA5C50260000500079A97E /* QRScanViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScanViewController.swift; sourceTree = "<group>"; };
 		B0AA5C52260000520079A97E /* AddFriendViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFriendViewController.swift; sourceTree = "<group>"; };
+		B0AA5C56260000560079A97E /* MessageActionsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageActionsSheet.swift; sourceTree = "<group>"; };
+		B0AA5C54260000540079A97E /* MessageReactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageReactions.swift; sourceTree = "<group>"; };
 		B0AA5C17260000170079A97E /* AppearanceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceViewController.swift; sourceTree = "<group>"; };
 		B0AA5C16260000160079A97E /* AppearanceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettings.swift; sourceTree = "<group>"; };
 		B0AA5C05260000050079A97E /* InviteHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteHelper.swift; sourceTree = "<group>"; };
@@ -510,6 +514,8 @@
 				B0AA5C18260000180079A97E /* WallpaperViewController.swift */,
 				B0AA5C50260000500079A97E /* QRScanViewController.swift */,
 				B0AA5C52260000520079A97E /* AddFriendViewController.swift */,
+				B0AA5C56260000560079A97E /* MessageActionsSheet.swift */,
+				B0AA5C54260000540079A97E /* MessageReactions.swift */,
 				B0AA5C17260000170079A97E /* AppearanceViewController.swift */,
 				B0AA5C16260000160079A97E /* AppearanceSettings.swift */,
 				B0AA5C05260000050079A97E /* InviteHelper.swift */,
@@ -1080,6 +1086,8 @@
 				B0AA5C34260000340079A97E /* WallpaperViewController.swift in Sources */,
 				B0AA5C51260000510079A97E /* QRScanViewController.swift in Sources */,
 				B0AA5C53260000530079A97E /* AddFriendViewController.swift in Sources */,
+				B0AA5C57260000570079A97E /* MessageActionsSheet.swift in Sources */,
+				B0AA5C55260000550079A97E /* MessageReactions.swift in Sources */,
 				B0AA5C33260000330079A97E /* AppearanceViewController.swift in Sources */,
 				B0AA5C32260000320079A97E /* AppearanceSettings.swift in Sources */,
 				B0AA5C06260000060079A97E /* InviteHelper.swift in Sources */,
