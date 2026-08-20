@@ -28,6 +28,7 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./downloads:/downloads:ro   # /android: the APK download page + binary
+      - ./site:/site:ro             # blml.app: the public homepage
       - caddy_data:/data      # certificates live here; losing this re-issues them
       - caddy_config:/config
     depends_on:

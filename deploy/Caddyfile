@@ -7,6 +7,37 @@
 	email {$ACME_EMAIL}
 }
 
+# The public homepage on the bare domain: what BLML is, and where to get it.
+# Static files only — the chat itself stays on {$BLML_DOMAIN}, so a visitor
+# reading the marketing page never touches the chat server.
+#
+# This block only serves once blml.app has an A record pointing here; until
+# then Caddy retries the certificate in the background and the chat site is
+# unaffected.
+{$BLML_SITE_DOMAIN:blml.app} {
+	encode zstd gzip
+	root * /site
+	file_server
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	# Screenshots and the logo change name when they change; the page itself
+	# must revalidate or an edit takes a week to reach anyone.
+	@assets path *.png *.jpg *.jpeg *.svg *.webp *.woff2
+	header @assets Cache-Control "public, max-age=604800"
+	@page path / *.html
+	header @page Cache-Control "no-cache"
+}
+
+# One canonical address. www just forwards.
+www.{$BLML_SITE_DOMAIN:blml.app} {
+	redir https://{$BLML_SITE_DOMAIN:blml.app}{uri} permanent
+}
+
 {$BLML_DOMAIN} {
 	encode zstd gzip
 
