@@ -155,7 +155,7 @@ public class BaseDb extends SQLiteOpenHelper {
      * @param <T>   type of the parsed object
      * @return parsed object or null
      */
-    static <T> T deserialize(String input) {
+    public static <T> T deserialize(String input) {
         if (input != null) {
             try {
                 String[] parts = input.split(";", 2);

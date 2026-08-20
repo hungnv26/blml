@@ -407,11 +407,31 @@ public class MessageDb implements BaseColumns {
                 + COLUMN_NAME_TOPIC_ID + "=" + topicId +
                 " AND "
                 + COLUMN_NAME_EFFECTIVE_SEQ + " IS NOT NULL" +
+                // Emoji reactions travel as messages with a "reaction" head.
+                // They render as pills on their target bubble, never as rows.
+                " AND (" + COLUMN_NAME_HEAD + " IS NULL OR "
+                + COLUMN_NAME_HEAD + " NOT LIKE '%\"reaction\"%')" +
                 " ORDER BY "
                 + COLUMN_NAME_EFFECTIVE_SEQ + " DESC" +
                 " LIMIT " + (pageCount * pageSize);
 
         return db.rawQuery(sql, null);
+    }
+
+    /**
+     * Load reaction-carrier messages for a topic: seq, sender and head of every
+     * live message whose head marks it as an emoji reaction. Deleted statuses
+     * are excluded so a retracted reaction stops counting immediately.
+     */
+    public static Cursor queryReactions(SQLiteDatabase db, long topicId) {
+        return db.rawQuery("SELECT " +
+                COLUMN_NAME_SEQ + "," +
+                COLUMN_NAME_SENDER + "," +
+                COLUMN_NAME_HEAD +
+                " FROM " + TABLE_NAME +
+                " WHERE " + COLUMN_NAME_TOPIC_ID + "=" + topicId +
+                " AND " + COLUMN_NAME_HEAD + " LIKE '%\"reaction\"%'" +
+                " AND " + COLUMN_NAME_STATUS + "<=" + BaseDb.Status.SYNCED.value, null);
     }
 
     /**

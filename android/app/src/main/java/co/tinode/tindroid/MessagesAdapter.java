@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -72,7 +73,9 @@ import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
 import co.tinode.tindroid.db.BaseDb;
+import android.database.sqlite.SQLiteDatabase;
 import co.tinode.tindroid.db.MessageDb;
+import co.tinode.tindroid.db.TopicDb;
 import co.tinode.tindroid.db.SqlStore;
 import co.tinode.tindroid.db.StoredMessage;
 import co.tinode.tindroid.format.CopyFormatter;
@@ -810,17 +813,24 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             }
         }
 
+        if (holder.mReactionsPill != null) {
+            String summary = reactionsSummary(m.seq);
+            holder.mReactionsPill.setText(summary);
+            holder.mReactionsPill.setVisibility(summary != null ? View.VISIBLE : View.GONE);
+        }
+
         holder.itemView.setOnLongClickListener(v -> {
             int pos = holder.getBindingAdapterPosition();
 
-            if (mSelectedItems == null) {
-                mSelectionMode = mActivity.startSupportActionMode(mSelectionModeCallback);
+            if (mSelectedItems != null) {
+                // Already selecting: keep the classic toggle behavior.
+                toggleSelectionAt(pos);
+                notifyItemChanged(pos);
+                updateSelectionMode();
+            } else {
+                // Zalo-style hold menu with quick reactions.
+                showActionsSheet(pos);
             }
-
-            toggleSelectionAt(pos);
-            notifyItemChanged(pos);
-            updateSelectionMode();
-
             return true;
         });
         holder.itemView.setOnClickListener(v -> {
@@ -958,6 +968,227 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         }
     }
 
+    // ── Emoji reactions ─────────────────────────────────────────────────────
+    // A reaction is an ordinary message whose head carries "reaction" (emoji)
+    // and "ref" (target seq). Carrier rows are excluded from the transcript
+    // query; this map, rebuilt on every cursor swap, drives the pills.
+
+    static final String[] QUICK_REACTIONS = {"❤️", "👍", "😂", "😮", "😢", "😡"};
+
+    private static class Reaction {
+        final String emoji;
+        final String sender;
+        final int seq;
+        Reaction(String emoji, String sender, int seq) {
+            this.emoji = emoji;
+            this.sender = sender;
+            this.seq = seq;
+        }
+    }
+
+    /** Target seq → reactions on that message. */
+    private final Map<Integer, List<Reaction>> mReactions = new HashMap<>();
+
+    private void loadReactions() {
+        mReactions.clear();
+        if (mTopicName == null) {
+            return;
+        }
+        SQLiteDatabase db = BaseDb.getInstance().getReadableDatabase();
+        long topicId = TopicDb.getId(db, mTopicName);
+        if (topicId < 0) {
+            return;
+        }
+        try (Cursor c = MessageDb.queryReactions(db, topicId)) {
+            while (c.moveToNext()) {
+                int seq = c.getInt(0);
+                String sender = c.getString(1);
+                Map<String, Object> head = BaseDb.deserialize(c.getString(2));
+                if (head == null) {
+                    continue;
+                }
+                Object emoji = head.get("reaction");
+                Object ref = head.get("ref");
+                if (emoji instanceof String && ref instanceof Number) {
+                    mReactions.computeIfAbsent(((Number) ref).intValue(), k -> new ArrayList<>())
+                            .add(new Reaction((String) emoji, sender, seq));
+                }
+            }
+        } catch (Exception ex) {
+            Log.w(TAG, "Failed to load reactions", ex);
+        }
+    }
+
+    /** "❤️ 2 😂" pill text for one message; null when unreacted. */
+    private String reactionsSummary(int seq) {
+        List<Reaction> list = mReactions.get(seq);
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        Map<String, Integer> counts = new LinkedHashMap<>();
+        for (Reaction r : list) {
+            counts.merge(r.emoji, 1, Integer::sum);
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Integer> e : counts.entrySet()) {
+            if (sb.length() > 0) {
+                sb.append(' ');
+            }
+            sb.append(e.getKey());
+            if (e.getValue() > 1) {
+                sb.append(' ').append(e.getValue());
+            }
+        }
+        return sb.toString();
+    }
+
+    /** The Zalo-style hold-a-message sheet: quick reactions on top, then the
+     * actions that apply to this message. Mirrors iOS. */
+    private void showActionsSheet(final int pos) {
+        final StoredMessage m = getMessage(pos);
+        final ComTopic topic = (ComTopic) Cache.getTinode().getTopic(mTopicName);
+        if (m == null || topic == null || m.isDeleted()) {
+            return;
+        }
+        final float dp = mActivity.getResources().getDisplayMetrics().density;
+        final android.app.Dialog dialog = new android.app.Dialog(mActivity);
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+
+        android.widget.LinearLayout root = new android.widget.LinearLayout(mActivity);
+        root.setOrientation(android.widget.LinearLayout.VERTICAL);
+
+        // Quick reactions.
+        android.widget.LinearLayout emojiRow = new android.widget.LinearLayout(mActivity);
+        emojiRow.setOrientation(android.widget.LinearLayout.HORIZONTAL);
+        emojiRow.setBackgroundResource(R.drawable.reaction_pill);
+        emojiRow.setPadding(0, (int) (6 * dp), 0, (int) (6 * dp));
+        for (String emoji : QUICK_REACTIONS) {
+            TextView t = new TextView(mActivity);
+            t.setText(emoji);
+            t.setTextSize(28);
+            t.setGravity(android.view.Gravity.CENTER);
+            t.setOnClickListener(v -> {
+                dialog.dismiss();
+                toggleReaction(m.seq, emoji);
+            });
+            emojiRow.addView(t, new android.widget.LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        }
+        android.widget.LinearLayout.LayoutParams rowLp = new android.widget.LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        rowLp.bottomMargin = (int) (10 * dp);
+        root.addView(emojiRow, rowLp);
+
+        // Action list.
+        android.widget.LinearLayout list = new android.widget.LinearLayout(mActivity);
+        list.setOrientation(android.widget.LinearLayout.VERTICAL);
+        list.setBackgroundResource(R.drawable.reaction_pill);
+        boolean synced = m.status == BaseDb.Status.SYNCED;
+        if (synced) {
+            addSheetRow(list, dialog, R.string.action_reply, R.drawable.ic_reply, false, () ->
+                    showMessageQuote(UiUtils.MsgAction.REPLY, pos, Const.QUOTED_REPLY_LENGTH));
+            addSheetRow(list, dialog, R.string.action_forward, R.drawable.ic_forward, false, () ->
+                    showMessageForwardSelector(pos));
+        }
+        addSheetRow(list, dialog, R.string.action_copy, R.drawable.ic_copy, false, () ->
+                copyMessageText(new int[]{pos}));
+        if (synced && m.isMine()) {
+            addSheetRow(list, dialog, R.string.action_edit, R.drawable.ic_edit, false, () ->
+                    showMessageQuote(UiUtils.MsgAction.EDIT, pos, Const.EDIT_PREVIEW_LENGTH));
+        }
+        if (synced && topic.isManager()) {
+            boolean pinned = topic.isPinned(m.seq);
+            addSheetRow(list, dialog, pinned ? R.string.action_unpin : R.string.action_pin,
+                    R.drawable.ic_push_pin, false, () -> sendPinMessage(pos, !pinned));
+        }
+        addSheetRow(list, dialog, R.string.action_select_multiple, R.drawable.ic_checklist_grey, false, () -> {
+            mSelectionMode = mActivity.startSupportActionMode(mSelectionModeCallback);
+            toggleSelectionAt(pos);
+            notifyItemChanged(pos);
+            updateSelectionMode();
+        });
+        if (!ComTopic.isChannel(mTopicName)) {
+            addSheetRow(list, dialog, R.string.action_delete_for_me, R.drawable.ic_delete_outline, true, () ->
+                    sendDeleteMessages(new int[]{pos}, false));
+            if (topic.isDeleter()) {
+                addSheetRow(list, dialog, R.string.action_recall, R.drawable.ic_delete_red, true, () ->
+                        sendDeleteMessages(new int[]{pos}, true));
+            }
+        }
+        root.addView(list, new android.widget.LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        dialog.setContentView(root);
+        android.view.Window w = dialog.getWindow();
+        if (w != null) {
+            w.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+            w.setGravity(android.view.Gravity.BOTTOM);
+            w.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            android.view.WindowManager.LayoutParams attrs = w.getAttributes();
+            attrs.horizontalMargin = 0.04f;
+            attrs.verticalMargin = 0.02f;
+            w.setAttributes(attrs);
+        }
+        dialog.show();
+    }
+
+    private void addSheetRow(android.widget.LinearLayout list, android.app.Dialog dialog,
+                             int titleRes, int iconRes, boolean destructive, Runnable action) {
+        float dp = mActivity.getResources().getDisplayMetrics().density;
+        TextView row = new TextView(mActivity);
+        row.setText(titleRes);
+        row.setTextSize(16);
+        if (destructive) {
+            row.setTextColor(0xFFD32F2F);
+        }
+        row.setCompoundDrawablesRelativeWithIntrinsicBounds(iconRes, 0, 0, 0);
+        row.setCompoundDrawablePadding((int) (14 * dp));
+        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        row.setPadding((int) (18 * dp), (int) (13 * dp), (int) (18 * dp), (int) (13 * dp));
+        android.util.TypedValue tv = new android.util.TypedValue();
+        mActivity.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, tv, true);
+        row.setForeground(AppCompatResources.getDrawable(mActivity, tv.resourceId));
+        row.setOnClickListener(v -> {
+            dialog.dismiss();
+            action.run();
+        });
+        list.addView(row, new android.widget.LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    }
+
+    /** One reaction per person per message, Zalo semantics: same emoji again
+     * retracts, a different one replaces. */
+    private void toggleReaction(int targetSeq, String emoji) {
+        final ComTopic topic = (ComTopic) Cache.getTinode().getTopic(mTopicName);
+        if (topic == null) {
+            return;
+        }
+        String me = Cache.getTinode().getMyId();
+        Reaction mine = null;
+        List<Reaction> list = mReactions.get(targetSeq);
+        if (list != null && me != null) {
+            for (Reaction r : list) {
+                if (me.equals(r.sender)) {
+                    mine = r;
+                    break;
+                }
+            }
+        }
+        if (mine != null) {
+            //noinspection unchecked
+            topic.delMessages(mine.seq, mine.seq + 1, true);
+            if (mine.emoji.equals(emoji)) {
+                runLoader(false);
+                return;
+            }
+        }
+        Map<String, Object> head = new HashMap<>();
+        head.put("reaction", emoji);
+        head.put("ref", targetSeq);
+        //noinspection unchecked
+        topic.publish(Drafty.fromPlainText(emoji), head);
+    }
+
     private void toggleSelectionAt(int pos) {
         if (mSelectedItems.get(pos)) {
             mSelectedItems.delete(pos);
@@ -1053,6 +1284,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         if (oldCursor != null && oldCursor != cursor) {
             oldCursor.close();
         }
+
+        // The transcript cursor excludes reaction carriers; rebuild the pill
+        // map from its own query whenever the transcript changes.
+        loadReactions();
 
         if (refresh != REFRESH_NONE) {
             mActivity.runOnUiThread(() -> {
@@ -1180,6 +1415,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         final View mProgress;
         final TextView mProgressResult;
         final GestureDetector mGestureDetector;
+        final TextView mReactionsPill;
         int seqId = 0;
 
         ViewHolder(View itemView, int viewType) {
@@ -1188,6 +1424,26 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             mViewType = viewType;
             mAvatar = itemView.findViewById(R.id.avatar);
             mMessageBubble = itemView.findViewById(R.id.messageBubble);
+            // Zalo-style reaction pill, injected in code so all six bubble
+            // layouts get it without touching each XML. It overlays the
+            // bottom-trailing corner of the bubble's frame.
+            View frame = itemView.findViewById(R.id.content);
+            if (frame instanceof android.widget.FrameLayout) {
+                float dp = itemView.getResources().getDisplayMetrics().density;
+                TextView pill = new TextView(itemView.getContext());
+                pill.setTextSize(12);
+                pill.setBackgroundResource(R.drawable.reaction_pill);
+                pill.setPadding((int) (8 * dp), (int) (2 * dp), (int) (8 * dp), (int) (2 * dp));
+                pill.setVisibility(View.GONE);
+                android.widget.FrameLayout.LayoutParams lp = new android.widget.FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                        android.view.Gravity.BOTTOM | android.view.Gravity.END);
+                lp.setMarginEnd((int) (12 * dp));
+                ((android.widget.FrameLayout) frame).addView(pill, lp);
+                mReactionsPill = pill;
+            } else {
+                mReactionsPill = null;
+            }
             mDeliveredIcon = itemView.findViewById(R.id.messageViewedIcon);
             mDateDivider = itemView.findViewById(R.id.dateDivider);
             mText = itemView.findViewById(R.id.messageText);

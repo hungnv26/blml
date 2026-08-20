@@ -373,6 +373,9 @@
     <string name="in_group_with_you">In a group with you</string>
     <string name="enter_full_phone">Enter a full phone number with country code, like +61…</string>
     <string name="invalid_email">That does not look like an email address</string>
+    <string name="action_delete_for_me">Delete for me</string>
+    <string name="action_recall">Recall for everyone</string>
+    <string name="action_select_multiple">Select multiple</string>
     <string name="hint_enter_code">Configuration code</string>
     <string name="code_required">Code required</string>
     <string name="configure_connection">Configure Connection</string>
