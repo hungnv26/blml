@@ -147,14 +147,40 @@ To ship a code change: commit, then re-run `migrate-to-vps.sh`. It rsyncs and
 rebuilds. It will ask before replacing the database — answer no if you only
 meant to update the code, or better, take a backup first.
 
+## Files the build needs that are not in git
+
+Some files a working build depends on are deliberately untracked. Nothing
+breaks if you lose them — each can be downloaded again — but a fresh clone
+will not build a working app until they are back in place.
+
+| File | Where it comes from | Why it is untracked |
+|---|---|---|
+| `android/app/google-services.json` | Firebase console → Android app | Ignored by upstream, and this repo is public |
+| `ios/GoogleService-Info.plist` | Firebase console → iOS app | Same |
+| `android/blml-release.jks` + `keystore.properties` | Generated once; **irreplaceable** | Signing key: losing it strands every Android install |
+| `ios/.testflight.env` + `~/.appstoreconnect/private_keys/*.p8` | App Store Connect → API keys | Can publish builds as you |
+| `deploy/secrets.env` | Written during setup | Live production credentials |
+
+The two Firebase files are not secrets in the strict sense — they ship inside
+the app binaries and can be read out of any APK. They stay out of git because
+a public repo is still the wrong home for a project's API key, and because
+each deployment should point at its own Firebase project. Verify them with:
+
+```bash
+./deploy/check-firebase-config.sh
+```
+
+Only `blml-release.jks` cannot be regenerated. Back it up somewhere that is
+not this laptop.
+
 ## Still outstanding before the app stores
 
 These are unrelated to the VPS and need you:
 
-- **Firebase** — both configs still say `blml-placeholder`, so push
-  notifications do not work. A real project is needed for iOS and Android.
-- **Android release keystore** — the current one is dev-only and labelled
-  "NOT for Play Store use".
+- **Push notifications** — Firebase project `blml-80011` is wired into both
+  clients, but nothing is delivered yet: iOS needs an APNs key uploaded to
+  Firebase, and the server needs its FCM notificator enabled with
+  service-account credentials.
 - **Privacy policy URL** — both stores require one that is publicly hosted.
   Now that you have a domain, `https://chat.blml.app/privacy` is the obvious
   home for it.
