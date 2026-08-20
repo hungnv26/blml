@@ -52,11 +52,11 @@ class MessageActionsSheet: UIViewController {
         let reactionsRow = UIStackView()
         reactionsRow.axis = .horizontal
         reactionsRow.distribution = .fillEqually
-        reactionsRow.heightAnchor.constraint(equalToConstant: 56).isActive = true
+        reactionsRow.heightAnchor.constraint(equalToConstant: 64).isActive = true
         for emoji in MessageReactions.kQuickReactions {
             let b = UIButton(type: .system)
             b.setTitle(emoji, for: .normal)
-            b.titleLabel?.font = UIFont.systemFont(ofSize: 30)
+            b.titleLabel?.font = UIFont.systemFont(ofSize: 36)
             b.addAction(UIAction { [weak self] _ in
                 self?.dismiss(animated: true) { self?.onReaction(emoji) }
             }, for: .touchUpInside)

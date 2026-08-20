@@ -1061,11 +1061,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         android.widget.LinearLayout emojiRow = new android.widget.LinearLayout(mActivity);
         emojiRow.setOrientation(android.widget.LinearLayout.HORIZONTAL);
         emojiRow.setBackgroundResource(R.drawable.reaction_pill);
-        emojiRow.setPadding(0, (int) (6 * dp), 0, (int) (6 * dp));
+        emojiRow.setPadding(0, (int) (9 * dp), 0, (int) (9 * dp));
         for (String emoji : QUICK_REACTIONS) {
             TextView t = new TextView(mActivity);
             t.setText(emoji);
-            t.setTextSize(28);
+            t.setTextSize(34);
             t.setGravity(android.view.Gravity.CENTER);
             t.setOnClickListener(v -> {
                 dialog.dismiss();
@@ -1186,7 +1186,19 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         head.put("reaction", emoji);
         head.put("ref", targetSeq);
         //noinspection unchecked
-        topic.publish(Drafty.fromPlainText(emoji), head);
+        PromisedReply<ServerMessage> published = topic.publish(Drafty.fromPlainText(emoji), head);
+        // Reload for the local echo, and again when the server acks and the
+        // reaction's seq id becomes real. Without this the pill only showed up
+        // after leaving and re-entering the chat.
+        runLoader(false);
+        if (published != null) {
+            published.thenFinally(new PromisedReply.FinalListener() {
+                @Override
+                public void onFinally() {
+                    runLoader(false);
+                }
+            });
+        }
     }
 
     private void toggleSelectionAt(int pos) {
@@ -1431,9 +1443,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             if (frame instanceof android.widget.FrameLayout) {
                 float dp = itemView.getResources().getDisplayMetrics().density;
                 TextView pill = new TextView(itemView.getContext());
-                pill.setTextSize(12);
+                // The emoji is the content, so it carries the size: 12sp read
+                // as a typo next to the message text.
+                pill.setTextSize(17);
                 pill.setBackgroundResource(R.drawable.reaction_pill);
-                pill.setPadding((int) (8 * dp), (int) (2 * dp), (int) (8 * dp), (int) (2 * dp));
+                pill.setPadding((int) (9 * dp), (int) (3 * dp), (int) (9 * dp), (int) (3 * dp));
                 pill.setVisibility(View.GONE);
                 android.widget.FrameLayout.LayoutParams lp = new android.widget.FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
