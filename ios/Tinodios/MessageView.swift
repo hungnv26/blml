@@ -33,7 +33,11 @@ class MessageView: UICollectionView {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture(_:)))
         tapGesture.delaysTouchesBegan = true
         addGestureRecognizer(tapGesture)
-        addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(handleTapGesture(_:))))
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleTapGesture(_:)))
+        // Half a second of holding, then the menu — stated rather than left to
+        // the platform default so the intent survives.
+        longPress.minimumPressDuration = 0.5
+        addGestureRecognizer(longPress)
     }
 
     required public init?(coder aDecoder: NSCoder) {
@@ -48,7 +52,13 @@ class MessageView: UICollectionView {
 
     @objc
     func handleTapGesture(_ gesture: UIGestureRecognizer) {
-        guard gesture.state == .ended else { return }
+        // A long press has to fire the moment it is recognized — finger still
+        // down, half a second in — the way every other messenger behaves.
+        // Waiting for .ended meant the menu only appeared once you let go.
+        // A tap still fires on .ended: that is when a tap is a tap.
+        let wantedState: UIGestureRecognizer.State =
+            gesture is UILongPressGestureRecognizer ? .began : .ended
+        guard gesture.state == wantedState else { return }
 
         let touchLocation = gesture.location(in: self)
         guard let indexPath = indexPathForItem(at: touchLocation) else { return }
