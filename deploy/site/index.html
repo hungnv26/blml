@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BLML — a private chat app for your people</title>
+<meta name="description" content="BLML is a private chat app for family and close friends. No ads, no algorithms, no company reading your messages. It runs on a server we control.">
+<link rel="icon" href="/img/logo.png">
+<meta property="og:title" content="BLML — a private chat app for your people">
+<meta property="og:description" content="No ads, no algorithms, no company reading your messages.">
+<meta property="og:image" content="https://blml.app/img/logo.png">
+<meta property="og:url" content="https://blml.app">
+<meta name="theme-color" content="#00a884">
+<style>
+  :root {
+    color-scheme: light dark;
+    --green: #00a884;
+    --green-bright: #25d366;
+    --ink: light-dark(#111b21, #e9edef);
+    --ink-soft: light-dark(#3b4a54, #c5ccd1);
+    --ink-faint: light-dark(#667781, #8696a0);
+    --bg: light-dark(#ffffff, #0b141a);
+    --panel: light-dark(#f6f8f9, #16232b);
+    --line: light-dark(#e4e8ea, #223038);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 0 1.25rem; }
+
+  /* Hero */
+  header { text-align: center; padding: 4.5rem 0 3rem; }
+  header img.logo { width: 104px; height: 104px; }
+  h1 {
+    font-size: clamp(2.1rem, 6vw, 3.2rem);
+    line-height: 1.15; margin: 1.2rem 0 .6rem; letter-spacing: -.02em;
+  }
+  .tagline { font-size: clamp(1.05rem, 2.6vw, 1.3rem); color: var(--ink-soft); margin: 0 auto; max-width: 34rem; }
+
+  /* Buttons */
+  .cta { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; margin: 2.2rem 0 .75rem; }
+  .btn {
+    display: inline-flex; align-items: center; gap: .55rem;
+    padding: .85rem 1.6rem; border-radius: 999px; text-decoration: none;
+    font-weight: 600; font-size: 1rem; border: 1.5px solid transparent;
+  }
+  .btn.primary { background: var(--green); color: #fff; }
+  .btn.primary:hover { background: #00967a; }
+  .btn.ghost { border-color: var(--line); color: var(--ink); background: var(--panel); }
+  .btn.ghost:hover { border-color: var(--green); color: var(--green); }
+  .cta-note { text-align: center; color: var(--ink-faint); font-size: .9rem; margin: 0; }
+
+  /* Screenshot strip */
+  .shots {
+    display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    padding: 3rem 0 1rem;
+  }
+  .shots img { width: 210px; height: auto; }
+  .web-shot { padding: 1rem 0 3.5rem; text-align: center; }
+  .web-shot img {
+    width: 100%; max-width: 46rem; height: auto;
+    border-radius: 10px; border: 1px solid var(--line);
+  }
+
+  /* Features */
+  section.features { background: var(--panel); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 3.5rem 0; }
+  .grid { display: grid; gap: 2rem 2.5rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+  .grid h3 { font-size: 1.05rem; margin: 0 0 .35rem; }
+  .grid p { margin: 0; color: var(--ink-soft); font-size: .97rem; }
+  h2 { font-size: clamp(1.5rem, 4vw, 2rem); margin: 0 0 1.8rem; letter-spacing: -.01em; }
+
+  /* Download */
+  section.get { padding: 3.5rem 0; }
+  .platforms { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); margin-top: 1.5rem; }
+  .card {
+    border: 1px solid var(--line); border-radius: 14px; padding: 1.4rem;
+    background: var(--panel);
+  }
+  .card h3 { margin: 0 0 .4rem; font-size: 1.05rem; }
+  .card p { margin: 0 0 1rem; color: var(--ink-soft); font-size: .95rem; }
+  .card a { color: var(--green); font-weight: 600; text-decoration: none; }
+  .card a:hover { text-decoration: underline; }
+
+  .invite {
+    margin-top: 2rem; padding: 1.1rem 1.3rem; border-radius: 12px;
+    border-left: 3px solid var(--green); background: var(--panel);
+    color: var(--ink-soft); font-size: .95rem;
+  }
+
+  footer {
+    border-top: 1px solid var(--line); padding: 2.5rem 0 3.5rem;
+    color: var(--ink-faint); font-size: .9rem; text-align: center;
+  }
+  footer a { color: var(--green); }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <img class="logo" src="/img/logo.png" alt="BLML">
+  <h1>A private chat app<br>for the people who matter</h1>
+  <p class="tagline">
+    No ads. No algorithms deciding what you see. No company reading your
+    messages to sell you things.
+  </p>
+  <div class="cta">
+    <a class="btn primary" href="https://chat.blml.app/android">Download for Android</a>
+    <a class="btn ghost" href="https://testflight.apple.com/join/yQDTJcax">Get it on iPhone</a>
+    <a class="btn ghost" href="https://chat.blml.app">Open in browser</a>
+  </div>
+  <p class="cta-note">Free · Invite-only · Runs on our own server</p>
+</header>
+
+<div class="wrap shots">
+  <img src="/img/ios-chats.png" alt="BLML chat list on iPhone">
+  <img src="/img/ios-conversation.png" alt="A BLML conversation on iPhone">
+  <img src="/img/android-chats.png" alt="BLML chat list on Android">
+  <img src="/img/android-conversation.png" alt="A BLML conversation on Android">
+</div>
+
+<div class="wrap web-shot">
+  <img src="/img/web-conversation.png" alt="BLML running in a web browser">
+</div>
+
+<section class="features">
+  <div class="wrap">
+    <h2>What you can do with it</h2>
+    <div class="grid">
+      <div>
+        <h3>Talk, properly</h3>
+        <p>One-to-one or in a group. Typing indicators, delivery and read
+           marks, replies, edits, and voice notes when typing is too slow.</p>
+      </div>
+      <div>
+        <h3>React and reply</h3>
+        <p>Hold any message for reactions, reply, forward, copy or pin —
+           the gestures you already know.</p>
+      </div>
+      <div>
+        <h3>Share real files</h3>
+        <p>Photos, videos, documents and audio up to 100&nbsp;MB each — a real
+           video, not a compressed smear of one.</p>
+      </div>
+      <div>
+        <h3>Call each other</h3>
+        <p>Voice and video calls, relayed through our own server when the
+           network won't let devices talk directly.</p>
+      </div>
+      <div>
+        <h3>Keep a group organised</h3>
+        <p>Mentions, pinned messages and polls, so "what are we eating"
+           takes one tap each instead of forty messages.</p>
+      </div>
+      <div>
+        <h3>Find each other easily</h3>
+        <p>Scan a QR code, add by phone number or email, or pick from people
+           already in your groups.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="get wrap">
+  <h2>Get BLML</h2>
+  <div class="platforms">
+    <div class="card">
+      <h3>Android</h3>
+      <p>Download the app straight from our server. Your phone will ask
+         permission to install it — that's normal for an app that doesn't
+         come from the Play Store.</p>
+      <a href="https://chat.blml.app/android">Download the app →</a>
+    </div>
+    <div class="card">
+      <h3>iPhone and iPad</h3>
+      <p>While the App Store release is being reviewed, BLML is available
+         through Apple's TestFlight.</p>
+      <a href="https://testflight.apple.com/join/yQDTJcax">Join on TestFlight →</a>
+    </div>
+    <div class="card">
+      <h3>Any web browser</h3>
+      <p>Nothing to install. Open it on a laptop and pick up the same
+         conversations.</p>
+      <a href="https://chat.blml.app">Open chat.blml.app →</a>
+    </div>
+  </div>
+
+  <p class="invite">
+    <strong>You'll need an invite code.</strong> BLML is invite-only on
+    purpose — an address anyone can reach is not a room anyone can walk into.
+    Ask whoever told you about BLML for the code.
+  </p>
+</section>
+
+<footer class="wrap">
+  <p>
+    BLML is open source ·
+    <a href="https://github.com/hungnv26/blml">Source code</a> ·
+    <a href="https://chat.blml.app/privacy">Privacy policy</a>
+  </p>
+  <p>Built on <a href="https://github.com/tinode/chat">Tinode</a>.</p>
+</footer>
+
+</body>
+</html>
