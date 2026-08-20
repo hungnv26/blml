@@ -7,11 +7,13 @@ No ads. No algorithms deciding what you see. No company reading your messages to
 sell you things. BLML runs on a server you control, and your conversations,
 photos and voice notes stay there.
 
-**Try it: [chat.blml.app](https://chat.blml.app)**
+**[blml.app](https://blml.app)** — the homepage, with the app for every
+platform. **[chat.blml.app](https://chat.blml.app)** opens the chat itself in
+any browser, no install needed.
 
-It opens in any browser, no install needed. Creating an account needs an invite
-code from whoever runs the server — BLML is invite-only on purpose, so an
-address anyone can reach is not a room anyone can walk into.
+Creating an account needs an invite code from whoever runs the server — BLML is
+invite-only on purpose, so an address anyone can reach is not a room anyone can
+walk into.
 
 ### On your phone
 
@@ -106,6 +108,9 @@ photos you want to find again later.
 **iPhone and iPad**, **Android**, and **any web browser**. All three talk to the
 same server, so a conversation looks the same wherever you pick it up, and
 history follows you between devices.
+
+Every download is gathered on **[blml.app](https://blml.app)**, which reads in
+Vietnamese or English:
 
 - **iPhone**: join through [TestFlight](https://testflight.apple.com/join/yQDTJcax)
   while the App Store release is in review.
