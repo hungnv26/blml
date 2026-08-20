@@ -973,7 +973,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
     // and "ref" (target seq). Carrier rows are excluded from the transcript
     // query; this map, rebuilt on every cursor swap, drives the pills.
 
-    static final String[] QUICK_REACTIONS = {"❤️", "👍", "😂", "😮", "😢", "😡"};
+    // Matched to the set family members know from Zalo: love, like, haha, wow,
+    // sad, angry. The laugh squints rather than weeping with joy, and the sad
+    // one sobs rather than shedding a single tear — those two read as the
+    // wrong feeling otherwise. Keep in step with iOS MessageReactions.
+    static final String[] QUICK_REACTIONS = {"❤️", "👍", "😆", "😮", "😭", "😡"};
 
     private static class Reaction {
         final String emoji;
