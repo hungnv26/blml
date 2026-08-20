@@ -108,6 +108,17 @@ curl -sI https://chat.blml.app | head -1          # expect 200
 python3 deploy/qa_suite.py                        # point HTTP/WS at the domain first
 ```
 
+**Check the app port is closed, from another machine.** `BLML_BIND=127.0.0.1`
+must be set in `secrets.env`; without it the API is published on every
+interface in cleartext. Do not check this with `ufw status` — Docker publishes
+ports by writing iptables rules ahead of ufw, so the firewall reads as correct
+while the port is open. Probe from outside instead:
+
+```bash
+nc -z <vps-ip> 6060 && echo "EXPOSED — set BLML_BIND" || echo "closed, good"
+nc -z <vps-ip> 5432 && echo "EXPOSED — postgres" || echo "closed, good"
+```
+
 Admin dashboard — deliberately not exposed to the internet:
 
 ```bash
