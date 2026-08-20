@@ -107,6 +107,13 @@ photos you want to find again later.
 same server, so a conversation looks the same wherever you pick it up, and
 history follows you between devices.
 
+- **iPhone**: join through [TestFlight](https://testflight.apple.com/join/yQDTJcax)
+  while the App Store release is in review.
+- **Android**: download the app directly from
+  [chat.blml.app/android](https://chat.blml.app/android) — it comes from your
+  own server, like everything else here.
+- **Browser**: just open [chat.blml.app](https://chat.blml.app).
+
 ## Why it works this way
 
 Most chat apps are free because you are the product. BLML is the other trade:
