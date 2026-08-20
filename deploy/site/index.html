@@ -46,8 +46,13 @@
   }
   .wrap { max-width: 60rem; margin: 0 auto; padding: 0 1.25rem; }
 
-  /* Language toggle: two halves of one pill, the active one filled. */
-  .langbar { position: absolute; top: 1rem; right: 1.25rem; z-index: 10; }
+  /* Language toggle: two halves of one pill, the active one filled.
+     Kept in normal flow rather than absolutely positioned — floating it over
+     the header made it sit on top of the logo on narrow screens. */
+  .langbar {
+    display: flex; justify-content: flex-end;
+    max-width: 60rem; margin: 0 auto; padding: 1rem 1.25rem 0;
+  }
   .langbar div {
     display: inline-flex; border: 1px solid var(--line);
     border-radius: 999px; overflow: hidden; background: var(--panel);
@@ -60,7 +65,7 @@
   .langbar button:hover { color: var(--ink); }
   .langbar button[aria-pressed="true"] { background: var(--green); color: #fff; }
 
-  header { text-align: center; padding: 4.5rem 0 3rem; }
+  header { text-align: center; padding: 2rem 0 3rem; }
   header img.logo { width: 104px; height: 104px; }
   h1 { font-size: clamp(2rem, 5.6vw, 3.1rem); line-height: 1.15; margin: 1.2rem 0 .6rem; letter-spacing: -.02em; }
   .tagline { font-size: clamp(1.05rem, 2.6vw, 1.28rem); color: var(--ink-soft); margin: 0 auto; max-width: 36rem; }
@@ -102,6 +107,7 @@
     color: var(--ink-soft); font-size: .95rem;
   }
   footer { border-top: 1px solid var(--line); padding: 2.5rem 0 3.5rem; color: var(--ink-faint); font-size: .9rem; text-align: center; }
+
   footer a { color: var(--green); }
 
   /* One language at a time. Vietnamese shows by default, so the page is
@@ -112,6 +118,19 @@
   body [lang="en"] { display: none; }
   .lang-en body [lang="en"] { display: revert; }
   .lang-en body [lang="vi"] { display: none; }
+
+  @media (max-width: 34rem) {
+    /* The hand-placed break is tuned for a wide line; on a phone it fights
+       the natural wrap and leaves a stranded word. */
+    .wide-only { display: none; }
+    .langbar { padding: .75rem 1rem 0; }
+    .langbar button { font-size: .78rem; padding: .34rem .7rem; }
+    header { padding: 1rem 0 2.5rem; }
+    header img.logo { width: 84px; height: 84px; }
+    /* Full-width buttons stack more cleanly than three ragged pills. */
+    .cta { flex-direction: column; align-items: stretch; gap: .6rem; }
+    .btn { justify-content: center; }
+  }
 </style>
 </head>
 <body>
@@ -128,8 +147,8 @@
 
 <header class="wrap">
   <img class="logo" src="/img/logo.png" alt="BLML">
-  <h1 lang="vi">Ứng dụng nhắn tin riêng tư<br>cho những người thân thiết</h1>
-  <h1 lang="en">A private chat app<br>for the people who matter</h1>
+  <h1 lang="vi">Ứng dụng nhắn tin riêng tư <br class="wide-only">cho những người thân thiết</h1>
+  <h1 lang="en">A private chat app <br class="wide-only">for the people who matter</h1>
   <p class="tagline" lang="vi">
     Không quảng cáo. Không thuật toán quyết định bạn thấy gì. Không có công ty
     nào đọc tin nhắn của bạn để bán hàng.
