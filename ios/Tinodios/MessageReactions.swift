@@ -51,15 +51,19 @@ enum MessageReactions {
         return (visible, byTarget)
     }
 
-    /// "❤️ 2 😂 1" — the pill text for one message, nil when unreacted.
+    /// "❤️😆 3" — the distinct emoji followed by how many reactions in total,
+    /// the way Zalo's pill reads. Nil when the message is unreacted.
+    ///
+    /// The count always shows, including for a single reaction: a bare emoji
+    /// gives no sense of how many people joined in, which is most of the point
+    /// of a reaction. Distinct emoji are capped so a popular message cannot
+    /// stretch the pill across the bubble.
     static func summary(for entries: [Entry]?) -> String? {
         guard let entries = entries, !entries.isEmpty else { return nil }
-        var counts: [String: Int] = [:]
         var order: [String] = []
-        for e in entries {
-            if counts[e.emoji] == nil { order.append(e.emoji) }
-            counts[e.emoji, default: 0] += 1
+        for e in entries where !order.contains(e.emoji) {
+            order.append(e.emoji)
         }
-        return order.map { counts[$0]! > 1 ? "\($0) \(counts[$0]!)" : $0 }.joined(separator: " ")
+        return "\(order.prefix(3).joined()) \(entries.count)"
     }
 }

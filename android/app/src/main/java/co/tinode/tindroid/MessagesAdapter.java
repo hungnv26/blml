@@ -52,6 +52,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -1023,27 +1025,27 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         }
     }
 
-    /** "❤️ 2 😂" pill text for one message; null when unreacted. */
+    /** "❤️😆 3" pill text: the distinct emoji, then how many reactions in
+     * total, the way Zalo's pill reads. Null when the message is unreacted.
+     * The count always shows, including for a single reaction — a bare emoji
+     * gives no sense of how many people joined in. Distinct emoji are capped
+     * so a popular message cannot stretch the pill across the bubble.
+     * Keep in step with iOS MessageReactions.summary. */
     private String reactionsSummary(int seq) {
         List<Reaction> list = mReactions.get(seq);
         if (list == null || list.isEmpty()) {
             return null;
         }
-        Map<String, Integer> counts = new LinkedHashMap<>();
-        for (Reaction r : list) {
-            counts.merge(r.emoji, 1, Integer::sum);
-        }
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, Integer> e : counts.entrySet()) {
-            if (sb.length() > 0) {
-                sb.append(' ');
-            }
-            sb.append(e.getKey());
-            if (e.getValue() > 1) {
-                sb.append(' ').append(e.getValue());
+        int distinct = 0;
+        Set<String> seen = new LinkedHashSet<>();
+        for (Reaction r : list) {
+            if (seen.add(r.emoji) && distinct < 3) {
+                sb.append(r.emoji);
+                distinct++;
             }
         }
-        return sb.toString();
+        return sb.append(' ').append(list.size()).toString();
     }
 
     /** The Zalo-style hold-a-message sheet: quick reactions on top, then the
@@ -1168,23 +1170,26 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             return;
         }
         String me = Cache.getTinode().getMyId();
+        // Match on the emoji too, not just the sender: reacting with a second
+        // emoji adds it alongside the first instead of replacing it, so the
+        // counts on a message climb the way people expect. Only the same emoji
+        // again takes that one reaction back.
         Reaction mine = null;
         List<Reaction> list = mReactions.get(targetSeq);
         if (list != null && me != null) {
             for (Reaction r : list) {
-                if (me.equals(r.sender)) {
+                if (me.equals(r.sender) && emoji.equals(r.emoji)) {
                     mine = r;
                     break;
                 }
             }
         }
         if (mine != null) {
+            // I already sent this exact emoji: take it back.
             //noinspection unchecked
             topic.delMessages(mine.seq, mine.seq + 1, true);
-            if (mine.emoji.equals(emoji)) {
-                runLoader(false);
-                return;
-            }
+            runLoader(false);
+            return;
         }
         Map<String, Object> head = new HashMap<>();
         head.put("reaction", emoji);
@@ -1479,6 +1484,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                     new GestureDetector.SimpleOnGestureListener() {
                         @Override
                         public void onLongPress(@NonNull MotionEvent ev) {
+                            // A thump the moment the hold matures, so nobody is
+                            // left pressing and wondering. Android fires this
+                            // with the finger still down, which is what we want.
+                            itemView.performHapticFeedback(
+                                    android.view.HapticFeedbackConstants.LONG_PRESS);
                             itemView.performLongClick();
                         }
 

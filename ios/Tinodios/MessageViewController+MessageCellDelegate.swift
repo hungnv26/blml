@@ -21,6 +21,10 @@ extension MessageViewController: MessageCellDelegate {
     /// all read the target from `activeMenuSeqId`.
     func presentActionsSheet(for cell: MessageCell) {
         guard !cell.isDeleted, let topic = topic else { return }
+        // The tap that opens this menu is not a tap the user made — it is a
+        // hold that matured. A thump confirms it, so nobody is left pressing
+        // and wondering. Fired only once the menu is certain to appear.
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         MessageViewController.activeMenuSeqId = cell.seqId
         let mc = UIMenuController.shared    // handlers ignore it; kept for their signatures
 

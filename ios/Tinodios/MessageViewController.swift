@@ -222,7 +222,11 @@ class MessageViewController: UIViewController {
     func toggleReaction(_ emoji: String, for targetSeq: Int) {
         guard let topic = topic else { return }
         let myUid = Cache.tinode.myUid
-        let mine = reactionsByTarget[targetSeq]?.first(where: { $0.fromUid == myUid })
+        // Match on the emoji too, not just the sender: reacting with a second
+        // emoji adds it alongside the first instead of replacing it, so the
+        // counts on a message climb the way people expect. Only the same emoji
+        // again takes that one reaction back.
+        let mine = reactionsByTarget[targetSeq]?.first(where: { $0.fromUid == myUid && $0.emoji == emoji })
 
         // Reactions go through the topic directly rather than the interactor's
         // sendMessage(), which means they skip the cache reload that sending a
@@ -237,11 +241,10 @@ class MessageViewController: UIViewController {
         }
 
         if let mine = mine {
+            // I already sent this exact emoji: take it back.
             topic.delMessage(id: mine.seqId, hard: true).thenFinally(refresh)
             refresh()
-            if mine.emoji == emoji {
-                return    // Same emoji: plain retraction.
-            }
+            return
         }
         topic.publish(content: Drafty(plainText: emoji),
                       withExtraHeaders: ["reaction": .string(emoji),
