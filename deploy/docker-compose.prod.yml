@@ -27,6 +27,7 @@ services:
       ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in secrets.env — Let's Encrypt expiry notices}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./downloads:/downloads:ro   # /android: the APK download page + binary
       - caddy_data:/data      # certificates live here; losing this re-issues them
       - caddy_config:/config
     depends_on:

@@ -56,6 +56,19 @@
 	# with a file extension in it looks like an afterthought.
 	rewrite /privacy /privacy.html
 
+	# Android app download: a landing page and the signed APK, served straight
+	# from a host directory. Shipping a new APK is one file copy on the server;
+	# no image rebuild, and an 87 MB binary never enters the git repository.
+	redir /android /android/ permanent
+	handle_path /android/* {
+		root * /downloads
+		file_server
+		# The correct MIME type is what makes Android offer to install the
+		# file rather than treat it as a generic download.
+		@apk path *.apk
+		header @apk Content-Type application/vnd.android.package-archive
+	}
+
 	# Media is immutable in practice: wallpapers and icons change name when they
 	# change, and uploads are content-addressed. Let those cache properly.
 	@media path *.png *.jpg *.jpeg *.svg *.webp *.woff2 *.mp3
