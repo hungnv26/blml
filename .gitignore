@@ -50,3 +50,6 @@ brand/appstore/
 
 # Built APKs staged for the /android download page live on the server, not in git.
 deploy/downloads/*.apk
+
+# Local security reports — never commit these.
+.gstack/
