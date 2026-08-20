@@ -1,21 +1,35 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BLML — a private chat app for your people</title>
-<meta name="description" content="BLML is a private chat app for family and close friends. No ads, no algorithms, no company reading your messages. It runs on a server we control.">
+<title>BLML — ứng dụng nhắn tin riêng tư cho người thân</title>
+<meta name="description" content="BLML là ứng dụng nhắn tin riêng tư cho gia đình và bạn bè thân thiết. Không quảng cáo, không thuật toán, không công ty nào đọc tin nhắn của bạn.">
 <link rel="icon" href="/img/logo.png">
-<meta property="og:title" content="BLML — a private chat app for your people">
-<meta property="og:description" content="No ads, no algorithms, no company reading your messages.">
+<meta property="og:title" content="BLML — ứng dụng nhắn tin riêng tư cho người thân">
+<meta property="og:description" content="Không quảng cáo. Không thuật toán. Không ai đọc tin nhắn của bạn.">
 <meta property="og:image" content="https://blml.app/img/logo.png">
 <meta property="og:url" content="https://blml.app">
 <meta name="theme-color" content="#00a884">
+
+<script>
+  // Set the language before first paint, so a returning visitor never sees
+  // the wrong language flash past. Vietnamese is the default; a saved choice
+  // wins over it.
+  (function () {
+    try {
+      if (localStorage.getItem('blml-lang') === 'en') {
+        document.documentElement.classList.add('lang-en');
+        document.documentElement.lang = 'en';
+      }
+    } catch (e) { /* private mode: stay with the default */ }
+  })();
+</script>
+
 <style>
   :root {
     color-scheme: light dark;
     --green: #00a884;
-    --green-bright: #25d366;
     --ink: light-dark(#111b21, #e9edef);
     --ink-soft: light-dark(#3b4a54, #c5ccd1);
     --ink-faint: light-dark(#667781, #8696a0);
@@ -27,27 +41,35 @@
   body {
     margin: 0;
     font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: var(--ink);
-    background: var(--bg);
+    color: var(--ink); background: var(--bg);
     -webkit-font-smoothing: antialiased;
   }
   .wrap { max-width: 60rem; margin: 0 auto; padding: 0 1.25rem; }
 
-  /* Hero */
+  /* Language toggle: two halves of one pill, the active one filled. */
+  .langbar { position: absolute; top: 1rem; right: 1.25rem; z-index: 10; }
+  .langbar div {
+    display: inline-flex; border: 1px solid var(--line);
+    border-radius: 999px; overflow: hidden; background: var(--panel);
+  }
+  .langbar button {
+    font: inherit; font-size: .82rem; font-weight: 600; letter-spacing: .02em;
+    padding: .38rem .85rem; border: 0; cursor: pointer;
+    background: transparent; color: var(--ink-faint);
+  }
+  .langbar button:hover { color: var(--ink); }
+  .langbar button[aria-pressed="true"] { background: var(--green); color: #fff; }
+
   header { text-align: center; padding: 4.5rem 0 3rem; }
   header img.logo { width: 104px; height: 104px; }
-  h1 {
-    font-size: clamp(2.1rem, 6vw, 3.2rem);
-    line-height: 1.15; margin: 1.2rem 0 .6rem; letter-spacing: -.02em;
-  }
-  .tagline { font-size: clamp(1.05rem, 2.6vw, 1.3rem); color: var(--ink-soft); margin: 0 auto; max-width: 34rem; }
+  h1 { font-size: clamp(2rem, 5.6vw, 3.1rem); line-height: 1.15; margin: 1.2rem 0 .6rem; letter-spacing: -.02em; }
+  .tagline { font-size: clamp(1.05rem, 2.6vw, 1.28rem); color: var(--ink-soft); margin: 0 auto; max-width: 36rem; }
 
-  /* Buttons */
   .cta { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; margin: 2.2rem 0 .75rem; }
   .btn {
-    display: inline-flex; align-items: center; gap: .55rem;
-    padding: .85rem 1.6rem; border-radius: 999px; text-decoration: none;
-    font-weight: 600; font-size: 1rem; border: 1.5px solid transparent;
+    display: inline-flex; align-items: center; padding: .85rem 1.6rem;
+    border-radius: 999px; text-decoration: none; font-weight: 600;
+    font-size: 1rem; border: 1.5px solid transparent;
   }
   .btn.primary { background: var(--green); color: #fff; }
   .btn.primary:hover { background: #00967a; }
@@ -55,32 +77,20 @@
   .btn.ghost:hover { border-color: var(--green); color: var(--green); }
   .cta-note { text-align: center; color: var(--ink-faint); font-size: .9rem; margin: 0; }
 
-  /* Screenshot strip */
-  .shots {
-    display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
-    padding: 3rem 0 1rem;
-  }
+  .shots { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; padding: 3rem 0 1rem; }
   .shots img { width: 210px; height: auto; }
   .web-shot { padding: 1rem 0 3.5rem; text-align: center; }
-  .web-shot img {
-    width: 100%; max-width: 46rem; height: auto;
-    border-radius: 10px; border: 1px solid var(--line);
-  }
+  .web-shot img { width: 100%; max-width: 46rem; height: auto; border-radius: 10px; border: 1px solid var(--line); }
 
-  /* Features */
   section.features { background: var(--panel); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 3.5rem 0; }
   .grid { display: grid; gap: 2rem 2.5rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
   .grid h3 { font-size: 1.05rem; margin: 0 0 .35rem; }
   .grid p { margin: 0; color: var(--ink-soft); font-size: .97rem; }
   h2 { font-size: clamp(1.5rem, 4vw, 2rem); margin: 0 0 1.8rem; letter-spacing: -.01em; }
 
-  /* Download */
   section.get { padding: 3.5rem 0; }
   .platforms { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); margin-top: 1.5rem; }
-  .card {
-    border: 1px solid var(--line); border-radius: 14px; padding: 1.4rem;
-    background: var(--panel);
-  }
+  .card { border: 1px solid var(--line); border-radius: 14px; padding: 1.4rem; background: var(--panel); }
   .card h3 { margin: 0 0 .4rem; font-size: 1.05rem; }
   .card p { margin: 0 0 1rem; color: var(--ink-soft); font-size: .95rem; }
   .card a { color: var(--green); font-weight: 600; text-decoration: none; }
@@ -91,105 +101,166 @@
     border-left: 3px solid var(--green); background: var(--panel);
     color: var(--ink-soft); font-size: .95rem;
   }
-
-  footer {
-    border-top: 1px solid var(--line); padding: 2.5rem 0 3.5rem;
-    color: var(--ink-faint); font-size: .9rem; text-align: center;
-  }
+  footer { border-top: 1px solid var(--line); padding: 2.5rem 0 3.5rem; color: var(--ink-faint); font-size: .9rem; text-align: center; }
   footer a { color: var(--green); }
+
+  /* One language at a time. Vietnamese shows by default, so the page is
+     correct even if the script never runs.
+     Scoped under body on purpose: the toggle also sets lang on <html>, and an
+     unscoped [lang="en"] matches the root element itself — which hid the
+     entire document the moment English was selected. */
+  body [lang="en"] { display: none; }
+  .lang-en body [lang="en"] { display: revert; }
+  .lang-en body [lang="vi"] { display: none; }
 </style>
 </head>
 <body>
 
+<nav class="langbar">
+  <div>
+    <!-- No lang attribute on these two: each option is always shown in its own
+         language, and a lang="vi" here would be swallowed by the show/hide
+         rules — hiding the way back to Vietnamese. -->
+    <button id="btn-vi" type="button" aria-pressed="true">Tiếng Việt</button>
+    <button id="btn-en" type="button" aria-pressed="false">English</button>
+  </div>
+</nav>
+
 <header class="wrap">
   <img class="logo" src="/img/logo.png" alt="BLML">
-  <h1>A private chat app<br>for the people who matter</h1>
-  <p class="tagline">
+  <h1 lang="vi">Ứng dụng nhắn tin riêng tư<br>cho những người thân thiết</h1>
+  <h1 lang="en">A private chat app<br>for the people who matter</h1>
+  <p class="tagline" lang="vi">
+    Không quảng cáo. Không thuật toán quyết định bạn thấy gì. Không có công ty
+    nào đọc tin nhắn của bạn để bán hàng.
+  </p>
+  <p class="tagline" lang="en">
     No ads. No algorithms deciding what you see. No company reading your
     messages to sell you things.
   </p>
   <div class="cta">
-    <a class="btn primary" href="https://chat.blml.app/android">Download for Android</a>
-    <a class="btn ghost" href="https://testflight.apple.com/join/yQDTJcax">Get it on iPhone</a>
-    <a class="btn ghost" href="https://chat.blml.app">Open in browser</a>
+    <a class="btn primary" href="https://chat.blml.app/android">
+      <span lang="vi">Tải cho Android</span><span lang="en">Download for Android</span></a>
+    <a class="btn ghost" href="https://testflight.apple.com/join/yQDTJcax">
+      <span lang="vi">Cài trên iPhone</span><span lang="en">Get it on iPhone</span></a>
+    <a class="btn ghost" href="https://chat.blml.app">
+      <span lang="vi">Mở trên trình duyệt</span><span lang="en">Open in browser</span></a>
   </div>
-  <p class="cta-note">Free · Invite-only · Runs on our own server</p>
+  <p class="cta-note" lang="vi">Miễn phí · Chỉ dành cho người được mời · Chạy trên máy chủ riêng</p>
+  <p class="cta-note" lang="en">Free · Invite-only · Runs on our own server</p>
 </header>
 
 <div class="wrap shots">
-  <img src="/img/ios-chats.png" alt="BLML chat list on iPhone">
-  <img src="/img/ios-conversation.png" alt="A BLML conversation on iPhone">
-  <img src="/img/android-chats.png" alt="BLML chat list on Android">
-  <img src="/img/android-conversation.png" alt="A BLML conversation on Android">
+  <img src="/img/ios-chats.png" alt="BLML trên iPhone">
+  <img src="/img/ios-conversation.png" alt="Cuộc trò chuyện BLML trên iPhone">
+  <img src="/img/android-chats.png" alt="BLML trên Android">
+  <img src="/img/android-conversation.png" alt="Cuộc trò chuyện BLML trên Android">
 </div>
 
 <div class="wrap web-shot">
-  <img src="/img/web-conversation.png" alt="BLML running in a web browser">
+  <img src="/img/web-conversation.png" alt="BLML trên trình duyệt web">
 </div>
 
 <section class="features">
   <div class="wrap">
-    <h2>What you can do with it</h2>
+    <h2 lang="vi">Bạn có thể làm gì với BLML</h2>
+    <h2 lang="en">What you can do with it</h2>
     <div class="grid">
       <div>
-        <h3>Talk, properly</h3>
-        <p>One-to-one or in a group. Typing indicators, delivery and read
-           marks, replies, edits, and voice notes when typing is too slow.</p>
+        <h3 lang="vi">Nhắn tin đúng nghĩa</h3>
+        <h3 lang="en">Talk, properly</h3>
+        <p lang="vi">Nhắn riêng hoặc theo nhóm. Báo đang soạn tin, đã gửi và đã
+           xem, trả lời, chỉnh sửa, và tin nhắn thoại khi gõ chữ quá chậm.</p>
+        <p lang="en">One-to-one or in a group. Typing indicators, delivery and
+           read marks, replies, edits, and voice notes when typing is too slow.</p>
       </div>
       <div>
-        <h3>React and reply</h3>
-        <p>Hold any message for reactions, reply, forward, copy or pin —
-           the gestures you already know.</p>
+        <h3 lang="vi">Thả cảm xúc và trả lời</h3>
+        <h3 lang="en">React and reply</h3>
+        <p lang="vi">Giữ tin nhắn để thả cảm xúc, trả lời, chuyển tiếp, sao chép
+           hoặc ghim — đúng những thao tác bạn đã quen.</p>
+        <p lang="en">Hold any message for reactions, reply, forward, copy or
+           pin — the gestures you already know.</p>
       </div>
       <div>
-        <h3>Share real files</h3>
-        <p>Photos, videos, documents and audio up to 100&nbsp;MB each — a real
-           video, not a compressed smear of one.</p>
+        <h3 lang="vi">Gửi tệp thật sự</h3>
+        <h3 lang="en">Share real files</h3>
+        <p lang="vi">Ảnh, video, tài liệu và âm thanh tối đa 100&nbsp;MB mỗi tệp —
+           một video thật, không phải bản nén mờ nhoè.</p>
+        <p lang="en">Photos, videos, documents and audio up to 100&nbsp;MB each —
+           a real video, not a compressed smear of one.</p>
       </div>
       <div>
-        <h3>Call each other</h3>
-        <p>Voice and video calls, relayed through our own server when the
-           network won't let devices talk directly.</p>
+        <h3 lang="vi">Gọi cho nhau</h3>
+        <h3 lang="en">Call each other</h3>
+        <p lang="vi">Gọi thoại và gọi video, được chuyển tiếp qua máy chủ riêng
+           khi mạng không cho hai máy kết nối trực tiếp.</p>
+        <p lang="en">Voice and video calls, relayed through our own server when
+           the network won't let devices talk directly.</p>
       </div>
       <div>
-        <h3>Keep a group organised</h3>
-        <p>Mentions, pinned messages and polls, so "what are we eating"
+        <h3 lang="vi">Giữ nhóm gọn gàng</h3>
+        <h3 lang="en">Keep a group organised</h3>
+        <p lang="vi">Nhắc tên, ghim tin nhắn và bình chọn, để “tối nay ăn gì” chỉ
+           cần mỗi người một chạm thay vì bốn mươi tin nhắn.</p>
+        <p lang="en">Mentions, pinned messages and polls, so “what are we eating”
            takes one tap each instead of forty messages.</p>
       </div>
       <div>
-        <h3>Find each other easily</h3>
-        <p>Scan a QR code, add by phone number or email, or pick from people
-           already in your groups.</p>
+        <h3 lang="vi">Tìm nhau dễ dàng</h3>
+        <h3 lang="en">Find each other easily</h3>
+        <p lang="vi">Quét mã QR, thêm bằng số điện thoại hoặc email, hoặc chọn từ
+           những người đã ở chung nhóm với bạn.</p>
+        <p lang="en">Scan a QR code, add by phone number or email, or pick from
+           people already in your groups.</p>
       </div>
     </div>
   </div>
 </section>
 
 <section class="get wrap">
-  <h2>Get BLML</h2>
+  <h2 lang="vi">Tải BLML</h2>
+  <h2 lang="en">Get BLML</h2>
   <div class="platforms">
     <div class="card">
       <h3>Android</h3>
-      <p>Download the app straight from our server. Your phone will ask
-         permission to install it — that's normal for an app that doesn't
+      <p lang="vi">Tải ứng dụng trực tiếp từ máy chủ của chúng ta. Điện thoại sẽ
+         hỏi quyền cài đặt — chuyện đó là bình thường với ứng dụng không đến từ
+         Play Store.</p>
+      <p lang="en">Download the app straight from our server. Your phone will
+         ask permission to install it — that's normal for an app that doesn't
          come from the Play Store.</p>
-      <a href="https://chat.blml.app/android">Download the app →</a>
+      <a href="https://chat.blml.app/android">
+        <span lang="vi">Tải ứng dụng →</span><span lang="en">Download the app →</span></a>
     </div>
     <div class="card">
-      <h3>iPhone and iPad</h3>
-      <p>While the App Store release is being reviewed, BLML is available
-         through Apple's TestFlight.</p>
-      <a href="https://testflight.apple.com/join/yQDTJcax">Join on TestFlight →</a>
+      <h3 lang="vi">iPhone và iPad</h3>
+      <h3 lang="en">iPhone and iPad</h3>
+      <p lang="vi">Trong lúc bản App Store đang được duyệt, BLML được phát hành
+         qua TestFlight của Apple.</p>
+      <p lang="en">While the App Store release is being reviewed, BLML is
+         available through Apple's TestFlight.</p>
+      <a href="https://testflight.apple.com/join/yQDTJcax">
+        <span lang="vi">Tham gia TestFlight →</span><span lang="en">Join on TestFlight →</span></a>
     </div>
     <div class="card">
-      <h3>Any web browser</h3>
-      <p>Nothing to install. Open it on a laptop and pick up the same
+      <h3 lang="vi">Mọi trình duyệt</h3>
+      <h3 lang="en">Any web browser</h3>
+      <p lang="vi">Không cần cài gì. Mở trên máy tính và tiếp tục đúng cuộc trò
+         chuyện đang dở.</p>
+      <p lang="en">Nothing to install. Open it on a laptop and pick up the same
          conversations.</p>
-      <a href="https://chat.blml.app">Open chat.blml.app →</a>
+      <a href="https://chat.blml.app">
+        <span lang="vi">Mở chat.blml.app →</span><span lang="en">Open chat.blml.app →</span></a>
     </div>
   </div>
 
-  <p class="invite">
+  <p class="invite" lang="vi">
+    <strong>Bạn cần mã mời.</strong> BLML chỉ dành cho người được mời — một địa
+    chỉ ai cũng tới được không có nghĩa là căn phòng ai cũng bước vào được. Hãy
+    hỏi người đã giới thiệu BLML cho bạn để lấy mã.
+  </p>
+  <p class="invite" lang="en">
     <strong>You'll need an invite code.</strong> BLML is invite-only on
     purpose — an address anyone can reach is not a room anyone can walk into.
     Ask whoever told you about BLML for the code.
@@ -197,13 +268,43 @@
 </section>
 
 <footer class="wrap">
-  <p>
+  <p lang="vi">
+    BLML là mã nguồn mở ·
+    <a href="https://github.com/hungnv26/blml">Mã nguồn</a> ·
+    <a href="https://chat.blml.app/privacy">Chính sách riêng tư</a>
+  </p>
+  <p lang="en">
     BLML is open source ·
     <a href="https://github.com/hungnv26/blml">Source code</a> ·
     <a href="https://chat.blml.app/privacy">Privacy policy</a>
   </p>
-  <p>Built on <a href="https://github.com/tinode/chat">Tinode</a>.</p>
+  <p lang="vi">Được xây dựng trên <a href="https://github.com/tinode/chat">Tinode</a>.</p>
+  <p lang="en">Built on <a href="https://github.com/tinode/chat">Tinode</a>.</p>
 </footer>
+
+<script>
+  (function () {
+    var vi = document.getElementById('btn-vi');
+    var en = document.getElementById('btn-en');
+    var titles = {
+      vi: 'BLML — ứng dụng nhắn tin riêng tư cho người thân',
+      en: 'BLML — a private chat app for your people'
+    };
+    function apply(lang) {
+      var isEn = lang === 'en';
+      document.documentElement.classList.toggle('lang-en', isEn);
+      document.documentElement.lang = lang;
+      document.title = titles[lang];
+      vi.setAttribute('aria-pressed', String(!isEn));
+      en.setAttribute('aria-pressed', String(isEn));
+      try { localStorage.setItem('blml-lang', lang); } catch (e) { /* private mode */ }
+    }
+    vi.addEventListener('click', function () { apply('vi'); });
+    en.addEventListener('click', function () { apply('en'); });
+    // Reflect a choice restored by the head script.
+    apply(document.documentElement.classList.contains('lang-en') ? 'en' : 'vi');
+  })();
+</script>
 
 </body>
 </html>
