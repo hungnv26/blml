@@ -212,6 +212,28 @@ class MessageViewController: UIViewController {
     // sender, which iOS 26 no longer supports (UIMenuController was removed).
     static var activeMenuSeqId: Int = -1
 
+    /// Emoji reactions per target message seq, rebuilt whenever the transcript
+    /// loads. The reaction messages themselves never reach `messages`.
+    var reactionsByTarget: [Int: [MessageReactions.Entry]] = [:]
+
+    /// Sends, replaces, or retracts this user's reaction on a message. One
+    /// reaction per person per message: tapping the same emoji again removes
+    /// it, a different emoji replaces it — the Zalo behavior.
+    func toggleReaction(_ emoji: String, for targetSeq: Int) {
+        guard let topic = topic else { return }
+        let myUid = Cache.tinode.myUid
+        let mine = reactionsByTarget[targetSeq]?.first(where: { $0.fromUid == myUid })
+        if let mine = mine {
+            _ = topic.delMessage(id: mine.seqId, hard: true)
+            if mine.emoji == emoji {
+                return    // Same emoji: plain retraction.
+            }
+        }
+        _ = topic.publish(content: Drafty(plainText: emoji),
+                          withExtraHeaders: ["reaction": .string(emoji),
+                                             "ref": .int(targetSeq)])
+    }
+
     /// Mentions picked for the message being composed: display name -> uid.
     /// Consumed (and cleared) on send, when @Name tokens become MN entities.
     var pendingMentions: [String: String] = [:]
@@ -880,6 +902,7 @@ extension MessageViewController: UICollectionViewDataSource {
         cell.editedMarker.textColor = markerTextColor
         cell.newDateLabel.attributedText = newDateLabel(for: message, at: indexPath)
         cell.senderNameLabel.attributedText = senderFullName(for: message, at: indexPath)
+        cell.showReactions(MessageReactions.summary(for: reactionsByTarget[message.seqId]))
 
         if shouldShowProgressBar(for: message) {
             cell.showProgressBar()
