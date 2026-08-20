@@ -78,9 +78,16 @@ dozen websites that you're online.
 
 ### Find each other
 
-Search by username, scan someone's QR code when you're together, or let the app
-match your phone's contacts against members who've added their number. Nothing
-is uploaded anywhere except your own server.
+Every member has a personal QR code — scan one with the camera, or pick a
+photo of one that was sent to you, and the chat opens. Add people by phone
+number or email, search by username, or let the app match your phone's
+contacts against members who've added their number. Nothing is uploaded
+anywhere except your own server.
+
+The app even suggests **people you may know**: members of your group chats
+you haven't talked to one-on-one yet — the kind of suggestion that makes
+sense in a family, computed on your phone rather than by an algorithm
+watching you.
 
 ### Make it yours
 
