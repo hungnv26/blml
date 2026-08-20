@@ -134,11 +134,17 @@ class MessageCell: UICollectionViewCell {
 
     /// Zalo-style reaction pill overlapping the bubble's bottom corner: "❤️ 2".
     /// An overlay, so it never changes the bubble's laid-out height.
+    /// Height of the reaction pill; the corner radius is half of it, and
+    /// layoutSubviews positions the overhang from it.
+    static let kReactionPillHeight: CGFloat = 30
+
     var reactionsPill: PaddedLabel = {
         let label = PaddedLabel()
-        label.font = UIFont.systemFont(ofSize: 12)
+        // The emoji is the content here, so it carries the size: 12pt read as
+        // a typo next to the message text.
+        label.font = UIFont.systemFont(ofSize: 17)
         label.textAlignment = .center
-        label.layer.cornerRadius = 11
+        label.layer.cornerRadius = MessageCell.kReactionPillHeight / 2
         label.layer.masksToBounds = true
         label.layer.borderWidth = 0.5
         label.isHidden = true
@@ -215,7 +221,8 @@ class MessageCell: UICollectionViewCell {
         // Cells must not clip, or the overhang is cut off.
         clipsToBounds = false
         contentView.clipsToBounds = false
-        let size = CGSize(width: reactionsPill.intrinsicContentSize.width + 16, height: 22)
+        let size = CGSize(width: reactionsPill.intrinsicContentSize.width + 18,
+                          height: MessageCell.kReactionPillHeight)
         let bubble = containerView.frame
         reactionsPill.frame = CGRect(
             x: max(bubble.minX + 8, bubble.maxX - size.width - 8),

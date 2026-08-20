@@ -223,15 +223,30 @@ class MessageViewController: UIViewController {
         guard let topic = topic else { return }
         let myUid = Cache.tinode.myUid
         let mine = reactionsByTarget[targetSeq]?.first(where: { $0.fromUid == myUid })
+
+        // Reactions go through the topic directly rather than the interactor's
+        // sendMessage(), which means they skip the cache reload that sending a
+        // normal message performs — without this the pill only appeared after
+        // leaving and re-entering the chat. Refresh twice: once for the local
+        // echo, once when the server acks and the seq id becomes real.
+        // Never scroll: reacting to an old message must not jump to the bottom.
+        let refresh: () -> Void = { [weak self] in
+            DispatchQueue.main.async {
+                self?.interactor?.loadMessagesFromCache(scrollToMostRecentMessage: false)
+            }
+        }
+
         if let mine = mine {
-            _ = topic.delMessage(id: mine.seqId, hard: true)
+            topic.delMessage(id: mine.seqId, hard: true).thenFinally(refresh)
+            refresh()
             if mine.emoji == emoji {
                 return    // Same emoji: plain retraction.
             }
         }
-        _ = topic.publish(content: Drafty(plainText: emoji),
-                          withExtraHeaders: ["reaction": .string(emoji),
-                                             "ref": .int(targetSeq)])
+        topic.publish(content: Drafty(plainText: emoji),
+                      withExtraHeaders: ["reaction": .string(emoji),
+                                         "ref": .int(targetSeq)]).thenFinally(refresh)
+        refresh()
     }
 
     /// Mentions picked for the message being composed: display name -> uid.
