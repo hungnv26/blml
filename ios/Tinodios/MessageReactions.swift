@@ -17,7 +17,11 @@ import UIKit
 /// not (the web app, for now) show a plain emoji message — a graceful
 /// degradation rather than a protocol break.
 enum MessageReactions {
-    static let kQuickReactions = ["❤️", "👍", "😂", "😮", "😢", "😡"]
+    /// Matched to the set family members know from Zalo: love, like, haha,
+    /// wow, sad, angry. The laugh squints rather than weeping with joy, and
+    /// the sad one sobs rather than shedding a single tear — those two read as
+    /// the wrong feeling otherwise.
+    static let kQuickReactions = ["❤️", "👍", "😆", "😮", "😭", "😡"]
 
     struct Entry {
         let emoji: String
