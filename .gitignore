@@ -53,3 +53,6 @@ deploy/downloads/*.apk
 
 # Local security reports — never commit these.
 .gstack/
+
+# Firebase service-account key: can send push as you. Server-only.
+deploy/fcm-service-account.json
