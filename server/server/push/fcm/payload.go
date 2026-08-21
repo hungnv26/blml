@@ -8,7 +8,6 @@ import (
 
 	fcmv1 "google.golang.org/api/fcm/v1"
 
-	"github.com/tinode/chat/server/drafty"
 	"github.com/tinode/chat/server/logs"
 	"github.com/tinode/chat/server/push"
 	"github.com/tinode/chat/server/push/common"
@@ -29,7 +28,6 @@ func payloadToData(pl *push.Payload) (map[string]string, error) {
 		return nil, errors.New("empty push payload")
 	}
 	data := make(map[string]string)
-	var err error
 	data["what"] = pl.What
 	if pl.Silent {
 		data["silent"] = "true"
@@ -44,22 +42,30 @@ func payloadToData(pl *push.Payload) (map[string]string, error) {
 			data["mime"] = pl.ContentType
 		}
 
-		// Convert Drafty content to plain text (clients 0.16 and below).
-		data["content"], err = drafty.PlainText(pl.Content)
-		if err != nil {
-			return nil, err
-		}
-		// Trim long strings to 128 runes.
-		// Check byte length first and don't waste time converting short strings.
-		if len(data["content"]) > push.MaxPayloadLength {
-			runes := []rune(data["content"])
-			if len(runes) > push.MaxPayloadLength {
-				data["content"] = string(runes[:push.MaxPayloadLength]) + "…"
-			}
-		}
-
-		// Rich content for clients version 0.17 and above.
-		data["rc"], err = drafty.Preview(pl.Content, push.MaxPayloadLength)
+		// BLML divergence from upstream: the message text is deliberately NOT
+		// put in the push payload.
+		//
+		// Upstream sets data["content"] (plain text) and data["rc"] (rich
+		// preview) here so clients can render a full notification without
+		// fetching anything. The cost is that every message body travels
+		// through Google's FCM servers, and for iOS onward to Apple.
+		//
+		// This deployment's privacy policy states that those services "see
+		// that a message is waiting for your device" — not what it says.
+		// Sending the text would make that statement untrue, so the payload
+		// carries only routing metadata: who, which topic, which seq.
+		//
+		// Both clients already degrade correctly with these absent:
+		// Android falls back through rc -> content -> R.string.new_message
+		// (FBaseMessagingService), and the iOS notification service extension
+		// sets the title from the sender and leaves the body as configured.
+		// The app fetches the actual message over its own authenticated
+		// connection once opened.
+		//
+		// To restore upstream behaviour, put back the two assignments below —
+		// nothing else depends on this.
+		//   data["content"], err = drafty.PlainText(pl.Content)   (+ trimming)
+		//   data["rc"], err = drafty.Preview(pl.Content, push.MaxPayloadLength)
 
 		if pl.Webrtc != "" {
 			data["webrtc"] = pl.Webrtc
@@ -73,9 +79,6 @@ func payloadToData(pl *push.Payload) (map[string]string, error) {
 			// Notification of a message edit should be silent too.
 			data["silent"] = "true"
 			data["replace"] = pl.Replace
-		}
-		if err != nil {
-			return nil, err
 		}
 	} else if pl.What == push.ActSub {
 		data["modeWant"] = pl.ModeWant.String()

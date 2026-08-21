@@ -56,6 +56,11 @@ services:
       - "${BLML_BIND:-0.0.0.0}:6060:6060"
     volumes:
       - ./blml.conf:/etc/blml/blml.conf:ro
+      # Firebase service-account key, used to send push. gen-config.sh keeps an
+      # empty placeholder here when push is off: a bind mount whose source is
+      # missing becomes a directory, and the server then fails reading it.
+      # Only this service needs it — blml-init never sends anything.
+      - ./fcm-service-account.json:/etc/blml/fcm-service-account.json:ro
       - uploads:/var/blml/uploads
     depends_on:
       db:
