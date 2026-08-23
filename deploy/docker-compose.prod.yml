@@ -45,6 +45,21 @@ services:
     volumes:
       - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
 
+  # Loopback is pinned here rather than left to ${BLML_BIND}, which the base
+  # file defaults to 0.0.0.0. That default is right for local development, where
+  # the server is reached from phones on the same wifi — but on this box it
+  # means a plain `docker compose up -d`, run without the env file that carries
+  # BLML_BIND, republishes the chat API to the internet in cleartext, past both
+  # TLS and the firewall. The production overlay should not be able to lose that
+  # argument to a forgotten variable.
+  #
+  # !override, not a second entry: compose merges port lists by appending, so
+  # without it the 0.0.0.0 mapping from the base file survives alongside this
+  # one and the port is public anyway.
+  blml:
+    ports: !override
+      - "127.0.0.1:6060:6060"
+
   # Nothing should reach the mail catcher from outside. In production either
   # point SMTP_SERVER at a real provider, or leave email verification off.
   mailpit:
