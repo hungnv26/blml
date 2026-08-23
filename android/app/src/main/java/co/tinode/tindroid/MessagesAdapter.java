@@ -817,8 +817,21 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
 
         if (holder.mReactionsPill != null) {
             String summary = reactionsSummary(m.seq);
+            boolean reacted = summary != null;
             holder.mReactionsPill.setText(summary);
-            holder.mReactionsPill.setVisibility(summary != null ? View.VISIBLE : View.GONE);
+            holder.mReactionsPill.setVisibility(reacted ? View.VISIBLE : View.GONE);
+            // The pill is an overlay hung below the bubble, so it does not
+            // grow the row. Without extra room after a reacted message the
+            // next bubble is drawn straight over the pill. Reset on the other
+            // branch too: view holders are recycled.
+            float dp = holder.itemView.getResources().getDisplayMetrics().density;
+            int extra = reacted
+                    ? (int) ((REACTION_PILL_OVERHANG_DP + REACTION_PILL_CLEARANCE_DP) * dp) : 0;
+            View row = holder.itemView;
+            if (row.getPaddingBottom() != extra) {
+                row.setPadding(row.getPaddingLeft(), row.getPaddingTop(),
+                        row.getPaddingRight(), extra);
+            }
         }
 
         holder.itemView.setOnLongClickListener(v -> {
@@ -991,6 +1004,13 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             this.seq = seq;
         }
     }
+
+    /** How far the reaction pill hangs below its bubble: half the pill's
+     * height, matching iOS MessageCell.kReactionPillHeight / 2. */
+    private static final int REACTION_PILL_OVERHANG_DP = 15;
+    /** Breathing room between a hanging pill and the message below it, so the
+     * two do not merely touch. Matches iOS kReactionPillClearance. */
+    private static final int REACTION_PILL_CLEARANCE_DP = 6;
 
     /** Target seq → reactions on that message. */
     private final Map<Integer, List<Reaction>> mReactions = new HashMap<>();
@@ -1462,7 +1482,15 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                         ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                         android.view.Gravity.BOTTOM | android.view.Gravity.END);
                 lp.setMarginEnd((int) (12 * dp));
+                // Hangs off the bubble's bottom-trailing corner, Zalo-style.
+                // Sitting inside the frame it covered the bubble's own
+                // timestamp; below it, it needs the row not to clip.
+                lp.bottomMargin = -(int) (REACTION_PILL_OVERHANG_DP * dp);
                 ((android.widget.FrameLayout) frame).addView(pill, lp);
+                ((ViewGroup) frame).setClipChildren(false);
+                if (frame.getParent() instanceof ViewGroup) {
+                    ((ViewGroup) frame.getParent()).setClipChildren(false);
+                }
                 mReactionsPill = pill;
             } else {
                 mReactionsPill = null;

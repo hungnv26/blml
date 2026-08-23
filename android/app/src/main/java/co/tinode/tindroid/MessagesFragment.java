@@ -370,6 +370,10 @@ public class MessagesFragment extends Fragment implements MenuProvider {
 
         mRecyclerView = view.findViewById(R.id.messages_container);
         mRecyclerView.setLayoutManager(mMessageViewLayoutManager);
+        // The reaction pill hangs below its bubble, past the row's own bounds.
+        // Without this the overhang is clipped away at the row edge.
+        mRecyclerView.setClipChildren(false);
+        mRecyclerView.setClipToPadding(false);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {

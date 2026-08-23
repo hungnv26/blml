@@ -101,6 +101,8 @@ class MessageViewController: UIViewController {
         static let kNewDateLabelHeight: CGFloat = 24
         // Vertical spacing between messages from the same user
         static let kVerticalCellSpacing: CGFloat = 8
+        /// Breathing room between a reaction pill and the bubble below it.
+        static let kReactionPillClearance: CGFloat = 6
         // Additional vertical spacing between messages from different users in P2P topics.
         static let kAdditionalP2PVerticalCellSpacing: CGFloat = 8
         static let kMinimumCellWidth: CGFloat = 94
@@ -1112,7 +1114,14 @@ extension MessageViewController: MessageViewLayoutDelegate {
         let containerSize = calcContainerSize(for: message, avatarsVisible: hasAvatars, progressVisible: showUploadProgress, senderNameVisible: isAvatarVisible)
         // Get cell size.
         let cellSize = !isDeleted ? calcCellSize(forItemAt: indexPath) : containerSize
+        // The reaction pill is an overlay hung half its height below the
+        // bubble, so it does not grow the cell. Without extra room after a
+        // reacted message the next bubble is drawn straight over the pill.
+        // The overhang is exactly half the pill, plus a little air so the two
+        // do not merely touch.
+        let hasReactions = !(reactionsByTarget[message.seqId]?.isEmpty ?? true)
         attr.cellSpacing = Constants.kVerticalCellSpacing
+            + (hasReactions ? MessageCell.kReactionPillHeight / 2 + Constants.kReactionPillClearance : 0)
 
         // Height of the field with the current date above the first message of the day.
         let newDateLabelHeight = !isDeleted ? calcNewDateLabelHeight(at: indexPath) : 0
