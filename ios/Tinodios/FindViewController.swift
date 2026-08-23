@@ -16,9 +16,11 @@ protocol FindDisplayLogic: AnyObject {
 }
 
 class FindViewController: UITableViewController, FindDisplayLogic {
-    static let kLocalSavedMessagesSection = 0
-    static let kLocalContactsSection = 1
-    static let kRemoteContactsSection = 2
+    // Saved messages used to sit above these as its own section. It now lives
+    // pinned to the top of the Chats tab instead: it is a conversation, not a
+    // contact, and showing it in both places made it look like two things.
+    static let kLocalContactsSection = 0
+    static let kRemoteContactsSection = 1
 
     @IBOutlet weak var inviteActionButtonItem: UIBarButtonItem!
     var interactor: FindBusinessLogic?
@@ -213,13 +215,11 @@ class FindViewController: UITableViewController, FindDisplayLogic {
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 3
+        return 2
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
-        case FindViewController.kLocalSavedMessagesSection:
-            return getQueryString() != nil ? 0 : 1
         case FindViewController.kLocalContactsSection:
             return localContacts.isEmpty ? 1 : localContacts.count
         case FindViewController.kRemoteContactsSection:
@@ -235,16 +235,11 @@ class FindViewController: UITableViewController, FindDisplayLogic {
         case FindViewController.kRemoteContactsSection:
             return NSLocalizedString("Directory", comment: "Section title")
         default:
-            // Saved Messages has no section title.
             return nil
         }
     }
 
     override func tableView(_: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if section == FindViewController.kLocalSavedMessagesSection {
-            // Hide Saved Messages section title.
-            return CGFloat.leastNonzeroMagnitude
-        }
         return 40.0
     }
 
@@ -256,17 +251,11 @@ class FindViewController: UITableViewController, FindDisplayLogic {
             cell.delegate = self
 
             // Configure the cell...
-            if indexPath.section == FindViewController.kLocalSavedMessagesSection {
-                cell.avatar.set(pub: nil, id: Tinode.kTopicSlf, deleted: false)
-                cell.title.text = NSLocalizedString("Saved messages", comment: "Title of the slf topic")
-                cell.subtitle.text = NSLocalizedString("Notes, messages, links, files saved for posterity", comment: "Explanation for Saved messages topic")
-            } else {
-                let contact = indexPath.section == FindViewController.kLocalContactsSection ? localContacts[indexPath.row] : remoteContacts[indexPath.row]
+            let contact = indexPath.section == FindViewController.kLocalContactsSection ? localContacts[indexPath.row] : remoteContacts[indexPath.row]
 
-                cell.avatar.set(pub: contact.pub, id: contact.uniqueId, deleted: false)
-                cell.title.text = contact.pub?.fn
-                cell.subtitle.text = contact.subtitle ?? contact.uniqueId
-            }
+            cell.avatar.set(pub: contact.pub, id: contact.uniqueId, deleted: false)
+            cell.title.text = contact.pub?.fn
+            cell.subtitle.text = contact.subtitle ?? contact.uniqueId
             cell.title.sizeToFit()
             cell.subtitle.sizeToFit()
             return cell
@@ -275,8 +264,6 @@ class FindViewController: UITableViewController, FindDisplayLogic {
 
     private func isSectionEmpty(section: Int) -> Bool {
         switch section {
-        case FindViewController.kLocalSavedMessagesSection:
-            return getQueryString() != nil
         case FindViewController.kLocalContactsSection:
             return localContacts.isEmpty
         case FindViewController.kRemoteContactsSection:
@@ -288,8 +275,6 @@ class FindViewController: UITableViewController, FindDisplayLogic {
 
     func getUniqueId(for path: IndexPath) -> String? {
         switch path.section {
-        case FindViewController.kLocalSavedMessagesSection:
-            return Tinode.kTopicSlf
         case FindViewController.kLocalContactsSection:
             return self.localContacts[path.row].uniqueId
         case FindViewController.kRemoteContactsSection:

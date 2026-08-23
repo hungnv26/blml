@@ -138,15 +138,6 @@ public class FindAdapter extends RecyclerView.Adapter<FindAdapter.ViewHolder>
 
     @Override
     public int getItemViewType(int position) {
-        if (TextUtils.isEmpty(mSearchTerm)) {
-            // Self topic is present.
-            if (position == 0) {
-                return R.layout.contact;
-            }
-
-            position--;
-        }
-
         if (position == 0) {
             // Phone contacts section title.
             return R.layout.contact_section;
@@ -185,15 +176,6 @@ public class FindAdapter extends RecyclerView.Adapter<FindAdapter.ViewHolder>
 
     @Override
     public long getItemId(int position) {
-        if (TextUtils.isEmpty(mSearchTerm)) {
-            // Self topic is present.
-            if (position == 0) {
-                return "slf".hashCode();
-            }
-
-            position--;
-        }
-
         if (position == 0) {
             return "section_one".hashCode();
         }
@@ -245,15 +227,6 @@ public class FindAdapter extends RecyclerView.Adapter<FindAdapter.ViewHolder>
     }
 
     private Object getItemAt(int position) {
-        if (TextUtils.isEmpty(mSearchTerm)) {
-            // Self topic is present.
-            if (position == 0) {
-                return new FoundMember("slf", null, null);
-            }
-
-            position--;
-        }
-
         if (position == 0) {
             // Section title 'PHONE CONTACTS';
             return R.string.contacts_section_contacts;
@@ -300,11 +273,6 @@ public class FindAdapter extends RecyclerView.Adapter<FindAdapter.ViewHolder>
     public int getItemCount() {
         // At least 2 section titles.
         int itemCount = 2;
-
-        if (TextUtils.isEmpty(mSearchTerm)) {
-            // Self topic is present.
-            itemCount++;
-        }
 
         int count = getFoundItemCount();
         itemCount += count == 0 ? 1 : count;

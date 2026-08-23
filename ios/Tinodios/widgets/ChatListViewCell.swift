@@ -97,6 +97,41 @@ class ChatListViewCell: UITableViewCell {
         iconMessageStatusWidth.constant = width
     }
 
+    /// Renders the pinned "Saved messages" row on the Chats tab.
+    ///
+    /// The slf topic is created server-side on first {sub}, so for anyone who
+    /// has never opened it there is no topic to fill from — and the row still
+    /// has to be there, or Saved messages becomes unreachable now that the
+    /// Contacts tab no longer lists it. Passing the topic when it does exist
+    /// keeps the real preview, unread badge and timestamp.
+    public func fillAsSavedMessages(topic: DefaultComTopic?) {
+        if let topic = topic {
+            fillFromTopic(topic: topic)
+            return
+        }
+        title.text = NSLocalizedString("Saved messages", comment: "Title of the slf topic")
+        title.sizeToFit()
+        subtitle.attributedText = nil
+        subtitle.text = NSLocalizedString("Notes, messages, links, files saved for posterity", comment: "Explanation for Saved messages topic")
+        subtitle.sizeToFit()
+        setMessageStatusVisibility(hidden: true)
+        channelIndicator.isHidden = true
+        channelIndicatorWidth.constant = .leastNonzeroMagnitude
+        badgeVerified.isHidden = true
+        badgeVerifiedWidth.constant = .leastNonzeroMagnitude
+        badgeStaff.isHidden = true
+        badgeStaffWidth.constant = .leastNonzeroMagnitude
+        badgeDanger.isHidden = true
+        badgeDangerWidth.constant = .leastNonzeroMagnitude
+        unreadCount.isHidden = true
+        unreadCountWidth.constant = .leastNonzeroMagnitude
+        iconBlocked.isHidden = true
+        iconBlockedWidth.constant = .leastNonzeroMagnitude
+        iconMuted.isHidden = true
+        timeLabel.text = ""
+        icon.set(pub: nil, id: Tinode.kTopicSlf, online: nil, deleted: false)
+    }
+
     public func fillFromTopic(topic: DefaultComTopic) {
         title.text = topic.isSlfType ? NSLocalizedString("Saved messages", comment: "Title of the slf topic") :
             topic.pub?.fn ?? NSLocalizedString("Unknown or unnamed", comment: "Topic title when it has no name")
