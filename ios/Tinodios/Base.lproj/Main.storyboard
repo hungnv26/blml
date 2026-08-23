@@ -3115,6 +3115,56 @@
                                         </tableViewCellContentView>
                                         <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" accessoryType="disclosureIndicator" indentationWidth="10" focusStyle="custom" textLabel="Ps1-Lb-121" imageView="Ps1-Iv-131" style="IBUITableViewCellStyleDefault" id="Ps1-Ce-101">
+                                        <rect key="frame" x="0.0" y="81.666666666666671" width="414" height="43.666667938232422"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Ps1-Ce-101" id="Ps1-Cv-111">
+                                            <rect key="frame" x="0.0" y="0.0" width="383.66666666666669" height="43.666667938232422"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Set passcode" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Ps1-Lb-121">
+                                                    <rect key="frame" x="59" y="0.0" width="316.66666666666669" height="43.666667938232422"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Ps1-Iv-131">
+                                                    <rect key="frame" x="21.833333333333336" y="12" width="20.333333333333332" height="19"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <imageReference key="image" image="lock.square" catalog="system" symbolScale="medium"/>
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="medium" weight="regular"/>
+                                                </imageView>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                        <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" accessoryType="disclosureIndicator" indentationWidth="10" focusStyle="custom" textLabel="Ps2-Lb-122" imageView="Ps2-Iv-132" style="IBUITableViewCellStyleDefault" id="Ps2-Ce-102">
+                                        <rect key="frame" x="0.0" y="81.666666666666671" width="414" height="43.666667938232422"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Ps2-Ce-102" id="Ps2-Cv-112">
+                                            <rect key="frame" x="0.0" y="0.0" width="383.66666666666669" height="43.666667938232422"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Turn passcode off" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Ps2-Lb-122">
+                                                    <rect key="frame" x="59" y="0.0" width="316.66666666666669" height="43.666667938232422"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Ps2-Iv-132">
+                                                    <rect key="frame" x="21.833333333333336" y="12" width="20.333333333333332" height="19"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <imageReference key="image" image="lock.open" catalog="system" symbolScale="medium"/>
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="medium" weight="regular"/>
+                                                </imageView>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                        <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" accessoryType="disclosureIndicator" indentationWidth="10" focusStyle="custom" textLabel="8RW-nB-5t3" imageView="MiG-tt-8oB" style="IBUITableViewCellStyleDefault" id="bX9-hY-HLX">
                                         <rect key="frame" x="0.0" y="81.666667938232422" width="414" height="43.666667938232422"/>
                                         <autoresizingMask key="autoresizingMask"/>
@@ -3262,6 +3312,8 @@
                         <outlet property="actionBlockedContacts" destination="ZpF-Ai-f16" id="i19-vF-asp"/>
                         <outlet property="actionChangePassword" destination="wqh-Iw-MIx" id="gVd-nB-YE4"/>
                         <outlet property="actionDeleteAccount" destination="prj-Re-cc5" id="hYZ-5T-xc9"/>
+                        <outlet property="actionPasscode" destination="Ps1-Ce-101" id="Ps1-Ou-141"/>
+                        <outlet property="actionPasscodeOff" destination="Ps2-Ce-102" id="Ps2-Ou-142"/>
                         <outlet property="actionLogOut" destination="bX9-hY-HLX" id="ryi-Yj-9jk"/>
                         <outlet property="anonPermissionsLabel" destination="bZv-2Q-BI9" id="iKX-A4-R1R"/>
                         <outlet property="anonUsersPermissions" destination="OkX-G2-xm9" id="1uH-nG-S3B"/>

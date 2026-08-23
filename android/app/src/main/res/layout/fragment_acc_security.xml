@@ -20,6 +20,31 @@
         app:drawableStartCompat="@drawable/ic_lock_outline" />
 
     <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/buttonPasscode"
+        style="?attr/buttonBarButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/set_passcode"
+        android:drawablePadding="4sp"
+        android:text="@string/set_passcode"
+        android:textColor="?android:textColorPrimary"
+        app:drawableTint="?android:textColorPrimary"
+        app:drawableStartCompat="@drawable/ic_lock_outline" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/buttonPasscodeOff"
+        style="?attr/buttonBarButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/turn_passcode_off"
+        android:drawablePadding="4sp"
+        android:text="@string/turn_passcode_off"
+        android:textColor="?android:textColorPrimary"
+        android:visibility="gone"
+        app:drawableTint="?android:textColorPrimary"
+        app:drawableStartCompat="@drawable/ic_lock_outline" />
+
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/buttonLogout"
         style="?attr/buttonBarButtonStyle"
         android:layout_width="wrap_content"

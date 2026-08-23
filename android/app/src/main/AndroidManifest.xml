@@ -159,6 +159,16 @@
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- The passcode gate. excludeFromRecents keeps the lock screen out of
+             the recents list, and noHistory means it is not left behind on the
+             back stack once unlocked. -->
+        <activity
+            android:name=".PasscodeActivity"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:noHistory="true"
+            android:theme="@style/AppTheme" />
+
         <activity
             android:name=".QRScanActivity"
             android:label="@string/scan_qr_code"

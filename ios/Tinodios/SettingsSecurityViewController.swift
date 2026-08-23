@@ -17,6 +17,8 @@ class SettingsSecurityViewController: UITableViewController {
     @IBOutlet weak var actionChangePassword: UITableViewCell!
     @IBOutlet weak var actionLogOut: UITableViewCell!
     @IBOutlet weak var actionDeleteAccount: UITableViewCell!
+    @IBOutlet weak var actionPasscode: UITableViewCell!
+    @IBOutlet weak var actionPasscodeOff: UITableViewCell!
 
     @IBOutlet weak var actionBlockedContacts: UITableViewCell!
 
@@ -58,9 +60,29 @@ class SettingsSecurityViewController: UITableViewController {
             forView: actionDeleteAccount,
             action: #selector(SettingsSecurityViewController.deleteAccountClicked),
             actionTarget: self)
+        UiUtils.setupTapRecognizer(
+            forView: actionPasscode,
+            action: #selector(SettingsSecurityViewController.passcodeClicked),
+            actionTarget: self)
+        UiUtils.setupTapRecognizer(
+            forView: actionPasscodeOff,
+            action: #selector(SettingsSecurityViewController.passcodeOffClicked),
+            actionTarget: self)
+    }
+
+    /// True when the signed-in account has a passcode configured.
+    private var hasPasscode: Bool {
+        return Passcode.isSet(for: tinode.myUid)
     }
 
     private func reloadData() {
+        // Passcode rows.
+        self.actionPasscode.textLabel?.text = hasPasscode ?
+            NSLocalizedString("Change passcode", comment: "Settings row") :
+            NSLocalizedString("Set passcode", comment: "Settings row")
+        self.actionPasscode.textLabel?.sizeToFit()
+        self.tableView.reloadData()
+
         // Permissions.
         self.authPermissionsLabel.text = me.defacs?.getAuth() ?? ""
         self.authPermissionsLabel.sizeToFit()
@@ -80,6 +102,34 @@ class SettingsSecurityViewController: UITableViewController {
             self.actionBlockedContacts.imageView?.tintColor = UIColor.darkText
             self.actionBlockedContacts.accessoryType = .disclosureIndicator
         }
+    }
+
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        // Nothing to turn off until a passcode exists.
+        if let path = tableView.indexPath(for: actionPasscodeOff), path == indexPath, !hasPasscode {
+            return CGFloat.leastNonzeroMagnitude
+        }
+        return super.tableView(tableView, heightForRowAt: indexPath)
+    }
+
+    @objc func passcodeClicked(sender: UITapGestureRecognizer) {
+        let mode: PasscodeViewController.Mode = hasPasscode ? .change : .setup
+        let vc = PasscodeViewController(mode: mode, uid: tinode.myUid) { [weak self] done in
+            guard done else { return }
+            UiUtils.showToast(message: NSLocalizedString("Passcode updated", comment: "Success message"), level: .info)
+            self?.reloadData()
+        }
+        present(vc, animated: true)
+    }
+
+    @objc func passcodeOffClicked(sender: UITapGestureRecognizer) {
+        guard hasPasscode else { return }
+        let vc = PasscodeViewController(mode: .remove, uid: tinode.myUid) { [weak self] done in
+            guard done else { return }
+            UiUtils.showToast(message: NSLocalizedString("Passcode removed", comment: "Success message"), level: .info)
+            self?.reloadData()
+        }
+        present(vc, animated: true)
     }
 
     private func getAcsAndPermissionsChangeType(for sender: UIView) -> (AcsHelper?, UiUtils.PermissionsChangeType?) {

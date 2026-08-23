@@ -13,6 +13,8 @@ import android.widget.Toast;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
@@ -29,6 +31,44 @@ import co.tinode.tinodesdk.NotConnectedException;
  * Fragment for editing current user details.
  */
 public class AccSecurityFragment extends Fragment implements ChatsActivity.FormUpdatable {
+
+    /** Set, changed or removed the passcode: repaint the two rows either way. */
+    private final ActivityResultLauncher<Intent> mPasscodeLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() != Activity.RESULT_OK) {
+                    return;
+                }
+                final FragmentActivity activity = getActivity();
+                if (activity == null) {
+                    return;
+                }
+                Toast.makeText(activity,
+                        hasPasscode() ? R.string.passcode_updated : R.string.passcode_removed,
+                        Toast.LENGTH_SHORT).show();
+                refreshPasscodeRows(activity);
+            });
+
+    /** True when the signed-in account has a passcode configured. */
+    private boolean hasPasscode() {
+        final FragmentActivity activity = getActivity();
+        return activity != null && Cache.getTinode() != null &&
+                Passcode.isSet(activity, Cache.getTinode().getMyId());
+    }
+
+    /** "Set" becomes "Change" once a code exists, and only then is there
+     * anything to turn off. */
+    private void refreshPasscodeRows(final FragmentActivity activity) {
+        boolean has = hasPasscode();
+        TextView set = activity.findViewById(R.id.buttonPasscode);
+        if (set != null) {
+            set.setText(has ? R.string.change_passcode : R.string.set_passcode);
+        }
+        View off = activity.findViewById(R.id.buttonPasscodeOff);
+        if (off != null) {
+            off.setVisibility(has ? View.VISIBLE : View.GONE);
+        }
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -106,6 +146,14 @@ public class AccSecurityFragment extends Fragment implements ChatsActivity.FormU
                     .setNegativeButton(android.R.string.cancel, null)
                     .show();
         });
+        activity.findViewById(R.id.buttonPasscode).setOnClickListener(v ->
+                mPasscodeLauncher.launch(PasscodeActivity.intent(activity,
+                        hasPasscode() ? PasscodeActivity.MODE_CHANGE : PasscodeActivity.MODE_SETUP)));
+
+        activity.findViewById(R.id.buttonPasscodeOff).setOnClickListener(v ->
+                mPasscodeLauncher.launch(PasscodeActivity.intent(activity,
+                        PasscodeActivity.MODE_REMOVE)));
+
         activity.findViewById(R.id.buttonLogout).setOnClickListener(v -> logout());
 
         activity.findViewById(R.id.buttonDeleteAccount).setOnClickListener(v -> {
@@ -140,6 +188,8 @@ public class AccSecurityFragment extends Fragment implements ChatsActivity.FormU
         if (activity == null) {
             return;
         }
+
+        refreshPasscodeRows(activity);
 
         if (me != null) {
             ((TextView) activity.findViewById(R.id.authPermissions)).setText(me.getAuthAcsStr());

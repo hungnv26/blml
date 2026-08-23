@@ -221,6 +221,10 @@ public class ChatsActivity extends BaseActivity
     public void onResume() {
         super.onResume();
 
+        // Passcode gate, run again here because on a cold start the account is
+        // not loaded yet when the process first comes to the foreground.
+        Passcode.enforce(this);
+
         final Tinode tinode = Cache.getTinode();
         mTinodeListener = new ContactsEventListener(tinode.isConnected());
         tinode.addListener(mTinodeListener);

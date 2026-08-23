@@ -368,10 +368,18 @@ public class TindroidApp extends Application implements DefaultLifecycleObserver
         if (!TextUtils.isEmpty(uid)) {
             Executors.newSingleThreadExecutor().execute(() -> loginInBackground(uid));
         }
+
+        // Passcode gate. On a cold start the uid may not be known yet, in
+        // which case this is a no-op and ChatsActivity runs the check again
+        // once the account is loaded.
+        Passcode.enforce(sContext);
     }
 
     @Override
     public void onStop(@NonNull LifecycleOwner owner) {
+        // Backgrounded: require the passcode again on the way back in.
+        Passcode.lock();
+
         // Disconnect now, so the connection does not wait for the timeout.
         if (Cache.getTinode() != null) {
             Cache.getTinode().maybeDisconnect(false);

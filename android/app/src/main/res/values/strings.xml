@@ -441,4 +441,23 @@
     <string name="poll_send">Send</string>
     <string name="poll_needs_more">A poll needs a question and at least 2 options.</string>
     <string name="action_poll">Poll</string>
+
+    <!-- Four-digit app passcode. Kept in step with the iOS strings. -->
+    <string name="set_passcode">Set passcode</string>
+    <string name="change_passcode">Change passcode</string>
+    <string name="turn_passcode_off">Turn passcode off</string>
+    <string name="passcode_enter">Enter passcode</string>
+    <string name="passcode_app_locked">BLML is locked.</string>
+    <string name="passcode_enter_current">Enter current passcode</string>
+    <string name="passcode_choose">Choose a passcode</string>
+    <string name="passcode_choose_explained">Four digits. You will need it every time you open BLML.</string>
+    <string name="passcode_confirm">Confirm your passcode</string>
+    <string name="passcode_confirm_explained">Enter the same four digits again.</string>
+    <string name="passcode_wrong">Wrong passcode. Try again.</string>
+    <string name="passcode_mismatch">Those did not match. Start again.</string>
+    <string name="passcode_save_failed">Could not save the passcode.</string>
+    <string name="passcode_forgot">Forgot passcode? Log out</string>
+    <string name="passcode_logout_warning">Logging out clears the passcode. You will need your account password to sign back in.</string>
+    <string name="passcode_updated">Passcode updated</string>
+    <string name="passcode_removed">Passcode removed</string>
 </resources>
