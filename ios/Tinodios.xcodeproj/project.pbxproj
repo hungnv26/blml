@@ -25,6 +25,8 @@
 		B0AA5C53260000530079A97E /* AddFriendViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C52260000520079A97E /* AddFriendViewController.swift */; };
 		B0AA5C57260000570079A97E /* MessageActionsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C56260000560079A97E /* MessageActionsSheet.swift */; };
 		B0AA5C55260000550079A97E /* MessageReactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C54260000540079A97E /* MessageReactions.swift */; };
+		B0AA5C65260000650079A97E /* Passcode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C64260000640079A97E /* Passcode.swift */; };
+		B0AA5C67260000670079A97E /* PasscodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C66260000660079A97E /* PasscodeViewController.swift */; };
 		B0AA5C33260000330079A97E /* AppearanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C17260000170079A97E /* AppearanceViewController.swift */; };
 		B0AA5C32260000320079A97E /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C16260000160079A97E /* AppearanceSettings.swift */; };
 		B0AA5C06260000060079A97E /* InviteHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C05260000050079A97E /* InviteHelper.swift */; };
@@ -218,6 +220,8 @@
 		B0AA5C52260000520079A97E /* AddFriendViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFriendViewController.swift; sourceTree = "<group>"; };
 		B0AA5C56260000560079A97E /* MessageActionsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageActionsSheet.swift; sourceTree = "<group>"; };
 		B0AA5C54260000540079A97E /* MessageReactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageReactions.swift; sourceTree = "<group>"; };
+		B0AA5C64260000640079A97E /* Passcode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Passcode.swift; sourceTree = "<group>"; };
+		B0AA5C66260000660079A97E /* PasscodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasscodeViewController.swift; sourceTree = "<group>"; };
 		B0AA5C17260000170079A97E /* AppearanceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceViewController.swift; sourceTree = "<group>"; };
 		B0AA5C16260000160079A97E /* AppearanceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettings.swift; sourceTree = "<group>"; };
 		B0AA5C05260000050079A97E /* InviteHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteHelper.swift; sourceTree = "<group>"; };
@@ -516,6 +520,8 @@
 				B0AA5C52260000520079A97E /* AddFriendViewController.swift */,
 				B0AA5C56260000560079A97E /* MessageActionsSheet.swift */,
 				B0AA5C54260000540079A97E /* MessageReactions.swift */,
+				B0AA5C64260000640079A97E /* Passcode.swift */,
+				B0AA5C66260000660079A97E /* PasscodeViewController.swift */,
 				B0AA5C17260000170079A97E /* AppearanceViewController.swift */,
 				B0AA5C16260000160079A97E /* AppearanceSettings.swift */,
 				B0AA5C05260000050079A97E /* InviteHelper.swift */,
@@ -1088,6 +1094,8 @@
 				B0AA5C53260000530079A97E /* AddFriendViewController.swift in Sources */,
 				B0AA5C57260000570079A97E /* MessageActionsSheet.swift in Sources */,
 				B0AA5C55260000550079A97E /* MessageReactions.swift in Sources */,
+				B0AA5C65260000650079A97E /* Passcode.swift in Sources */,
+				B0AA5C67260000670079A97E /* PasscodeViewController.swift in Sources */,
 				B0AA5C33260000330079A97E /* AppearanceViewController.swift in Sources */,
 				B0AA5C32260000320079A97E /* AppearanceSettings.swift in Sources */,
 				B0AA5C06260000060079A97E /* InviteHelper.swift in Sources */,

@@ -16,6 +16,11 @@ import TinodiosDB
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+
+    /// True while the passcode screen is up. Background/foreground churn can
+    /// fire the lifecycle hooks repeatedly, and without this each pass would
+    /// stack another lock screen on the last.
+    private var isPasscodeLockShowing = false
     var backgroundSessionCompletionHandler: (() -> Void)?
     // Network reachability.
     var nwReachability: Any!
@@ -142,6 +147,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(_ application: UIApplication) {
         self.appIsStarting = false
         application.applicationIconBadgeNumber = Cache.totalUnreadCount()
+        // Locking here rather than on return means the snapshot iOS takes for
+        // the app switcher shows the passcode screen instead of whatever
+        // conversation was open.
+        presentPasscodeLockIfNeeded()
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
@@ -164,6 +173,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
         self.appIsStarting = false
+        presentPasscodeLockIfNeeded()
+    }
+
+    /// Puts the passcode screen up when the signed-in account has one set.
+    ///
+    /// Safe to call repeatedly: it is a no-op with no passcode configured, no
+    /// signed-in user, a call in progress (answering a call must not require
+    /// the code first), or a lock already on screen.
+    func presentPasscodeLockIfNeeded() {
+        guard let uid = Cache.tinode.myUid, Passcode.isSet(for: uid) else { return }
+        guard Cache.callManager.callInProgress == nil else { return }
+        guard !isPasscodeLockShowing else { return }
+        guard let top = UiUtils.topViewController(rootViewController: window?.rootViewController),
+              !(top is PasscodeViewController) else { return }
+
+        isPasscodeLockShowing = true
+        let lock = PasscodeViewController(mode: .unlock, uid: uid) { [weak self] _ in
+            self?.isPasscodeLockShowing = false
+        }
+        top.present(lock, animated: false)
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
