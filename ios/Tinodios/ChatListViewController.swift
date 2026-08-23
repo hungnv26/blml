@@ -18,6 +18,12 @@ protocol ChatListDisplayLogic: AnyObject {
 
 class ChatListViewController: UITableViewController, ChatListDisplayLogic {
 
+    // Saved messages is pinned above everything else in its own section, so it
+    // keeps its place regardless of when it was last touched. It used to live
+    // on the Contacts tab, which read as a person rather than a conversation.
+    static let kSectionSaved = 0
+    static let kSectionChats = 1
+
     private static let kFooterHeight: CGFloat = 30
     // 60pt in the XIB, which was tight once the separator lines came out.
     private static let kRowHeight: CGFloat = 76
@@ -33,6 +39,17 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
     private let searchField = UISearchTextField()
     var archivedTopics: [DefaultComTopic]?
     var numArchivedTopics: Int { return archivedTopics?.count ?? 0 }
+
+    // The real slf topic once it exists. Nil until the user first opens Saved
+    // messages, because the server creates the topic on the first {sub}.
+    private var savedMessagesTopic: DefaultComTopic? {
+        return allTopics.first { $0.isSlfType }
+    }
+    // Hidden while searching: a pinned row that ignores the query would look
+    // like a result that does not match.
+    private var isSavedRowVisible: Bool {
+        return (searchField.text ?? "").trimmingCharacters(in: .whitespaces).isEmpty
+    }
 
     // Index of contacts: name => position in topics
     var rowIndex: [String: Int] = [:]
@@ -219,6 +236,11 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
         self.interactor?.setup()
         self.interactor?.attachToMeTopic()
         self.interactor?.loadAndPresentTopics()
+
+        // Cold launch: the app becomes active before sign-in has restored the
+        // uid, so AppDelegate's own attempt finds nothing to lock. By the time
+        // this list is on screen the account is known.
+        (UIApplication.shared.delegate as? AppDelegate)?.presentPasscodeLockIfNeeded()
     }
 
     // Continue listening on meTopic even when the VC isn't visible.
@@ -255,9 +277,17 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
     private func applySearchFilter() {
         let query = (searchField.text ?? "").trimmingCharacters(in: .whitespaces).lowercased()
         if query.isEmpty {
-            self.topics = allTopics
+            // Drawn by the pinned section instead, or it would appear twice.
+            self.topics = allTopics.filter { !$0.isSlfType }
         } else {
             self.topics = allTopics.filter { topic in
+                if topic.isSlfType {
+                    // The pinned row is hidden during a search, so match the
+                    // slf topic on its displayed title rather than its empty
+                    // public name — otherwise it becomes unsearchable.
+                    return NSLocalizedString("Saved messages", comment: "Title of the slf topic")
+                        .lowercased().contains(query)
+                }
                 let hayStack = [topic.pub?.fn, topic.pub?.note, topic.comment]
                 return hayStack.contains { $0?.lowercased().contains(query) ?? false }
             }
@@ -268,8 +298,15 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
 
     func updateChat(_ name: String) {
         assert(Thread.isMainThread)
+        if name == Tinode.kTopicSlf {
+            // Not in rowIndex — the pinned row is drawn from allTopics.
+            if isSavedRowVisible {
+                self.tableView!.reloadSections(IndexSet(integer: ChatListViewController.kSectionSaved), with: .none)
+            }
+            return
+        }
         guard let position = rowIndex[name] else { return }
-        self.tableView!.reloadRows(at: [IndexPath(item: position, section: 0)], with: .none)
+        self.tableView!.reloadRows(at: [IndexPath(item: position, section: ChatListViewController.kSectionChats)], with: .none)
         self.toggleFooter(visible: self.numArchivedTopics > 0)
     }
 
@@ -281,7 +318,7 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
         guard let position = rowIndex[name] else { return }
         self.topics.remove(at: position)
         self.rowIndex = Dictionary(uniqueKeysWithValues: self.topics.enumerated().map { (index, topic) in (topic.name, index) })
-        self.tableView!.deleteRows(at: [IndexPath(item: position, section: 0)], with: .fade)
+        self.tableView!.deleteRows(at: [IndexPath(item: position, section: ChatListViewController.kSectionChats)], with: .fade)
         self.toggleFooter(visible: self.numArchivedTopics > 0)
     }
 
@@ -299,22 +336,42 @@ extension ChatListViewController {
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return 2
+    }
+
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        // The two sections are a pinning device, not a visual grouping: the
+        // list should still read as one continuous list.
+        return .leastNonzeroMagnitude
+    }
+
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        return nil
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if section == ChatListViewController.kSectionSaved {
+            return isSavedRowVisible ? 1 : 0
+        }
         toggleNoChatsNote(on: topics.isEmpty)
         return topics.count
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChatListViewCell") as! ChatListViewCell
-        let topic = self.topics[indexPath.row]
-        cell.fillFromTopic(topic: topic)
+        if indexPath.section == ChatListViewController.kSectionSaved {
+            cell.fillAsSavedMessages(topic: savedMessagesTopic)
+        } else {
+            cell.fillFromTopic(topic: self.topics[indexPath.row])
+        }
         return cell
     }
 
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        // Saved messages is pinned: deleting or archiving it from here would
+        // just leave the row in place, since it is drawn whether or not the
+        // topic exists.
+        guard indexPath.section == ChatListViewController.kSectionChats else { return nil }
         // Delete item at indexPath
         let delete = UIContextualAction(style: .destructive, title: NSLocalizedString("Delete", comment: "Swipe action"), handler: { _,_,_ in
             let topic = self.topics[indexPath.row]
@@ -331,7 +388,9 @@ extension ChatListViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        self.performSegue(withIdentifier: "Chats2Messages", sender: self.topics[indexPath.row].name)
+        let name = indexPath.section == ChatListViewController.kSectionSaved
+            ? Tinode.kTopicSlf : self.topics[indexPath.row].name
+        self.performSegue(withIdentifier: "Chats2Messages", sender: name)
     }
 }
 

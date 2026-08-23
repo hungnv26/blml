@@ -36,6 +36,8 @@ import co.tinode.tindroid.format.PreviewFormatter;
 import co.tinode.tindroid.media.VxCard;
 import co.tinode.tinodesdk.ComTopic;
 import co.tinode.tinodesdk.Storage;
+import co.tinode.tinodesdk.Tinode;
+import co.tinode.tinodesdk.Topic;
 import co.tinode.tinodesdk.model.Drafty;
 import co.tinode.tinodesdk.model.TheCard;
 
@@ -47,6 +49,10 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
 
     private static int sColorOffline;
     private static int sColorOnline;
+    // The slf topic has no public name, so a search has to match its
+    // displayed title instead or Saved messages becomes unfindable while the
+    // pinned row is hidden.
+    private static String sSelfTitle;
     private final ClickListener mClickListener;
     private List<ComTopic<VxCard>> mTopics;
     private HashMap<String, Integer> mTopicIndex;
@@ -54,6 +60,11 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
     private final Filter mTopicFilter;
     // Optional filter to find topics by name.
     private Filter mTextFilter = null;
+    // Saved messages is pinned above everything else, in row 0. It used to
+    // live on the Contacts tab, which read as a person rather than a
+    // conversation. Hidden while a search is running: a pinned row that
+    // ignores the query looks like a result that does not match.
+    private boolean mPinSaved = true;
 
     ChatsAdapter(Context context, ClickListener clickListener, @Nullable Filter filter) {
         super();
@@ -68,6 +79,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                 R.color.offline, context.getTheme());
         sColorOnline = ResourcesCompat.getColor(context.getResources(),
                 R.color.online, context.getTheme());
+        sSelfTitle = context.getString(R.string.self_topic_title);
     }
 
     void resetContent(Activity activity) {
@@ -75,8 +87,10 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             return;
         }
 
+        final boolean pinSaved = mPinSaved;
         final Collection<ComTopic<VxCard>> newTopics = Cache.getTinode().getFilteredTopics(t ->
                 t.getTopicType().match(ComTopic.TopicType.USER) &&
+                        !(pinSaved && t.isSlfType()) &&
                         mTopicFilter.filter((ComTopic) t) &&
                         mTextFilter.filter((ComTopic) t));
 
@@ -102,8 +116,29 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                 inflater.inflate(viewType, parent, false), mClickListener, viewType);
     }
 
+    /** 1 while the pinned Saved messages row occupies position 0. */
+    private int pinnedCount() {
+        return mPinSaved ? 1 : 0;
+    }
+
+    /** The real slf topic, or null when it has not been created yet: the
+     * server makes it on the first subscribe, so a fresh account has none. */
+    @SuppressWarnings("unchecked")
+    private ComTopic<VxCard> savedTopic() {
+        if (Cache.getTinode() == null) {
+            return null;
+        }
+        Topic t = Cache.getTinode().getTopic(Tinode.TOPIC_SLF);
+        return t instanceof ComTopic ? (ComTopic<VxCard>) t : null;
+    }
+
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        if (holder.viewType == R.layout.contact && position < pinnedCount()) {
+            holder.bindSaved(savedTopic());
+            return;
+        }
+        position -= pinnedCount();
         if (holder.viewType == R.layout.contact) {
             if (mTopics.size() <= position) {
                 // Looks like there is a race condition here.
@@ -122,6 +157,10 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
 
     @Override
     public long getItemId(int position) {
+        if (position < pinnedCount()) {
+            return Tinode.TOPIC_SLF.hashCode();
+        }
+        position -= pinnedCount();
         if (getActualItemCount() == 0) {
             return -2;
         }
@@ -129,6 +168,13 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
     }
 
     private String getItemKey(int position) {
+        if (position < pinnedCount()) {
+            return Tinode.TOPIC_SLF;
+        }
+        position -= pinnedCount();
+        if (mTopics == null || position < 0 || position >= mTopics.size()) {
+            return null;
+        }
         return mTopics.get(position).getName();
     }
 
@@ -137,7 +183,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             return -1;
         }
         Integer pos = mTopicIndex.get(key);
-        return pos == null ? -1 : pos;
+        return pos == null ? -1 : pos + pinnedCount();
     }
 
     private int getActualItemCount() {
@@ -148,11 +194,14 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
     public int getItemCount() {
         // If there are no contacts, the RV will show a single 'empty' item.
         int count = getActualItemCount();
-        return count == 0 ? 1 : count;
+        return pinnedCount() + (count == 0 ? 1 : count);
     }
 
     @Override
     public int getItemViewType(int position) {
+        if (position < pinnedCount()) {
+            return R.layout.contact;
+        }
         if (getActualItemCount() == 0) {
             return R.layout.contact_empty;
         }
@@ -164,12 +213,20 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
     }
 
     void setTextFilter(@Nullable String text) {
+        // The pinned row steps aside for a search, and the slf topic rejoins
+        // the ordinary filtered list so it can still be found.
+        mPinSaved = TextUtils.isEmpty(text);
         mTextFilter = new Filter() {
             private final String mQuery = text;
             @Override
             public boolean filter(ComTopic topic) {
                 if (TextUtils.isEmpty(mQuery)) {
                     return true;
+                }
+
+                if (topic.isSlfType()) {
+                    return sSelfTitle != null &&
+                            sSelfTitle.toLowerCase(Locale.getDefault()).contains(mQuery);
                 }
 
                 ArrayList<String> hayStack = new ArrayList<>();
@@ -317,10 +374,68 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
         }
 
         ItemDetailsLookup.ItemDetails<String> getItemDetails() {
-            return details;
+            // The pinned Saved messages row is not selectable: multi-select
+            // exists to delete and archive chats, and neither applies to a row
+            // that is drawn whether or not the topic exists.
+            return isPinnedSaved ? null : details;
+        }
+
+        /** True while this holder is showing the pinned Saved messages row. */
+        boolean isPinnedSaved = false;
+
+        /** Draws the pinned Saved messages row.
+         *
+         * The slf topic is created server-side on the first subscribe, so for
+         * anyone who has never opened it there is nothing to bind — and the
+         * row still has to be there, or Saved messages is unreachable now that
+         * the Contacts tab no longer lists it. When the topic does exist the
+         * ordinary bind runs, keeping the preview, unread badge and time. */
+        void bindSaved(@Nullable ComTopic<VxCard> topic) {
+            isPinnedSaved = true;
+            if (topic != null) {
+                bind(0, topic, Cache.getTinode().getLastMessage(topic.getName()), false);
+                // bind() clears the flag on the way through; this row is still
+                // the pinned one.
+                isPinnedSaved = true;
+                return;
+            }
+
+            name.setText(R.string.self_topic_title);
+            name.setTypeface(null, Typeface.NORMAL);
+            priv.setText(R.string.self_topic_description);
+            messageStatus.setVisibility(View.GONE);
+            unreadCount.setVisibility(View.GONE);
+            if (time != null) {
+                time.setVisibility(View.GONE);
+            }
+            UiUtils.setAvatar(avatarView, null, Tinode.TOPIC_SLF, false);
+            online.setVisibility(View.INVISIBLE);
+            channel.setVisibility(View.GONE);
+            group.setVisibility(View.GONE);
+            deleted.setVisibility(View.GONE);
+            verified.setVisibility(View.GONE);
+            staff.setVisibility(View.GONE);
+            danger.setVisibility(View.GONE);
+            muted.setVisibility(View.GONE);
+            archived.setVisibility(View.GONE);
+            blocked.setVisibility(View.GONE);
+            pinned.setVisibility(View.GONE);
+            itemView.setAlpha(1.0f);
+            itemView.setActivated(false);
+
+            final Context context = itemView.getContext();
+            TypedArray typedArray = context.obtainStyledAttributes(
+                    new int[]{android.R.attr.selectableItemBackgroundBorderless});
+            itemView.setBackgroundResource(typedArray.getResourceId(0, 0));
+            typedArray.recycle();
+            itemView.setOnClickListener(view -> clickListener.onClick(Tinode.TOPIC_SLF));
+            itemView.setOnLongClickListener(null);
         }
 
         void bind(int position, final ComTopic<VxCard> topic, Storage.Message msg, boolean selected) {
+            // View holders are recycled; a row that was the pinned one last
+            // time must go back to being selectable.
+            isPinnedSaved = false;
             final Context context = itemView.getContext();
             final String topicName = topic.getName();
 
