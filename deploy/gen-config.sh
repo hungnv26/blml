@@ -32,6 +32,7 @@ sed \
   -e 's|"max_size": 8388608|"max_size": 104857600|' \
   -e 's|"upload_dir": "uploads"|"upload_dir": "/var/blml/uploads"|' \
   -e 's|"required": \["auth"\]|"required": []|' \
+  -e 's|"expvar": "/debug/vars"|"expvar": "-"|' \
   "$TEMPLATE" > "$OUT"
 
 # Sanity: no known default secret may survive into the generated config.
@@ -41,6 +42,16 @@ for leaked in 'T713/rYYgW7g4m3vG6zGRh7' 'wfaY2RgF2S1OQI' 'la6YsO+bNX'; do
     exit 1
   fi
 done
+
+# Runtime stats must not be servable. Upstream ships expvar on /debug/vars,
+# which needs no auth and hands out the binary and config paths, live session
+# and topic counts, uptime and goroutine counts to anyone who asks. "-" is the
+# server's documented way to unregister the handler entirely (statsInit returns
+# before mux.Handle), rather than relying on the proxy to hide it.
+if ! grep -qF '"expvar": "-"' "$OUT"; then
+  echo "ERROR: expvar is not disabled in $OUT" >&2
+  exit 1
+fi
 
 # Invite-only registration: inject the code as a top-level array. An empty
 # REGISTRATION_CODE leaves registration open.
