@@ -150,6 +150,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Locking here rather than on return means the snapshot iOS takes for
         // the app switcher shows the passcode screen instead of whatever
         // conversation was open.
+        Passcode.lock()
         presentPasscodeLockIfNeeded()
     }
 
@@ -182,15 +183,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     /// signed-in user, a call in progress (answering a call must not require
     /// the code first), or a lock already on screen.
     func presentPasscodeLockIfNeeded() {
-        guard let uid = Cache.tinode.myUid, Passcode.isSet(for: uid) else { return }
+        // Already unlocked for this session: the app has been opened and the
+        // code entered. Without this the gate fires on every call site,
+        // including the chat list appearing again after a tab switch or on
+        // leaving a conversation, and asks for the passcode over and over.
+        guard Passcode.isLocked else { return }
+        guard let uid = Cache.tinode.myUid else { return }
+        guard Passcode.isSet(for: uid) else {
+            // Nothing to enforce, so stop trying on every appearance.
+            Passcode.unlock()
+            return
+        }
         guard Cache.callManager.callInProgress == nil else { return }
         guard !isPasscodeLockShowing else { return }
         guard let top = UiUtils.topViewController(rootViewController: window?.rootViewController),
               !(top is PasscodeViewController) else { return }
 
         isPasscodeLockShowing = true
-        let lock = PasscodeViewController(mode: .unlock, uid: uid) { [weak self] _ in
+        let lock = PasscodeViewController(mode: .unlock, uid: uid) { [weak self] success in
             self?.isPasscodeLockShowing = false
+            if success {
+                Passcode.unlock()
+            }
         }
         top.present(lock, animated: false)
     }

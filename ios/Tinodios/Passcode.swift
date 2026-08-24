@@ -22,6 +22,30 @@ public enum Passcode {
 
     private static let keychain = KeychainWrapper(serviceName: "app.blml.chat.passcode")
 
+    /// True while the app must be unlocked before it can be used: set when the
+    /// app goes to the background, and true at launch so a cold start is gated
+    /// too. Cleared by a correct code, or by the gate when the account has no
+    /// passcode to enforce.
+    ///
+    /// Without this the gate had only "is the lock on screen", which says
+    /// nothing about whether the app has already been unlocked — so every
+    /// viewDidAppear on the chat list put the lock back up, and the passcode
+    /// was demanded again on a tab switch or on leaving a conversation.
+    private static var locked = true
+
+    public static var isLocked: Bool {
+        return locked
+    }
+
+    /// Called when the app goes to the background.
+    public static func lock() {
+        locked = true
+    }
+
+    public static func unlock() {
+        locked = false
+    }
+
     private static func key(for uid: String) -> String {
         return "passcode.\(uid)"
     }
@@ -80,6 +104,7 @@ public enum Passcode {
     public static func clear(for uid: String?) {
         guard let uid = uid else { return }
         keychain.removeObject(forKey: key(for: uid))
+        locked = false
     }
 
     /// Exactly `kLength` ASCII digits. Guards against a paste or an autofill
