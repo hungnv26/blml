@@ -89,12 +89,88 @@ log "Uploading $(du -h "$IPA" | cut -f1) to App Store Connect"
 xcrun altool --upload-app -f "$IPA" -t ios \
   --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID" 2>&1 | tail -8
 
+# ── Distribute ───────────────────────────────────────────────────────────────
+# Uploading is not shipping. A build that lands in App Store Connect belonging
+# to no beta group is invisible to every tester, and TestFlight then offers
+# them the newest build their groups DO carry — so the new version looks like
+# it silently failed to install, or worse, downgrades them. That is exactly
+# what happened to build 96, which sat undistributed while the script printed
+# "Uploaded" and stopped.
+#
+# GROUP=... picks a different one. External groups additionally need the build
+# submitted for Beta App Review; group membership alone does not distribute to
+# them either.
+GROUP=${GROUP:-Family (internal)}
+
+log "Waiting for processing, then adding it to '$GROUP'"
+python3 - "$BUNDLE" "$BUILD_NO" "$GROUP" <<'PYEOF'
+import sys, time
+# cd to the script's directory happened in the shell above, so asc/ is here.
+sys.path.insert(0, "asc")
+import asc
+
+bundle, target, group_name = sys.argv[1], sys.argv[2], sys.argv[3]
+
+app = asc.call("GET", f"/v1/apps?filter[bundleId]={bundle}")["data"][0]["id"]
+
+groups = asc.call("GET", f"/v1/apps/{app}/betaGroups?limit=50")["data"]
+match = [g for g in groups if g["attributes"].get("name") == group_name]
+if not match:
+    sys.exit("no beta group named %r (have: %s)"
+             % (group_name, ", ".join(g["attributes"].get("name") for g in groups)))
+group = match[0]
+gid = group["id"]
+external = not group["attributes"].get("isInternalGroup")
+
+# Ingestion runs well past the point where the upload reports success, and the
+# build is not addressable until it does.
+build = None
+deadline = time.time() + 1800
+while time.time() < deadline:
+    for b in asc.call("GET", f"/v1/builds?filter[app]={app}&limit=5&sort=-version")["data"]:
+        if b["attributes"].get("version") == target:
+            if b["attributes"].get("processingState") == "VALID":
+                build = b
+            break
+    if build:
+        break
+    print("  still processing...")
+    time.sleep(60)
+if not build:
+    sys.exit("build %s never became VALID; assign it by hand in App Store Connect" % target)
+
+asc.call("POST", f"/v1/builds/{build['id']}/relationships/betaGroups",
+         {"data": [{"type": "betaGroups", "id": gid}]})
+
+# External testers cannot install until Apple has reviewed the build, and
+# adding it to a group does not submit it.
+if external:
+    try:
+        asc.call("POST", "/v1/betaAppReviewSubmissions", {"data": {
+            "type": "betaAppReviewSubmissions",
+            "relationships": {"build": {"data": {"type": "builds", "id": build["id"]}}}}})
+    except Exception as err:
+        print("  beta review submission failed:", str(err)[:200])
+
+# Verify from the group's side. The POST returning cleanly is not evidence
+# that a tester can see the build.
+carried = sorted((int(b["attributes"]["version"])
+                  for b in asc.call("GET", f"/v1/betaGroups/{gid}/builds?limit=200")["data"]),
+                 reverse=True)
+state = asc.call("GET", f"/v1/builds/{build['id']}/buildBetaDetail")["data"]["attributes"]
+print("  '%s' now carries: %s" % (group_name, carried[:5]))
+print("  internal: %s   external: %s"
+      % (state.get("internalBuildState"), state.get("externalBuildState")))
+if target not in (str(v) for v in carried):
+    sys.exit("build %s is still not in the group" % target)
+PYEOF
+
 cat <<EOF
 
-Uploaded. App Store Connect processes the build for 5-15 minutes before it
-appears in TestFlight.
+Done. Build $BUILD_NO is uploaded and assigned to '$GROUP'.
 
-Internal testers (people on your App Store Connect team, up to 100) get it as
-soon as processing finishes, with no review. External testers need the first
-build of each version to pass Beta App Review, usually within a day.
+Internal testers (people on your App Store Connect team, up to 100) get it
+straight away, with no review. External groups go through Beta App Review;
+after the first build of a version has passed, later ones usually clear
+immediately.
 EOF
