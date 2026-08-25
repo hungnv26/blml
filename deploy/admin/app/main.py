@@ -18,7 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from . import audit, auth, charts, db, tinode
-from .security import hash_password  # noqa: F401  (re-exported for ops use)
+from . import security as security_mod
 
 BASE = Path(__file__).parent
 app = FastAPI(title="BLML admin", docs_url=None, redoc_url=None,
@@ -207,6 +207,67 @@ def set_state(request: Request, user_id: int, state: str = Form(...),
                  detail={"before": before["state"], "after": state},
                  ip=client_ip(request))
     return RedirectResponse(back, status_code=303)
+
+
+# ── Security (TOTP enrolment) ────────────────────────────────────────────────
+
+@app.get("/security", response_class=HTMLResponse)
+def security(request: Request, session: dict = Depends(current_session)):
+    """Shows TOTP status and, when unenrolled, a secret to enrol with.
+
+    The secret is generated and stored on first view but `totp_enrolled`
+    stays false until a code proves the authenticator actually has it.
+    Flipping the flag on generation would lock the operator out of a console
+    whose password is the only other way in.
+    """
+    op = auth.operator()
+    if not op:
+        raise HTTPException(500, "No operator configured")
+    secret = op["totp_secret"]
+    if not op["totp_enrolled"] and not secret:
+        secret = security_mod.generate_totp_secret()
+        db.execute("UPDATE admin.operator SET totp_secret = %s, "
+                   "updated_at = now() WHERE id = 1", (secret,))
+    return render(request, "security.html",
+                  enrolled=op["totp_enrolled"],
+                  secret=None if op["totp_enrolled"] else secret,
+                  uri=None if op["totp_enrolled"] else
+                      security_mod.provisioning_uri(secret, op["username"],
+                                                    "BLML admin"),
+                  stepup=auth.has_stepup(session), error=None)
+
+
+@app.post("/security/totp/enable")
+def enable_totp(request: Request, code: str = Form(...),
+                session: dict = Depends(current_session)):
+    op = auth.operator()
+    if not op or not op["totp_secret"]:
+        raise HTTPException(400, "No secret to confirm")
+    if not security_mod.verify_totp(op["totp_secret"], code):
+        audit.record("totp.enable", outcome="denied", ip=client_ip(request))
+        return render(request, "security.html", enrolled=False,
+                      secret=op["totp_secret"],
+                      uri=security_mod.provisioning_uri(
+                          op["totp_secret"], op["username"], "BLML admin"),
+                      stepup=auth.has_stepup(session),
+                      error="That code is not right. Check the clock on your "
+                            "phone if it keeps failing.")
+    db.execute("UPDATE admin.operator SET totp_enrolled = true, "
+               "updated_at = now() WHERE id = 1")
+    audit.record("totp.enable", ip=client_ip(request))
+    return RedirectResponse("/security", status_code=303)
+
+
+@app.post("/security/totp/disable")
+def disable_totp(request: Request, session: dict = Depends(current_session)):
+    """Turning off a second factor is a security downgrade, so it needs the
+    same step-up as deleting an account."""
+    if (gate := require_stepup(request, session, "/security")) is not None:
+        return gate
+    db.execute("UPDATE admin.operator SET totp_enrolled = false, "
+               "totp_secret = NULL, updated_at = now() WHERE id = 1")
+    audit.record("totp.disable", ip=client_ip(request))
+    return RedirectResponse("/security", status_code=303)
 
 
 # ── Audit ────────────────────────────────────────────────────────────────────
