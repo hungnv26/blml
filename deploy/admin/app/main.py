@@ -152,6 +152,16 @@ def _sparkline(values: list[int], width: int = 560, height: int = 48) -> str:
             f'stroke-width="2" stroke-linejoin="round"/></svg>')
 
 
+# ── Groups ───────────────────────────────────────────────────────────────────
+
+@app.get("/groups", response_class=HTMLResponse)
+def groups(request: Request, session: dict = Depends(current_session)):
+    """Read-only for now. Membership editing and deletion are Phase 4; this
+    exists so retiring the old page does not remove a view the operator
+    already had."""
+    return render(request, "groups.html", topics=db.list_topics())
+
+
 # ── People ───────────────────────────────────────────────────────────────────
 
 @app.get("/people", response_class=HTMLResponse)

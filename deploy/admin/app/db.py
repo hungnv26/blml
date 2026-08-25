@@ -37,7 +37,10 @@ def cursor(dict_rows: bool = True):
 
 def query(sql: str, args: tuple = ()) -> list:
     with cursor() as cur:
-        cur.execute(sql, args)
+        # `args or None`, not `args`: psycopg2 attempts %-interpolation
+        # whenever args is not None, so an empty tuple makes a literal
+        # `LIKE 'grp%'` blow up at runtime. Passing None skips it entirely.
+        cur.execute(sql, args or None)
         return cur.fetchall()
 
 
@@ -54,7 +57,7 @@ def execute(sql: str, args: tuple = ()) -> int:
     mistake, keyed on the wrong column, cost an afternoon once already.
     """
     with cursor(dict_rows=False) as cur:
-        cur.execute(sql, args)
+        cur.execute(sql, args or None)
         return cur.rowcount
 
 
@@ -109,6 +112,36 @@ def recent_signups(limit: int = 8) -> list:
         "SELECT id, public->>'fn' AS name, createdat, lastseen "
         "FROM users WHERE state != 30 ORDER BY createdat DESC LIMIT %s",
         (limit,))
+
+
+# ── Groups and conversations ─────────────────────────────────────────────────
+
+def list_topics() -> list:
+    """Every conversation topic with its size and last activity.
+
+    Includes p2p and saved-messages rows, not just groups: the page this
+    console replaces listed them all, and losing that view would leave the
+    operator worse off than before. Names and counts only — no message
+    content, here or anywhere.
+    """
+    return query(
+        """
+        SELECT t.name,
+               t.public->>'fn' AS title,
+               CASE
+                   WHEN t.name LIKE 'grp%' THEN 'group'
+                   WHEN t.name LIKE 'p2p%' THEN 'one-to-one'
+                   WHEN t.name LIKE 'slf%' THEN 'saved'
+                   ELSE 'other'
+               END AS kind,
+               t.seqid AS messages,
+               t.touchedat,
+               (SELECT count(*) FROM subscriptions s
+                 WHERE s.topic = t.name AND s.deletedat IS NULL) AS members
+        FROM topics t
+        WHERE t.name <> 'sys' AND t.name NOT LIKE 'usr%'
+        ORDER BY t.touchedat DESC NULLS LAST
+        """)
 
 
 # ── People ───────────────────────────────────────────────────────────────────
