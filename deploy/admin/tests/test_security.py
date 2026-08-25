@@ -146,5 +146,42 @@ class RateLimiterTests(unittest.TestCase):
         self.assertEqual(rl.retry_after("ip", now=0.0), 0.0)
 
 
+
+class SparklineTests(unittest.TestCase):
+    """The dashboard chart. Pure enough to test, and wrong enough to matter:
+    an inverted y-axis or an off-by-one step looks plausible in code."""
+
+    def setUp(self):
+        from app.charts import sparkline
+        self.sparkline = sparkline
+
+    def _points(self, svg):
+        import re
+        raw = re.search(r'points="([^"]+)"', svg).group(1)
+        return [tuple(float(n) for n in p.split(",")) for p in raw.split()]
+
+    def test_empty_series_renders_nothing(self):
+        self.assertEqual(self.sparkline([]), "")
+
+    def test_point_count_matches_series(self):
+        self.assertEqual(len(self._points(self.sparkline([1, 2, 3, 4]))), 4)
+
+    def test_peak_sits_at_the_top(self):
+        # SVG y grows downwards, so the largest value must have the smallest y.
+        pts = self._points(self.sparkline([1, 9, 3], height=48))
+        ys = [y for _, y in pts]
+        self.assertEqual(min(ys), ys[1], "the peak is not the highest point")
+
+    def test_spans_the_full_width(self):
+        pts = self._points(self.sparkline([1, 2, 3], width=100))
+        self.assertAlmostEqual(pts[0][0], 0.0)
+        self.assertAlmostEqual(pts[-1][0], 100.0, places=1)
+
+    def test_flat_series_does_not_divide_by_zero(self):
+        self.assertIn("polyline", self.sparkline([0, 0, 0]))
+
+    def test_single_point_is_safe(self):
+        self.assertEqual(len(self._points(self.sparkline([5]))), 1)
+
 if __name__ == "__main__":
     unittest.main()

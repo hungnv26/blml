@@ -17,7 +17,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import audit, auth, db, tinode
+from . import audit, auth, charts, db, tinode
 from .security import hash_password  # noqa: F401  (re-exported for ops use)
 
 BASE = Path(__file__).parent
@@ -131,25 +131,8 @@ def dashboard(request: Request, session: dict = Depends(current_session)):
     return render(request, "dashboard.html",
                   totals=db.dashboard_totals(),
                   series=series,
-                  spark=_sparkline([r["n"] for r in series]),
+                  spark=charts.sparkline([r["n"] for r in series]),
                   signups=db.recent_signups())
-
-
-def _sparkline(values: list[int], width: int = 560, height: int = 48) -> str:
-    """An inline SVG polyline. Rendered here rather than pulled from a chart
-    library: one series, no interaction, and no CDN dependency — the webapp
-    was already cleaned of those once."""
-    if not values:
-        return ""
-    peak = max(values) or 1
-    step = width / max(len(values) - 1, 1)
-    points = " ".join(
-        f"{i * step:.1f},{height - (v / peak) * (height - 4):.1f}"
-        for i, v in enumerate(values))
-    return (f'<svg viewBox="0 0 {width} {height}" preserveAspectRatio="none" '
-            f'class="spark" role="img" aria-label="messages per day">'
-            f'<polyline points="{points}" fill="none" stroke="currentColor" '
-            f'stroke-width="2" stroke-linejoin="round"/></svg>')
 
 
 # ── Groups ───────────────────────────────────────────────────────────────────
