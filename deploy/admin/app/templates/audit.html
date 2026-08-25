@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block body %}
+<h1>Audit</h1>
+<p class="muted">Every state-changing action and every failed sign-in.</p>
+<table><tr><th>When</th><th>Action</th><th>Target</th><th>Outcome</th><th>From</th></tr>
+{% for e in entries %}
+<tr><td class="mono small">{{ e.at.strftime('%Y-%m-%d %H:%M:%S') }}</td><td>{{ e.action }}</td>
+<td class="mono small">{{ e.target or '' }}</td>
+<td>{% if e.outcome == 'ok' %}<span class="ok">ok</span>{% else %}<span class="warn">{{ e.outcome }}</span>{% endif %}</td>
+<td class="mono small">{{ e.ip or '' }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">Nothing recorded yet.</td></tr>{% endfor %}
+</table>
+{% endblock %}

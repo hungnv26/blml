@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block body %}
+<div class="centre">
+  <h1>Confirm it's you</h1>
+  <p class="muted">This action changes an account or restarts a service. Re-enter your password to authorise it for the next few minutes.</p>
+  {% if error %}<p class="err">{{ error }}</p>{% endif %}
+  <form method="post" action="/stepup" class="card">
+    <input type="hidden" name="back" value="{{ back }}">
+    <label>Password<input name="password" type="password" autocomplete="current-password" autofocus required></label>
+    <button type="submit">Confirm</button>
+  </form>
+</div>
+{% endblock %}

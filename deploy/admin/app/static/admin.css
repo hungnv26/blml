@@ -1,0 +1,51 @@
+/* Console palette, taken from the page this replaces so it still feels like
+   the same tool. Dark only, deliberately: it is an ops surface with one user. */
+:root{--ground:#0b141a;--surface:#16232b;--sunk:#101c23;--ink:#e9edef;
+--muted:#8696a0;--rule:#1f2c33;--accent:#35d2a8;--warn:#e0a458;--risk:#e08076}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);display:flex;
+font:15px/1.55 -apple-system,system-ui,"Segoe UI",sans-serif}
+main{flex:1;padding:2rem clamp(1rem,4vw,3rem);max-width:70rem}
+h1{font-size:1.5rem;margin:0 0 1.25rem;letter-spacing:-.02em}
+h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;
+color:var(--muted);margin:2rem 0 .6rem;font-weight:600}
+a{color:var(--accent)}
+.muted{color:var(--muted)}.small{font-size:.85rem}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}
+.ok{color:var(--accent)}.warn{color:var(--warn)}.err{color:var(--risk)}
+/* sidebar */
+.side{width:13rem;flex:none;background:var(--sunk);border-right:1px solid var(--rule);
+min-height:100vh;padding:1.5rem 0;display:flex;flex-direction:column}
+.brand{padding:0 1.25rem 1.25rem;font-weight:700;letter-spacing:-.02em}
+.brand span{color:var(--muted);font-weight:400;margin-left:.35rem}
+.side a{display:block;padding:.55rem 1.25rem;color:var(--ink);text-decoration:none}
+.side a:hover{background:var(--surface)}
+.side a.on{color:var(--accent);box-shadow:inset 3px 0 0 var(--accent);background:var(--surface)}
+.out{margin-top:auto;padding:1rem 1.25rem 0}
+.out button{background:none;border:1px solid var(--rule);color:var(--muted);
+padding:.4rem .8rem;border-radius:6px;cursor:pointer;font:inherit;font-size:.85rem}
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));gap:.8rem}
+.tile{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:.9rem 1.1rem}
+.tile b{display:block;font-size:1.55rem;letter-spacing:-.02em}
+.tile span{color:var(--muted);font-size:.82rem}
+.sparkwrap{background:var(--surface);border:1px solid var(--rule);border-radius:10px;
+padding:1rem;color:var(--accent)}
+.spark{width:100%;height:48px;display:block}
+/* tables */
+table{border-collapse:collapse;width:100%;margin-top:.4rem}
+th,td{text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+/* forms */
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:12px;
+padding:1.4rem;display:flex;flex-direction:column;gap:.9rem;min-width:19rem}
+label{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:var(--muted)}
+input,select{background:var(--sunk);border:1px solid var(--rule);color:var(--ink);
+padding:.55rem .7rem;border-radius:7px;font:inherit}
+button{background:var(--accent);color:#05231c;border:0;padding:.55rem 1rem;
+border-radius:7px;font:inherit;font-weight:600;cursor:pointer}
+.row{display:flex;gap:.5rem;margin:.5rem 0;flex-wrap:wrap}
+.search{display:flex;gap:.5rem;margin-bottom:.5rem}
+.centre{margin:auto;padding:3rem 1rem;max-width:24rem}
+.centre h1{text-align:center}
