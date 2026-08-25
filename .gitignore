@@ -56,3 +56,7 @@ deploy/downloads/*.apk
 
 # Firebase service-account key: can send push as you. Server-only.
 deploy/fcm-service-account.json
+
+# Python bytecode: a .pyc was committed under deploy/admin once already.
+__pycache__/
+*.pyc

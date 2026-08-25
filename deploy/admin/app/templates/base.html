@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}BLML admin{% endblock %}</title>
+<link rel="stylesheet" href="/static/admin.css">
+</head><body>
+{% if request.cookies.get('blml_admin') %}
+<nav class="side">
+  <div class="brand">BLML<span>admin</span></div>
+  <a href="/" class="{{ 'on' if nav == '/' }}">Dashboard</a>
+  <a href="/people" class="{{ 'on' if nav.startswith('/people') }}">People</a>
+  <a href="/audit" class="{{ 'on' if nav == '/audit' }}">Audit</a>
+  <form method="post" action="/logout" class="out"><button>Sign out</button></form>
+</nav>
+{% endif %}
+<main>{% block body %}{% endblock %}</main>
+</body></html>

@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% block body %}
+<h1>Dashboard</h1>
+<div class="tiles">
+  <div class="tile"><b>{{ totals.members }}</b><span>members</span></div>
+  <div class="tile"><b>{{ totals.active_7d }}</b><span>active this week</span></div>
+  <div class="tile"><b>{{ totals.messages }}</b><span>messages</span></div>
+  <div class="tile"><b>{{ totals.topics }}</b><span>groups</span></div>
+  <div class="tile"><b>{{ totals.uploads.files }}</b><span>uploads</span></div>
+  <div class="tile"><b>{{ totals.db_size }}</b><span>database</span></div>
+</div>
+<h2>Messages, last 30 days</h2>
+<div class="sparkwrap">{{ spark|safe }}</div>
+<h2>Push devices</h2>
+<table><tr><th>Platform</th><th class="n">Registered</th></tr>
+{% for d in totals.devices %}<tr><td>{{ d.platform }}</td><td class="n">{{ d.n }}</td></tr>{% else %}<tr><td colspan="2" class="muted">none</td></tr>{% endfor %}</table>
+<h2>Recent signups</h2>
+<table><tr><th>Name</th><th>Joined</th><th>Last seen</th></tr>
+{% for s in signups %}<tr><td><a href="/people/{{ s.id }}">{{ s.name or '?' }}</a></td><td>{{ s.createdat.date() }}</td><td>{{ s.lastseen.strftime('%Y-%m-%d %H:%M') if s.lastseen else 'never' }}</td></tr>{% endfor %}</table>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block body %}
+<h1>People</h1>
+<form method="get" class="search"><input name="q" value="{{ q }}" placeholder="Search name or tag"><button>Search</button></form>
+<table>
+<tr><th>Name</th><th>State</th><th>Tags</th><th class="n">Chats</th><th>Last seen</th></tr>
+{% for p in people %}
+<tr>
+  <td><a href="/people/{{ p.id }}">{{ p.name or '?' }}</a></td>
+  <td>{% if p.state == 0 %}<span class="ok">ok</span>{% else %}<span class="warn">state {{ p.state }}</span>{% endif %}</td>
+  <td class="mono small">{{ p.tags or '' }}</td>
+  <td class="n">{{ p.subs }}</td>
+  <td>{{ p.lastseen.strftime('%Y-%m-%d %H:%M') if p.lastseen else 'never' }}</td>
+</tr>
+{% else %}<tr><td colspan="5" class="muted">No matches.</td></tr>{% endfor %}
+</table>
+{% endblock %}

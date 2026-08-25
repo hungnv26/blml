@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% block body %}
+<h1>{{ person.name or '?' }}</h1>
+<p class="muted mono small">db id {{ person.id }} &middot; joined {{ person.createdat.date() }} &middot; state {{ person.state }}</p>
+
+<h2>Tags</h2><p class="mono small">{% for t in extras.tags %}{{ t.tag }}{% if not loop.last %}, {% endif %}{% else %}none{% endfor %}</p>
+<h2>Credentials</h2>
+<table><tr><th>Method</th><th>Value</th><th>Verified</th></tr>
+{% for c in extras.credentials %}<tr><td>{{ c.method }}</td><td class="mono small">{{ c.value }}</td><td>{{ 'yes' if c.done else 'no' }}</td></tr>{% else %}<tr><td colspan="3" class="muted">none</td></tr>{% endfor %}</table>
+<h2>Devices</h2>
+<table><tr><th>Platform</th><th>Last seen</th></tr>
+{% for d in extras.devices %}<tr><td>{{ d.platform }}</td><td>{{ d.lastseen.strftime('%Y-%m-%d %H:%M') if d.lastseen else '?' }}</td></tr>{% else %}<tr><td colspan="2" class="muted">no push tokens</td></tr>{% endfor %}</table>
+
+<h2>Actions</h2>
+{% if not stepup %}<p class="muted">You'll be asked to confirm your password before these take effect.</p>{% endif %}
+<form method="post" action="/people/{{ person.id }}/password" class="row">
+  <input name="new_password" type="text" placeholder="New password" required>
+  <button>Reset password</button>
+</form>
+<form method="post" action="/people/{{ person.id }}/state" class="row">
+  <select name="state"><option value="suspended">suspended</option><option value="ok">ok</option></select>
+  <button>Set account state</button>
+</form>
+{% endblock %}
