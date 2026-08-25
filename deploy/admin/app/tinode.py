@@ -74,28 +74,45 @@ class RootSession:
         """Encoded uid (`usrXXXX`) for a login, asked of the server.
 
         NOT computed locally. The wire uid is the database id encrypted with
-        UID_ENCRYPTION_KEY, not an encoding of it — reproducing that here
-        would mean reimplementing the server's cipher and shipping its key
-        into this container, and getting it subtly wrong would address
-        privileged actions at the wrong account. Asking the server costs a
-        round trip and cannot drift.
+        UID_ENCRYPTION_KEY, not an encoding of it — reproducing that would
+        mean shipping the server's cipher and its key into this container,
+        and getting it subtly wrong would aim privileged actions at the
+        wrong account.
 
-        Searches the `fnd` topic for the `basic:<login>` tag, which is how
-        every account is indexed.
+        Two details here were established by watching the wire, not by
+        reading the docs, and both are easy to get wrong:
+
+          - `{get what:"sub"}` on fnd answers with a `meta` frame and NO
+            trailing `ctrl`. Waiting for one blocks until the socket times
+            out, which presents as "Connection timed out" rather than as a
+            missing reply.
+          - the match carries the uid in `topic`, not in `user`.
         """
         self.call({"sub": {"topic": "fnd"}})
         self.call({"set": {"topic": "fnd",
                            "desc": {"public": f"basic:{login}"}}})
-        self.call({"get": {"topic": "fnd", "what": "sub"}})
+
+        msg_id = self._next_id()
+        self.ws.send(json.dumps(
+            {"get": {"id": msg_id, "topic": "fnd", "what": "sub"}}))
+
         deadline = time.time() + 15.0
         while time.time() < deadline:
-            frame = json.loads(self.ws.recv())
-            for sub in (frame.get("meta") or {}).get("sub", []) or []:
-                if sub.get("user"):
-                    return sub["user"]
-            if frame.get("ctrl", {}).get("code", 0) >= 400:
+            try:
+                frame = json.loads(self.ws.recv())
+            except Exception as err:  # noqa: BLE001 - socket timeout
+                raise TinodeError(f"no answer searching for {login!r}") from err
+            meta = frame.get("meta")
+            if meta and meta.get("id") == msg_id:
+                for sub in meta.get("sub", []) or []:
+                    uid = sub.get("topic") or sub.get("user")
+                    if uid and uid.startswith("usr"):
+                        return uid
                 break
-        raise TinodeError(f"could not resolve a uid for login {login!r}")
+            ctrl = frame.get("ctrl")
+            if ctrl and ctrl.get("id") == msg_id and ctrl.get("code", 200) >= 400:
+                raise TinodeError(f"{ctrl.get('code')} {ctrl.get('text')}")
+        raise TinodeError(f"no account found for login {login!r}")
 
     def set_password(self, uid: str, login: str, new_password: str) -> None:
         """Resets another account's password. Root only."""
