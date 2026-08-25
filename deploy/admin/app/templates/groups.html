@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block body %}
+<h1>Conversations</h1>
+<p class="muted">Groups, one-to-one chats and saved messages. Names and counts only &mdash; the console never reads message content.</p>
+<table>
+<tr><th>Topic</th><th>Name</th><th>Kind</th><th class="n">Members</th><th class="n">Messages</th><th>Last activity</th></tr>
+{% for t in topics %}
+<tr>
+  <td class="mono small">{{ t.name }}</td>
+  <td>{{ t.title or '' }}</td>
+  <td class="small">{{ t.kind }}</td>
+  <td class="n">{{ t.members }}</td>
+  <td class="n">{{ t.messages or 0 }}</td>
+  <td>{{ t.touchedat.strftime('%Y-%m-%d %H:%M') if t.touchedat else 'never' }}</td>
+</tr>
+{% else %}<tr><td colspan="6" class="muted">No conversations yet.</td></tr>{% endfor %}
+</table>
+{% endblock %}

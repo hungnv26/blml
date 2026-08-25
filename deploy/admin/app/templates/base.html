@@ -9,6 +9,7 @@
   <div class="brand">BLML<span>admin</span></div>
   <a href="/" class="{{ 'on' if nav == '/' }}">Dashboard</a>
   <a href="/people" class="{{ 'on' if nav.startswith('/people') }}">People</a>
+  <a href="/groups" class="{{ 'on' if nav == '/groups' }}">Conversations</a>
   <a href="/audit" class="{{ 'on' if nav == '/audit' }}">Audit</a>
   <form method="post" action="/logout" class="out"><button>Sign out</button></form>
 </nav>
