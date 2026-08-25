@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block body %}
+<h1>Security</h1>
+{% if error %}<p class="err">{{ error }}</p>{% endif %}
+
+<h2>Two-factor authentication</h2>
+{% if enrolled %}
+<p><span class="ok">Enabled.</span> Sign-in asks for a code from your authenticator app.</p>
+<form method="post" action="/security/totp/disable" class="row">
+  <button style="background:var(--risk);color:#2b1714">Turn off</button>
+</form>
+<p class="muted small">Turning it off asks for your password first.</p>
+{% else %}
+<p class="muted">Not enabled. Add this secret to an authenticator app, then confirm a code to switch it on.</p>
+<p class="mono" style="font-size:1.1rem;letter-spacing:.08em">{{ secret }}</p>
+<p class="muted small mono" style="word-break:break-all">{{ uri }}</p>
+<form method="post" action="/security/totp/enable" class="row">
+  <input name="code" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code" required>
+  <button>Confirm and enable</button>
+</form>
+<p class="muted small">The secret is stored now but two-factor stays off until a code proves your app has it &mdash; so a mistake here cannot lock you out.</p>
+{% endif %}
+{% endblock %}
