@@ -84,7 +84,11 @@ services:
       # first boot and re-hashed if it changes here, so rotating it is an
       # env edit and a restart — the same shape as every other secret.
       ADMIN_USER: ${ADMIN_USER:-admin}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in secrets.env}
+      # Not `:?` — a required variable makes EVERY docker compose command on
+      # the host fail when it is missing, including ones for the chat server.
+      # The app refuses to start without it instead, which contains the
+      # failure to this one container.
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       ADMIN_SESSION_HOURS: ${ADMIN_SESSION_HOURS:-12}
       # Off until the console is actually served over TLS, or the session
       # cookie is set and never sent back.
@@ -92,7 +96,7 @@ services:
       # Privileged writes go through the chat API as root, never as SQL.
       # Create the account once:  tinode-db --make_root <login>
       TINODE_HOST: blml:6060
-      TINODE_API_KEY: ${TINODE_API_KEY:?set TINODE_API_KEY in secrets.env}
+      TINODE_API_KEY: ${TINODE_API_KEY:-}
       TINODE_ROOT_LOGIN: ${TINODE_ROOT_LOGIN:-}
       TINODE_ROOT_PASSWORD: ${TINODE_ROOT_PASSWORD:-}
     depends_on:
