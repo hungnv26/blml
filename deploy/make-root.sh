@@ -32,8 +32,13 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-LOGIN=${1:?usage: ./make-root.sh <login> <password>}
-PASSWORD=${2:?usage: ./make-root.sh <login> <password>}
+LOGIN=${1:-blmladmin}
+# Generated, not supplied. Every time this script has taken a password as an
+# argument, the value that arrived was a placeholder from the instructions or
+# a stale shell variable — three times running, twice landing a guessable
+# password on an internet-reachable ROOT account. A value nobody types is a
+# value nobody can get wrong.
+PASSWORD=${2:-$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | cut -c1-24)}
 # A placeholder number, only ever used to satisfy the validator above.
 PHONE=${ROOT_PHONE:-+15550100001}
 
@@ -49,9 +54,25 @@ fi
 
 psql() { $COMPOSE exec -T db psql -U postgres -d tinode "$@"; }
 
+# --add_root refuses outright when the login already exists ("duplicate
+# value"), which makes a re-run abort before any of the repairs below. Clear
+# the previous auth records first so this script is safe to run again — which
+# it needs to be, because rotating the password is exactly a re-run.
+#
+# The old user rows are deliberately left behind: subscriptions reference
+# them, so deleting trips a foreign key. They are inert once the auth record
+# is gone.
+echo "==> Clearing any previous auth record for ${LOGIN}"
+psql -c "DELETE FROM auth WHERE uname IN ('basic:${LOGIN}', ':${LOGIN}')"
+
 echo "==> Creating the account"
+# tinode-db logs the credentials it just created, in the clear. Redact that
+# line: this script generates the password precisely so it never has to pass
+# through a human's eyes, and letting the tool print it undoes the whole point.
 $COMPOSE run --rm blml-init --config=/etc/blml/blml.conf \
-  --add_root="${LOGIN}:${PASSWORD}" 2>&1 | tail -2
+  --add_root="${LOGIN}:${PASSWORD}" 2>&1 \
+  | sed -E "s/ROOT user created:.*/ROOT user created (password withheld)/" \
+  | tail -2
 
 echo "==> Repairing the auth record's scheme prefix"
 # Each statement separately: psql -c "a; b" runs them in ONE transaction, so a
@@ -62,23 +83,33 @@ UID_ROW=$(psql -tAc "SELECT userid FROM auth WHERE uname = 'basic:${LOGIN}'" | t
 [ -n "$UID_ROW" ] || { echo "error: no auth record for basic:${LOGIN}" >&2; exit 1; }
 
 echo "==> Attaching a validated credential"
+# Clear any row holding this number first. A previous run's credential belongs
+# to a user that no longer has an auth record, and the unique index on
+# `synthetic` would otherwise turn this INSERT into a silent no-op.
+psql -c "DELETE FROM credentials WHERE synthetic = 'tel:${PHONE}'"
 psql -c "INSERT INTO credentials
            (createdat, updatedat, method, value, synthetic, userid, done, resp, retries)
-         VALUES (now(), now(), 'tel', '${PHONE}', 'tel:${PHONE}', ${UID_ROW}, true, '', 0)
-         ON CONFLICT DO NOTHING"
+         VALUES (now(), now(), 'tel', '${PHONE}', 'tel:${PHONE}', ${UID_ROW}, true, '', 0)"
 
 echo "==> Verifying"
-psql -tAc "SELECT a.uname, a.authlvl, c.method, c.done
-           FROM auth a LEFT JOIN credentials c ON c.userid = a.userid
-           WHERE a.uname = 'basic:${LOGIN}'"
+CHECK=$(psql -tAc "SELECT a.authlvl || '/' || coalesce(c.done::text, 'nocred')
+                   FROM auth a LEFT JOIN credentials c ON c.userid = a.userid
+                   WHERE a.uname = 'basic:${LOGIN}'" | tr -d '[:space:]')
+if [ "$CHECK" != "30/true" ]; then
+  echo "FAILED: expected authlvl 30 with a validated credential, got '${CHECK}'" >&2
+  exit 1
+fi
+echo "  ok: authlvl 30, credential validated"
+
+echo "==> Recording it in secrets.env"
+sed -i '/^TINODE_ROOT_LOGIN=/d; /^TINODE_ROOT_PASSWORD=/d' secrets.env
+printf 'TINODE_ROOT_LOGIN=%s\nTINODE_ROOT_PASSWORD=%s\n' "$LOGIN" "$PASSWORD" >> secrets.env
 
 cat <<EOF
 
-Done. Put these in secrets.env for the admin console:
+Done. secrets.env now holds the root credentials; nothing further to copy.
 
-  TINODE_ROOT_LOGIN=${LOGIN}
-  TINODE_ROOT_PASSWORD=${PASSWORD}
-
-Confirm it works before relying on it — a root login should answer
-200 with authlvl "root", not 300 "validate credentials".
+The password is stored there and nowhere else. tinode-db logs it in the clear,
+so that line is redacted above — the value never needs to be read by a human,
+and every failed attempt at this went wrong because one passed through.
 EOF
