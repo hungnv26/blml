@@ -110,6 +110,12 @@ class ContactsSynchronizer {
         }
     }
     func run() {
+        // The in-app consent sheet comes before the system prompt: without a
+        // yes there, the address book is never read, let alone uploaded.
+        guard ContactsConsent.granted else {
+            Cache.log.info("ContactsSynchronizer - no consent to upload contacts. quitting...")
+            return
+        }
         switch self.authStatus {
         case .notDetermined:
             self.store.requestAccess(for: .contacts,

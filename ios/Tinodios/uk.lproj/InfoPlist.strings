@@ -2,7 +2,7 @@
 "NSCameraUsageDescription" = "BLML використовує камеру щоб зробити фото в якості аватара, а також, щоб надіслати фото вашим контактам";
 
 /* Privacy - Contacts Usage Description */
-"NSContactsUsageDescription" = "BLML зберігає емейлы і номери телефонів на сервері для того, щоб знайти по ним ваших знайомих";
+"NSContactsUsageDescription" = "BLML завантажує номери телефонів та адреси електронної пошти з ваших Контактів на ваш сервер BLML лише для того, щоб знайти людей, яких ви вже знаєте. Іншим користувачам вони не показуються.";
 
 /* Privacy - Microphone Usage Description */
 "NSMicrophoneUsageDescription" = "BLML використовує мікрофон для запису аудіо, які ви надсилаєте у своїх повідомленнях";

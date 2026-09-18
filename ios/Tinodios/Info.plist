@@ -42,7 +42,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>BLML uses the camera to take a profile picture or to send photos to your chats</string>
 	<key>NSContactsUsageDescription</key>
-	<string>BLML sends only email addresses and phone numbers to your BLML server, so you can find people you already know</string>
+	<string>BLML uploads the phone numbers and email addresses from your Contacts to your BLML server, only to find people you already know. They are never shown to other users.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>BLML uses the microphone to record the voice messages you send</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
