@@ -256,9 +256,23 @@ public class CreateGroupFragment extends Fragment implements UtilsMedia.MediaPre
             LoaderManager.getInstance(activity).restartLoader(LOADER_ID, null, mContactsLoaderCallback);
         } else if (activity.shouldRequestReadContactsPermission()) {
             activity.setReadContactsPermissionRequested();
-            mRequestContactsPermissionLauncher.launch(new String[]{
-                    Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS});
+            if (ContactsConsent.isGranted(activity)) {
+                requestContactsPermission();
+            } else {
+                // Picking members is the one place a declined upload gets in
+                // the way, so the offer is made again here.
+                ContactsConsent.offer(activity, accepted -> {
+                    if (accepted) {
+                        requestContactsPermission();
+                    }
+                });
+            }
         }
+    }
+
+    private void requestContactsPermission() {
+        mRequestContactsPermissionLauncher.launch(new String[]{
+                Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS});
     }
 
     @Override

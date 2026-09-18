@@ -437,9 +437,24 @@ public class FindFragment extends Fragment implements UiUtils.ProgressIndicator,
         } else if (((ReadContactsPermissionChecker) activity).shouldRequestReadContactsPermission()) {
             mAdapter.setContactsPermission(false);
             ((ReadContactsPermissionChecker) activity).setReadContactsPermissionRequested();
-            mRequestPermissionLauncher.launch(new String[]{Manifest.permission.READ_CONTACTS,
-                    Manifest.permission.WRITE_CONTACTS});
+            // The in-app consent comes before the system prompt: the system
+            // dialog cannot say that the address book is uploaded, or what for.
+            if (ContactsConsent.isGranted(activity)) {
+                requestContactsPermission();
+            } else if (!ContactsConsent.isDecided(activity)) {
+                ContactsConsent.offer(activity, accepted -> {
+                    if (accepted) {
+                        requestContactsPermission();
+                    }
+                });
+            }
+            // Declined: search by username still works; contacts stay on the device.
         }
+    }
+
+    private void requestContactsPermission() {
+        mRequestPermissionLauncher.launch(new String[]{Manifest.permission.READ_CONTACTS,
+                Manifest.permission.WRITE_CONTACTS});
     }
 
     interface ReadContactsPermissionChecker {
