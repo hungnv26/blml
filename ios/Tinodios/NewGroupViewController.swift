@@ -32,8 +32,20 @@ class NewGroupViewController: UITableViewController {
         self.tagsTextField.onVerifyTag = { (_, tag) in
             return Utils.isValidTag(tag: tag)
         }
-        if !Cache.isContactSynchronizerActive() {
-            Cache.synchronizeContactsPeriodically()
+        if ContactsConsent.granted {
+            if !Cache.isContactSynchronizerActive() {
+                Cache.synchronizeContactsPeriodically()
+            }
+        } else {
+            // Picking members is the one place a declined upload gets in the
+            // way, so the offer is made again here. Presented after the view
+            // is on screen; an alert from viewDidLoad is silently dropped.
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                ContactsConsent.offer(from: self) { accepted in
+                    if accepted { Cache.synchronizeContactsPeriodically() }
+                }
+            }
         }
 
         // Add me to selectedUids and selectedContacts.

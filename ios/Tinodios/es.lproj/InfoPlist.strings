@@ -2,7 +2,7 @@
 "NSCameraUsageDescription" = "BLML toma fotos con la cámara para usarlas como avatar o para enviarlas a tus contactos";
 
 /* Privacy - Contacts Usage Description */
-"NSContactsUsageDescription" = "BLML envía solo correos electrónicos y números de teléfono al servidor de BLML para ayudarte a conectarte con otros usuarios";
+"NSContactsUsageDescription" = "BLML sube los números de teléfono y correos electrónicos de tus Contactos a tu servidor BLML, solo para encontrar a personas que ya conoces. Nunca se muestran a otros usuarios.";
 
 /* Privacy - Microphone Usage Description */
 "NSMicrophoneUsageDescription" = "BLML utiliza el micrófono para grabar los mensajes de audio que envías a tus contactos";

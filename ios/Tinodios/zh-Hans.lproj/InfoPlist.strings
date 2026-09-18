@@ -2,7 +2,7 @@
 "NSCameraUsageDescription" = "BLML用相机拍照，用作头像或发送给您的联系人";
 
 /* Privacy - Contacts Usage Description */
-"NSContactsUsageDescription" = "BLML只向BLML服务器发送电子邮件和电话号码，以帮助您与其他用户联系";
+"NSContactsUsageDescription" = "BLML 会将您通讯录中的电话号码和电子邮件上传到您的 BLML 服务器，仅用于查找您已认识的人。这些信息不会展示给其他用户。";
 
 /* Privacy - Microphone Usage Description */
 "NSMicrophoneUsageDescription" = "BLML使用麦克风录制您发送给联系人的音频消息";
