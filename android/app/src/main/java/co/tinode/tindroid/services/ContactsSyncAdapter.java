@@ -233,6 +233,13 @@ class ContactsSyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(final Account account, final Bundle extras, String authority,
                               ContentProviderClient provider, final SyncResult syncResult) {
 
+        // Consent to the upload comes before the system permission: without a
+        // yes in the app, the address book is never sent, whatever triggered
+        // the sync (login, the contacts observer, a manual request).
+        if (!co.tinode.tindroid.ContactsConsent.isGranted(mContext)) {
+            Log.i(TAG, "No consent to upload contacts. Sync skipped.");
+            return;
+        }
         if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.READ_CONTACTS) !=
                 PackageManager.PERMISSION_GRANTED) {
             Log.w(TAG, "No permission to access contacts. Sync failed.");

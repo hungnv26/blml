@@ -159,7 +159,8 @@ public class TindroidApp extends Application implements DefaultLifecycleObserver
     static synchronized void startWatchingContacts(Context context, Account acc) {
         if (sContactsObserver == null) {
             // Check if we have already obtained contacts permissions.
-            if (!UiUtils.isPermissionGranted(context, Manifest.permission.READ_CONTACTS)) {
+            if (!ContactsConsent.isGranted(context)
+                    || !UiUtils.isPermissionGranted(context, Manifest.permission.READ_CONTACTS)) {
                 // No permissions, can't set up contacts sync.
                 return;
             }
