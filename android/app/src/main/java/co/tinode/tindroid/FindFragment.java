@@ -441,14 +441,9 @@ public class FindFragment extends Fragment implements UiUtils.ProgressIndicator,
             // dialog cannot say that the address book is uploaded, or what for.
             if (ContactsConsent.isGranted(activity)) {
                 requestContactsPermission();
-            } else if (!ContactsConsent.isDecided(activity)) {
-                ContactsConsent.offer(activity, accepted -> {
-                    if (accepted) {
-                        requestContactsPermission();
-                    }
-                });
+            } else {
+                ContactsConsent.offer(activity, accepted -> requestContactsPermission());
             }
-            // Declined: search by username still works; contacts stay on the device.
         }
     }
 

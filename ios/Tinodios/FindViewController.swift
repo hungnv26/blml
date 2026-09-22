@@ -51,13 +51,15 @@ class FindViewController: UITableViewController, FindDisplayLogic {
         if authStatus == .authorized {
             placeholderText = NSLocalizedString("Search by tags", comment: "Placeholder prompt")
             placeholderFontSize = 17
-        } else if !ContactsConsent.granted {
-            // Declined the upload: search still works, contacts just stay on the device.
-            placeholderText = NSLocalizedString("Search by username", comment: "Placeholder prompt when contacts are not uploaded")
+        } else if authStatus == .denied || authStatus == .restricted {
+            // No access to the address book: search by user name still works.
+            placeholderText = NSLocalizedString("Search by user name", comment: "Placeholder prompt when contacts are not available")
             placeholderFontSize = 17
         } else {
-            placeholderText = NSLocalizedString("Search functionality limited. Grant Contacts permission.", comment: "Error message when permissions are missing")
-            placeholderFontSize = 10
+            // Not asked yet. The sheet is about to explain and hand over to
+            // the system prompt, so there is nothing to ask the user for here.
+            placeholderText = NSLocalizedString("Search by user name", comment: "Placeholder prompt")
+            placeholderFontSize = 17
         }
         searchController.searchBar.textField?.attributedPlaceholder =
             NSAttributedString(
@@ -171,14 +173,12 @@ class FindViewController: UITableViewController, FindDisplayLogic {
         self.interactor?.loadAndPresentContacts(searchQuery: nil)
         self.tabBarController?.navigationItem.rightBarButtonItem = inviteActionButtonItem
 
-        // Ask once, the first time the tab is opened. A "Not now" is final
-        // until the user starts something that needs contacts (new group).
-        if !ContactsConsent.decided {
-            ContactsConsent.offer(from: self) { [weak self] accepted in
+        // Explain the upload the first time the tab is opened, then go
+        // straight on to the system prompt, which is where the user decides.
+        if !ContactsConsent.granted && ContactsSynchronizer.default.authStatus == .notDetermined {
+            ContactsConsent.offer(from: self) { [weak self] _ in
                 guard let self = self else { return }
-                if accepted {
-                    Cache.synchronizeContactsPeriodically()
-                }
+                Cache.synchronizeContactsPeriodically()
                 self.updateSearchBarPlaceholder(authStatus: ContactsSynchronizer.default.authStatus)
             }
         }

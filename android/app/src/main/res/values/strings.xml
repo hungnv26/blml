@@ -446,9 +446,8 @@
     <string name="set_passcode">Set passcode</string>
     <string name="change_passcode">Change passcode</string>
     <string name="contacts_consent_title">Find people you know</string>
-    <string name="contacts_consent_message">BLML can upload the phone numbers and email addresses in your Contacts to your BLML server (%1$s) to find which of your contacts already use BLML.\n\nThey are used only for this matching, are never shown to other users, and are not shared with anyone. You can stop this at any time in Settings › Apps › BLML › Permissions.</string>
-    <string name="contacts_consent_accept">Upload contacts</string>
-    <string name="contacts_consent_decline">Not now</string>
+    <string name="contacts_consent_message">BLML can upload the phone numbers and email addresses in your Contacts to your BLML server (%1$s) to find which of your contacts already use BLML.\n\nThey are used only for this matching, are never shown to other users, and are not shared with anyone.\n\nAndroid will now ask for access to your Contacts. If you don\'t allow it, nothing is uploaded and you can still find people by user name.</string>
+    <string name="contacts_consent_continue">Continue</string>
     <string name="turn_passcode_off">Turn passcode off</string>
     <string name="passcode_enter">Enter passcode</string>
     <string name="passcode_app_locked">BLML is locked.</string>

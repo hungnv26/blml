@@ -8,15 +8,21 @@
 import UIKit
 import TinodiosDB
 
-/// The user's answer to "may BLML upload your address book to the server?"
+/// Explains the contacts upload, immediately before the system prompt.
 ///
-/// The system Contacts permission is not that answer: its prompt is a single
-/// sentence and it cannot say what the server does with the data. App Review
-/// (5.1.2) requires that the app explain the upload and get a yes *before*
-/// asking the system, so this sheet runs first and `ContactsSynchronizer`
-/// refuses to touch the address book until it has been accepted. Declining
-/// keeps the Contacts tab usable for search by username; the offer is made
-/// again only when the user starts something that needs contacts.
+/// Two review rules meet here and only one shape satisfies both. 5.1.2 wants
+/// the upload explained and agreed to before it happens — the system prompt
+/// is a single sentence and cannot say what the server does with the data.
+/// 5.1.1(iv) forbids letting that explanation *delay* the system prompt: a
+/// pre-prompt with a "Not now" button was rejected, because the decision
+/// belongs to the system dialog, not to us. So this sheet has one button,
+/// which always continues to the system prompt; the user's real answer is
+/// the one they give iOS, and denying there leaves the Contacts tab usable
+/// for search by user name.
+///
+/// `granted` therefore means "the explanation was shown and the user
+/// continued" — `ContactsSynchronizer` still refuses to read the address
+/// book until iOS itself has granted access.
 public enum ContactsConsent {
     private static let kKey = "contactsUploadConsent"
     private static let kGranted = "granted"
@@ -26,42 +32,32 @@ public enum ContactsConsent {
         return SharedUtils.kAppDefaults.string(forKey: kKey) == kGranted
     }
 
-    /// True once the user has answered either way.
-    public static var decided: Bool {
-        return SharedUtils.kAppDefaults.string(forKey: kKey) != nil
-    }
-
+    /// Forgets that the explanation was shown, so it is shown again. Used
+    /// when the account changes.
     public static func revoke() {
         SharedUtils.kAppDefaults.set(kDeclined, forKey: kKey)
     }
 
-    /// Presents the consent sheet. Calls `completion(true)` only if the user
-    /// accepted; the caller then starts the synchronizer, which asks the
-    /// system for permission.
+    /// Shows the explanation, then continues to the system prompt.
     public static func offer(from viewController: UIViewController, completion: ((Bool) -> Void)? = nil) {
         let host = Cache.tinode.hostName
         let message = String(
             format: NSLocalizedString(
-                "BLML can upload the phone numbers and email addresses in your Contacts to your BLML server (%@) to find which of your contacts already use BLML.\n\nThey are used only for this matching, are never shown to other users, and are not shared with anyone. You can stop this at any time in Settings › Privacy & Security › Contacts.",
+                "BLML can upload the phone numbers and email addresses in your Contacts to your BLML server (%@) to find which of your contacts already use BLML.\n\nThey are used only for this matching, are never shown to other users, and are not shared with anyone.\n\niOS will now ask for access to your Contacts. If you don't allow it, nothing is uploaded and you can still find people by user name.",
                 comment: "Contacts upload consent: explanation"),
             host)
         let alert = UIAlertController(
             title: NSLocalizedString("Find people you know", comment: "Contacts upload consent: title"),
             message: message,
             preferredStyle: .alert)
+        // One action, and it always continues to the system prompt: see the
+        // note above on 5.1.1(iv). The place to say no is the iOS dialog.
         alert.addAction(UIAlertAction(
-            title: NSLocalizedString("Not now", comment: "Contacts upload consent: decline"),
-            style: .cancel) { _ in
-                SharedUtils.kAppDefaults.set(kDeclined, forKey: kKey)
-                completion?(false)
-            })
-        alert.addAction(UIAlertAction(
-            title: NSLocalizedString("Upload contacts", comment: "Contacts upload consent: accept"),
+            title: NSLocalizedString("Continue", comment: "Contacts upload consent: proceed to the system prompt"),
             style: .default) { _ in
                 SharedUtils.kAppDefaults.set(kGranted, forKey: kKey)
                 completion?(true)
             })
-        alert.preferredAction = alert.actions.last
         viewController.present(alert, animated: true)
     }
 }

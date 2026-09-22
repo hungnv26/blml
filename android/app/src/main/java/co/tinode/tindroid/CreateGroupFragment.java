@@ -259,13 +259,7 @@ public class CreateGroupFragment extends Fragment implements UtilsMedia.MediaPre
             if (ContactsConsent.isGranted(activity)) {
                 requestContactsPermission();
             } else {
-                // Picking members is the one place a declined upload gets in
-                // the way, so the offer is made again here.
-                ContactsConsent.offer(activity, accepted -> {
-                    if (accepted) {
-                        requestContactsPermission();
-                    }
-                });
+                ContactsConsent.offer(activity, accepted -> requestContactsPermission());
             }
         }
     }

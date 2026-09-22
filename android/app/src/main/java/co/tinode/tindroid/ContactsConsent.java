@@ -10,16 +10,17 @@ import androidx.preference.PreferenceManager;
 import co.tinode.tindroid.account.Utils;
 
 /**
- * The user's answer to "may BLML upload your address book to the server?"
+ * Explains the contacts upload, immediately before the system prompt.
  *
- * <p>The system READ_CONTACTS permission is not that answer: its prompt is a
- * single sentence and cannot say what the server does with the data. Store
- * policy (Apple 5.1.2, and Play asks the same) requires that the app explain
- * the upload and get a yes <em>before</em> asking the system, so this dialog
- * runs first and {@code ContactsSyncAdapter} refuses to upload until it has
- * been accepted. Declining keeps the Contacts tab usable for search by
- * username; the offer is made again only when the user starts something that
- * needs contacts.
+ * <p>Two review rules meet here and only one shape satisfies both. Apple
+ * 5.1.2 (and Play asks the same) wants the upload explained and agreed to
+ * before it happens — the system prompt is a single sentence and cannot say
+ * what the server does with the data. Apple 5.1.1(iv) forbids letting that
+ * explanation <em>delay</em> the system prompt: a pre-prompt with a "Not now"
+ * button was rejected, because the decision belongs to the system dialog.
+ * So this dialog has one button, which always continues to the system
+ * prompt; denying there leaves the Contacts tab usable for search by user
+ * name.
  *
  * <p>Kept in step with the iOS ContactsConsent enum.
  */
@@ -36,11 +37,6 @@ public class ContactsConsent {
         return GRANTED.equals(prefs(context).getString(KEY, null));
     }
 
-    /** True once the user has answered either way. */
-    public static boolean isDecided(Context context) {
-        return prefs(context).getString(KEY, null) != null;
-    }
-
     public static void revoke(Context context) {
         prefs(context).edit().putString(KEY, DECLINED).apply();
     }
@@ -49,21 +45,16 @@ public class ContactsConsent {
         void onDecided(boolean accepted);
     }
 
-    /**
-     * Shows the consent dialog. {@code callback.onDecided(true)} fires only if
-     * the user accepted; the caller then requests the system permission.
-     */
+    /** Shows the explanation, then continues to the system permission request. */
     public static void offer(Activity activity, Callback callback) {
         String host = PreferenceManager.getDefaultSharedPreferences(activity)
                 .getString(Utils.PREFS_HOST_NAME, TindroidApp.getDefaultHostName());
         new AlertDialog.Builder(activity)
                 .setTitle(R.string.contacts_consent_title)
                 .setMessage(activity.getString(R.string.contacts_consent_message, host))
-                .setNegativeButton(R.string.contacts_consent_decline, (dialog, which) -> {
-                    prefs(activity).edit().putString(KEY, DECLINED).apply();
-                    callback.onDecided(false);
-                })
-                .setPositiveButton(R.string.contacts_consent_accept, (dialog, which) -> {
+                // One button, and it always continues to the system prompt:
+                // see the note above. The place to say no is the OS dialog.
+                .setPositiveButton(R.string.contacts_consent_continue, (dialog, which) -> {
                     prefs(activity).edit().putString(KEY, GRANTED).apply();
                     callback.onDecided(true);
                 })

@@ -33,8 +33,11 @@ class ContactsSynchronizer {
     private let queue = DispatchQueue(label: "co.tinode.sync")
     public var authStatus: CNAuthorizationStatus = .notDetermined {
         didSet {
+            // Report every change, not just the grant: a denial has to reach
+            // the UI too, or the Contacts tab keeps telling the user to grant
+            // a permission they have just refused.
+            permissionsChangedCallback?(self.authStatus)
             if self.authStatus == .authorized {
-                permissionsChangedCallback?(self.authStatus)
                 queue.async {
                     self.synchronizeInternal()
                 }

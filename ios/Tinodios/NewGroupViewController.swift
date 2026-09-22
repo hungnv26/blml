@@ -37,13 +37,12 @@ class NewGroupViewController: UITableViewController {
                 Cache.synchronizeContactsPeriodically()
             }
         } else {
-            // Picking members is the one place a declined upload gets in the
-            // way, so the offer is made again here. Presented after the view
-            // is on screen; an alert from viewDidLoad is silently dropped.
+            // Presented after the view is on screen; an alert from viewDidLoad
+            // is silently dropped. Continues to the system prompt either way.
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                ContactsConsent.offer(from: self) { accepted in
-                    if accepted { Cache.synchronizeContactsPeriodically() }
+                ContactsConsent.offer(from: self) { _ in
+                    Cache.synchronizeContactsPeriodically()
                 }
             }
         }
