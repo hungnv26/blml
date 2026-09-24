@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Manual-signing export for App Store uploads. Xcode's account session keeps
+     lapsing, which breaks automatic export ("No Accounts"); these two profiles
+     were created through the ASC API and are installed in
+     ~/Library/MobileDevice/Provisioning Profiles. -->
+<plist version="1.0"><dict>
+  <key>method</key><string>app-store-connect</string>
+  <key>teamID</key><string>Y9T5MPV87F</string>
+  <key>destination</key><string>export</string>
+  <key>uploadSymbols</key><true/>
+  <key>signingStyle</key><string>manual</string>
+  <key>signingCertificate</key><string>Apple Distribution</string>
+  <key>provisioningProfiles</key><dict>
+    <key>app.blml.chat</key><string>BLML App Store</string>
+    <key>app.blml.chat.TinodiosNSExtension</key><string>BLML NSE App Store</string>
+  </dict>
+</dict></plist>
