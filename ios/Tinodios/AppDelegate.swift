@@ -6,7 +6,6 @@
 //
 
 import Firebase
-import PushKit
 import Network
 import UIKit
 import TinodeSDK
@@ -28,8 +27,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var appIsStarting: Bool = false
     // Video call event listener.
     var callListener = CallEventListener()
-
-    var voipRegistry: PKPushRegistry!
 
     // Video call event listener (responsible for displaying and dismissing Call UI).
     class CallEventListener: TinodeEventListener {
@@ -109,8 +106,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 UiUtils.routeToChatListVC()
             }
         }
-
-        registerForVoip()
 
         // Try to connect and login in the background.
         DispatchQueue.global(qos: .userInitiated).async {
@@ -273,11 +268,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return false
     }
 
-    func registerForVoip() {
-        self.voipRegistry = PKPushRegistry(queue: nil)
-        self.voipRegistry.delegate = self
-        self.voipRegistry.desiredPushTypes = [.voIP]
-    }
 }
 
 extension AppDelegate: UNUserNotificationCenterDelegate {
@@ -334,52 +324,10 @@ extension AppDelegate: MessagingDelegate {
     }
 }
 
-extension AppDelegate: PKPushRegistryDelegate {
-    func pushRegistry(_ registry: PKPushRegistry, didUpdate credentials: PKPushCredentials, for type: PKPushType) {
-        Cache.log.info("PK token received %@", credentials.debugDescription)
-    }
-
-    func pushRegistry(_ registry: PKPushRegistry, didInvalidatePushTokenFor type: PKPushType) {
-        Cache.log.info("PK must invalidate token")
-    }
-
-    // VoIP push notification recived.
-    func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
-        Cache.log.info("PK push %s", payload.debugDescription)
-
-        guard type == .voIP else {
-            completion()
-            return
-        }
-
-        // Cannot defer completion() because it's called from a closure.
-
-        guard let data = payload.dictionaryPayload["data"] as? [String: Any], let topicName = data["topic"] as? String, let callState = data["webrtc"] as? String else {
-            Cache.log.error("Missing payload data")
-            completion()
-            return
-        }
-
-        switch callState {
-        case MsgServerData.WebRTC.kStarted.rawValue:
-            guard let callerUID = data["xfrom"] as? String, !Cache.tinode.isMe(uid: callerUID), let seq = Int(data["seq"] as? String ?? ""), seq > 0 else {
-                completion()
-                return
-            }
-            let audioOnly = (data["aonly"] as? Bool) ?? false
-            // Report the call to CallKit, and let it display the call UI.
-            Cache.callManager.displayIncomingCall(uuid: UUID(), onTopic: topicName, originatingFrom: callerUID, withSeqId: seq, audioOnly: audioOnly, completion: { err in
-                // Tell PushKit that the notification is handled.
-                completion()
-            })
-        case MsgServerData.WebRTC.kAccepted.rawValue, MsgServerData.WebRTC.kBusy.rawValue, MsgServerData.WebRTC.kMissed.rawValue, MsgServerData.WebRTC.kDeclined.rawValue, MsgServerData.WebRTC.kDisconnected.rawValue:
-            // This should not happen: the server sends just the "started" push as voip.
-            guard let origSeq = Int(data["replace"] as? String ?? ""), origSeq > 0 else { return }
-            Cache.callManager.dismissIncomingCall(onTopic: topicName, withSeqId: origSeq)
-            fallthrough
-        default:
-            completion()
-            break
-        }
-    }
-}
+// Incoming calls arrive as a normal push carrying a "webrtc" field (see
+// didReceiveRemoteNotification above); the app fetches the call message in
+// the background and CallEventListener hands it to CallKit. PushKit was
+// registered here once, but the server never sent a VoIP push — the FCM
+// adapter cannot (server/push/fcm/payload.go) and the PushKit token was
+// never sent to the server — so the "voip" background mode did nothing but
+// keep the app alive. App Review 2.5.4 rejected exactly that. Removed.
