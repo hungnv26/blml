@@ -130,7 +130,8 @@ class SettingsHelpViewController: UITableViewController {
         if MFMailComposeViewController.canSendMail() {
             let mail = MFMailComposeViewController()
             mail.mailComposeDelegate = self
-            mail.setToRecipients(["mailto:info@tinode.co"])
+            mail.setToRecipients(["hungnv26@gmail.com"])
+            mail.setSubject("BLML support")
             present(mail, animated: true)
         } else {
             UiUtils.showToast(message: NSLocalizedString("Cannot send email: functionality not accessible.", comment: "Error message"))

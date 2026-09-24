@@ -191,8 +191,10 @@ class FindViewController: UITableViewController, FindDisplayLogic {
     }
 
     @IBAction func inviteActionClicked(_ sender: Any) {
-        let inviteSubject = NSLocalizedString("Check out Tinode Messenger", comment: "Invitation subject")
-        let inviteBody = NSLocalizedString("Check out Tinode Messenger: https://tinode.co/", comment: "Invitation body")
+        // BLML is invite-only: the person needs the group's invite code, which
+        // only the inviter has. The support page explains how to get started.
+        let inviteSubject = NSLocalizedString("Join me on BLML", comment: "Invitation subject")
+        let inviteBody = NSLocalizedString("Join me on BLML, our private chat. I'll send you the invite code you need to sign up. How to install: https://hungngo.net/blml/support", comment: "Invitation body")
         let attrs = [ NSAttributedString.Key.font: UIFont.systemFont(ofSize: 20.0) ]
         let dialogTitle = NSAttributedString(string: NSLocalizedString("Invite", comment: "Dialog title: call to action"), attributes: attrs)
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
