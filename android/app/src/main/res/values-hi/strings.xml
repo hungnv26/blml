@@ -50,8 +50,8 @@
     <string name="error_new_account_failed">खाता पंजीकरण विफल:</string>
     <string name="no_chats">आपके पास कोई चैट नहीं है\n¯\\_(ツ)_/¯</string>
     <string name="alphabet">ABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
-    <string name="tinode_invite_subject">Tinode Messenger देखें</string>
-    <string name="tinode_invite_body">टिनोड मैसेंजर देखें। इसे https://tinode.co से डाउनलोड करें</string>
+    <string name="tinode_invite_subject">BLML Messenger देखें</string>
+    <string name="tinode_invite_body">टिनोड मैसेंजर देखें। इसे https://blml.app से डाउनलोड करें</string>
     <string name="profile_action">टिनोड प्रोफाइल</string>
     <string name="view_profile">प्रोफ़ाइल देखें</string>
     <string name="tinode_message">टिनोड संदेश भेजें</string>

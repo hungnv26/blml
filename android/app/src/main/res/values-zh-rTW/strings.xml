@@ -60,12 +60,12 @@
      alphabet using ListView fast scroll. -->
     <string name="alphabet">\ ABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
 
-    <string name="tinode_invite_subject">試試 Tinode Messenger</string>
-    <string name="tinode_invite_body">試試 Tinode Messenger。從 https://tinode.co 下載。</string>
+    <string name="tinode_invite_subject">試試 BLML Messenger</string>
+    <string name="tinode_invite_body">試試 BLML Messenger。從 https://blml.app 下載。</string>
 
-    <string name="profile_action">Tinode 個人檔案</string>
+    <string name="profile_action">BLML 個人檔案</string>
     <string name="view_profile">查看個人檔案</string>
-    <string name="tinode_message">傳送 Tinode 訊息</string>
+    <string name="tinode_message">傳送 BLML 訊息</string>
     <string name="hint_topic_title">群組名稱</string>
     <string name="group_members">群組成員</string>
     <string name="name_required">需要主題名稱</string>
@@ -144,7 +144,7 @@
     <string name="hint_search_tags">以標籤搜尋</string>
     <string name="topic_not_found_or_invalid">找不到主題或是主題無效</string>
     <string name="sending_disabled">不可用</string>
-    <string name="download_title">Tinode 下載</string>
+    <string name="download_title">BLML 下載</string>
     <string name="some_permissions_missing">請授權所有需要的權限。</string>
     <string name="unable_to_attach_file">無法附加此檔案</string>
     <string name="canceled">已取消</string>
@@ -208,7 +208,7 @@
     <string name="app_server">伺服器</string>
     <string name="full_name_required">需要全名</string>
 
-    <string name="default_contact_name">Tinode 使用者 %1$s</string>
+    <string name="default_contact_name">BLML 使用者 %1$s</string>
     <string name="permission_missing">缺少必要的權限</string>
     <string name="enter_search_query">輸入搜尋關鍵字</string>
     <string name="image_caption_hint">圖片說明</string>
@@ -305,8 +305,8 @@
     <string name="unable_to_play_video">無法播放此視頻。</string>
     <string name="video_call_channel_name">視頻通話</string>
     <string name="video_call_channel_description">視頻和音頻通話</string>
-    <string name="tinode_video_call">Tinode 視頻通話</string>
-    <string name="tinode_audio_call">Tinode 通話</string>
+    <string name="tinode_video_call">BLML 視頻通話</string>
+    <string name="tinode_audio_call">BLML 通話</string>
     <string name="answer_call">接聽</string>
     <string name="decline_call">拒絕</string>
 

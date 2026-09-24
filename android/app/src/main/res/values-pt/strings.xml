@@ -60,12 +60,12 @@
      alphabet using ListView fast scroll. -->
     <string name="alphabet">\ ABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
 
-    <string name="tinode_invite_subject">Download Tinode Messenger</string>
-    <string name="tinode_invite_body">Baixe o Tinode Messenger em https://tinode.co </string>
+    <string name="tinode_invite_subject">Download BLML Messenger</string>
+    <string name="tinode_invite_body">Baixe o BLML Messenger em https://blml.app </string>
 
-    <string name="profile_action">Perfil Tinode</string>
+    <string name="profile_action">Perfil BLML</string>
     <string name="view_profile">Perfil</string>
-    <string name="tinode_message">Envie mensagem Tinode</string>
+    <string name="tinode_message">Envie mensagem BLML</string>
     <string name="hint_topic_title">Nome do grupo</string>
     <string name="group_members">Membro do grupo</string>
     <string name="name_required">Nome do grupo requerido</string>
@@ -144,7 +144,7 @@
     <string name="hint_search_tags">Procurar por tags</string>
     <string name="topic_not_found_or_invalid">Conversa não encontrada ou inválida</string>
     <string name="sending_disabled">Não disponível</string>
-    <string name="download_title">Tinode download</string>
+    <string name="download_title">BLML download</string>
     <string name="some_permissions_missing">Por favor atribua todas as permissões requeridas.</string>
     <string name="unable_to_attach_file">Falha para anexar o arquivo</string>
     <string name="canceled">Cancelado</string>
@@ -209,7 +209,7 @@
     <string name="button_hint_start_new_chat">Iniciar novo bate-papo</string>
     <string name="app_server">Servidor</string>
     <string name="full_name_required">Nome completo requerido</string>
-    <string name="default_contact_name">Usuário Tinode %1$s</string>
+    <string name="default_contact_name">Usuário BLML %1$s</string>
     <string name="permission_missing">Sem permissão</string>
     <string name="enter_search_query">Entre com a pesquisa</string>
     <string name="image_caption_hint">Informação da imagem</string>
@@ -306,8 +306,8 @@
     <string name="unable_to_play_video">Não foi possível reproduzir este vídeo.</string>
     <string name="video_call_channel_name">Videochamadas</string>
     <string name="video_call_channel_description">Chamadas de vídeo e áudio</string>
-    <string name="tinode_video_call">Tinode Videochamada</string>
-    <string name="tinode_audio_call">Tinode Chamada</string>
+    <string name="tinode_video_call">BLML Videochamada</string>
+    <string name="tinode_audio_call">BLML Chamada</string>
     <string name="answer_call">Resposta</string>
     <string name="decline_call">Recusar</string>
 

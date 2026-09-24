@@ -148,7 +148,7 @@ extension AddByIDViewController: QRScannerDelegate {
         guard let code = Utils.topicFromQrCode(codeValue) else {
             Cache.log.error("Invalid Tinode topic QR code")
             DispatchQueue.main.async {
-                UiUtils.showToast(message: "Invalid Tinode topic QR code")
+                UiUtils.showToast(message: NSLocalizedString("Invalid BLML chat QR code", comment: "Error message: unreadable chat QR code"))
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) { [weak self] in
                 // Restart QR scanner.

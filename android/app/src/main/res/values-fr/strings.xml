@@ -60,12 +60,12 @@
      alphabet using ListView fast scroll. -->
     <string name="alphabet">\ ABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
 
-    <string name="tinode_invite_subject">Découvrez Tinode Messenger</string>
-    <string name="tinode_invite_body">Découvrez Tinode Messenger. Téléchargez-la depuis https://tinode.co</string>
+    <string name="tinode_invite_subject">Découvrez BLML Messenger</string>
+    <string name="tinode_invite_body">Découvrez BLML Messenger. Téléchargez-la depuis https://blml.app</string>
 
-    <string name="profile_action">Profil Tinode</string>
+    <string name="profile_action">Profil BLML</string>
     <string name="view_profile">Voir le Profil</string>
-    <string name="tinode_message">Envoyer message Tinode</string>
+    <string name="tinode_message">Envoyer message BLML</string>
     <string name="group_members">Membres du groupe</string>
     <string name="name_required">Nom du groupe requis</string>
     <string name="no_members">Pas de membres du groupe</string>
@@ -207,7 +207,7 @@
     <string name="app_server">Serveur</string>
     <string name="full_name_required">Nom complet requis</string>
 
-    <string name="default_contact_name">Utilisateur Tinode %1$s</string>
+    <string name="default_contact_name">Utilisateur BLML %1$s</string>
     <string name="permission_missing">L\'autorisation requise est manquante</string>
     <string name="enter_search_query">Saisir la requête de recherche</string>
     <string name="image_caption_hint">Légende</string>
@@ -305,8 +305,8 @@
     <string name="unable_to_play_video">Impossible de lire cette vidéo.</string>
     <string name="video_call_channel_name">Appels vidéo</string>
     <string name="video_call_channel_description">Appels vidéo et audio</string>
-    <string name="tinode_video_call">Appel vidéo Tinode</string>
-    <string name="tinode_audio_call">Appel Tinode</string>
+    <string name="tinode_video_call">Appel vidéo BLML</string>
+    <string name="tinode_audio_call">Appel BLML</string>
     <string name="answer_call">Répondre</string>
     <string name="decline_call">Refuser</string>
 
