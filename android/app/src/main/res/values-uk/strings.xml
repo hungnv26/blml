@@ -48,7 +48,7 @@
     <string name="new_message_channel_description">Отримано нове повідомлення</string>
     <string name="request_pass_reset_title">Змінити пароль</string>
     <string name="request">Запит</string>
-    <string name="tinode_invite_subject">Спробуйте Tinode Messenger</string>
+    <string name="tinode_invite_subject">Спробуйте BLML Messenger</string>
     <string name="view_profile">Переглянути профіль</string>
     <string name="account_settings">Налаштування акаунту</string>
     <string name="action_delete">Видалити</string>
@@ -122,7 +122,7 @@
     <string name="current_user">Ви</string>
     <string name="default_permissions">Права доступу по замовчуванню</string>
     <string name="download_attachment">зберегти</string>
-    <string name="download_title">Tinode завантажити</string>
+    <string name="download_title">BLML завантажити</string>
     <string name="edit_permissions">Редагувати права доступу</string>
     <string name="email">Емейл</string>
     <string name="email_required">Потрібен емейл</string>
@@ -132,9 +132,9 @@
     <string name="failed_credential_confirmation">Невірний код підтвердження</string>
     <string name="failed_empty_password">введіть пароль</string>
     <string name="placeholder_private">Видно тільки вам</string>
-    <string name="profile_action">Tinode профіль</string>
-    <string name="tinode_message">Надіслати повідомлення Tinode</string>
-    <string name="tinode_invite_body">Спробуйте Tinode Messenger. Завантажте його з https://tinode.co/</string>
+    <string name="profile_action">BLML профіль</string>
+    <string name="tinode_message">Надіслати повідомлення BLML</string>
+    <string name="tinode_invite_body">Спробуйте BLML Messenger. Завантажте його з https://blml.app</string>
     <string name="user_not_found">Не знайдений</string>
     <string name="topic_tags">Теги, список через кому</string>
     <string name="sender_unknown">Невідомий</string>
@@ -189,7 +189,7 @@
     <string name="button_hint_start_new_chat">Розпочати новий чат</string>
     <string name="app_server">Сервер</string>
 
-    <string name="default_contact_name">Tinode Користувач %1$s</string>
+    <string name="default_contact_name">BLML Користувач %1$s</string>
     <string name="permission_missing">Немає прав доступу</string>
     <string name="enter_search_query">Введіть пошуковий запит</string>
 
@@ -285,8 +285,8 @@
     <string name="unable_to_play_video">Неможливо показати це відео</string>
     <string name="video_call_channel_name">Відеодзвінки</string>
     <string name="video_call_channel_description">Відео- та аудіовиклики</string>
-    <string name="tinode_video_call">Відеодзвінок Tinode</string>
-    <string name="tinode_audio_call">Дзвінок Tinode</string>
+    <string name="tinode_video_call">Відеодзвінок BLML</string>
+    <string name="tinode_audio_call">Дзвінок BLML</string>
     <string name="answer_call">Відповісти</string>
     <string name="decline_call">Відхилити</string>
 

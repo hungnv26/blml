@@ -48,7 +48,7 @@
     <string name="new_message_channel_description">Получено новое сообщение</string>
     <string name="request_pass_reset_title">Сменить пароль</string>
     <string name="request">Запрос</string>
-    <string name="tinode_invite_subject">Попробуйте Tinode Messenger</string>
+    <string name="tinode_invite_subject">Попробуйте BLML Messenger</string>
     <string name="view_profile">Посмотреть профиль</string>
     <string name="account_settings">Настройки аккаунта</string>
     <string name="action_delete">Удалить</string>
@@ -122,7 +122,7 @@
     <string name="current_user">Вы</string>
     <string name="default_permissions">Права доступа по умолчанию</string>
     <string name="download_attachment">сохранить</string>
-    <string name="download_title">Tinode скачать</string>
+    <string name="download_title">BLML скачать</string>
     <string name="edit_permissions">Редактировать права доступа</string>
     <string name="email">Емейл</string>
     <string name="email_required">Требуется емейл</string>
@@ -132,9 +132,9 @@
     <string name="failed_credential_confirmation">Неверный код подтверждения</string>
     <string name="failed_empty_password">введите пароль</string>
     <string name="placeholder_private">Видно только вам</string>
-    <string name="profile_action">Tinode профиль</string>
-    <string name="tinode_message">Отправить сообщение Tinode</string>
-    <string name="tinode_invite_body">Попробуйте Tinode Messenger. Скачайте его с https://tinode.co/</string>
+    <string name="profile_action">BLML профиль</string>
+    <string name="tinode_message">Отправить сообщение BLML</string>
+    <string name="tinode_invite_body">Попробуйте BLML Messenger. Скачайте его с https://blml.app</string>
     <string name="user_not_found">Не найден</string>
     <string name="topic_tags">Тэги, список через запятую</string>
     <string name="sender_unknown">Неизвестный</string>
@@ -189,7 +189,7 @@
     <string name="button_hint_start_new_chat">Начать новый чат</string>
     <string name="app_server">Сервер</string>
 
-    <string name="default_contact_name">Tinode Пользователь %1$s</string>
+    <string name="default_contact_name">BLML Пользователь %1$s</string>
     <string name="permission_missing">Нет прав доступа</string>
     <string name="enter_search_query">Введите поисковый запрос</string>
 
@@ -285,8 +285,8 @@
     <string name="unable_to_play_video">Невозможно показать это видео</string>
     <string name="video_call_channel_name">Видеозвонки</string>
     <string name="video_call_channel_description">Видео- и аудиовызовы</string>
-    <string name="tinode_video_call">Видеозвонок Tinode</string>
-    <string name="tinode_audio_call">Звонок Tinode</string>
+    <string name="tinode_video_call">Видеозвонок BLML</string>
+    <string name="tinode_audio_call">Звонок BLML</string>
     <string name="answer_call">Ответить</string>
     <string name="decline_call">Отклонить</string>
 

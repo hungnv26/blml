@@ -60,12 +60,12 @@
      alphabet using ListView fast scroll. -->
     <string name="alphabet">\ ABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
 
-    <string name="tinode_invite_subject">Tinode Messenger를 확인하세요.</string>
-    <string name="tinode_invite_body">Tinode Messenger를 확인하세요. https://tinode.co에서 다운로드하세요.</string>
+    <string name="tinode_invite_subject">BLML Messenger를 확인하세요.</string>
+    <string name="tinode_invite_body">BLML Messenger를 확인하세요. https://blml.app에서 다운로드하세요.</string>
 
-    <string name="profile_action">Tinode 프로필</string>
+    <string name="profile_action">BLML 프로필</string>
     <string name="view_profile">프로필 보기</string>
-    <string name="tinode_message"> Tinode 메시지 보내기</string>
+    <string name="tinode_message"> BLML 메시지 보내기</string>
     <string name="hint_topic_title">그룹 이름</string>
     <string name="group_members">그룹 멤버</string>
     <string name="name_required">그룹 이름이 필요합니다.</string>
@@ -144,7 +144,7 @@
     <string name="hint_search_tags">태그 검색</string>
     <string name="topic_not_found_or_invalid">그룹을 찾을 수 없거나 존재하지 않습니다.</string>
     <string name="sending_disabled">이용 불가능</string>
-    <string name="download_title">Tinode 다운로드</string>
+    <string name="download_title">BLML 다운로드</string>
     <string name="some_permissions_missing">요청된 모든 권한을 부여하세요</string>
     <string name="unable_to_attach_file">해당 파일을 첨부할 수 없습니다.</string>
     <string name="canceled">취소됨</string>
@@ -208,7 +208,7 @@
     <string name="app_server">서버</string>
     <string name="full_name_required">이름 필요</string>
 
-    <string name="default_contact_name">Tinode 사용자 %1$s</string>
+    <string name="default_contact_name">BLML 사용자 %1$s</string>
     <string name="permission_missing">필요한 권한이 없습니다.</string>
     <string name="enter_search_query">검색어 입력</string>
     <string name="image_caption_hint">이미지 캡션</string>
@@ -304,8 +304,8 @@
     <string name="unable_to_play_video">이 동영상을 재생할 수 없습니다.</string>
     <string name="video_call_channel_name">영상 통화</string>
     <string name="video_call_channel_description">영상 및 음성 통화</string>
-    <string name="tinode_video_call">Tinode 화상 통화</string>
-    <string name="tinode_audio_call">Tinode 호출</string>
+    <string name="tinode_video_call">BLML 화상 통화</string>
+    <string name="tinode_audio_call">BLML 호출</string>
     <string name="answer_call">답변</string>
     <string name="decline_call">거절</string>
 

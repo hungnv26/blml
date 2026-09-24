@@ -60,12 +60,12 @@
      alphabet using ListView fast scroll. -->
     <string name="alphabet">\ ABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
 
-    <string name="tinode_invite_subject">Tinode Messenger ausprobieren</string>
-    <string name="tinode_invite_body">Probieren Sie den Tinode Messenger aus. Tinode kann von https://tinode.co herunter geladen werden</string>
+    <string name="tinode_invite_subject">BLML Messenger ausprobieren</string>
+    <string name="tinode_invite_body">Probieren Sie den BLML Messenger aus. BLML kann von https://blml.app herunter geladen werden</string>
 
-    <string name="profile_action">Tinode Profil</string>
+    <string name="profile_action">BLML Profil</string>
     <string name="view_profile">Profil ansehen</string>
-    <string name="tinode_message">Eine Nachricht mit tinode senden</string>
+    <string name="tinode_message">Eine Nachricht mit BLML senden</string>
     <string name="hint_topic_title">Name der Gruppe</string>
     <string name="group_members">Mitglieder der Gruppe</string>
     <string name="name_required">Sie müssen den Namen der Gruppe eingeben </string>
@@ -208,7 +208,7 @@
     <string name="app_server">Server</string>
     <string name="full_name_required">Sie müssen Ihren vollständigen Namen eingeben</string>
 
-    <string name="default_contact_name">Tinode-Benutzer %1$s</string>
+    <string name="default_contact_name">BLML-Benutzer %1$s</string>
     <string name="permission_missing">Die erforderliche Berechtigung fehlt</string>
     <string name="enter_search_query">Geben Sie Ihre Suchbegriffe ein</string>
     <string name="image_caption_hint">Einen Kommentar hinzufügen</string>
@@ -306,8 +306,8 @@
     <string name="unable_to_play_video">Dieses Video kann nicht abgespielt werden.</string>
     <string name="video_call_channel_name">Videoanrufe</string>
     <string name="video_call_channel_description">Video- und Audioanrufe</string>
-    <string name="tinode_video_call">Tinode-Videoanruf</string>
-    <string name="tinode_audio_call">Tinode-Anruf</string>
+    <string name="tinode_video_call">BLML-Videoanruf</string>
+    <string name="tinode_audio_call">BLML-Anruf</string>
     <string name="answer_call">Antwort</string>
     <string name="decline_call">Ablehnen</string>
 

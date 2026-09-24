@@ -61,12 +61,12 @@
      alphabet using ListView fast scroll. -->
     <string name="alphabet">\ AĂÎBCDEFGHIJKLMNOPQRSŞTŢUVWXYZ</string>
 
-    <string name="tinode_invite_subject">Uită-te la Tinode Messenger</string>
-    <string name="tinode_invite_body">Hey! Aruncă un ochi pe Tinode Messenger. Descarcă-l de pe https://tinode.co</string>
+    <string name="tinode_invite_subject">Uită-te la BLML Messenger</string>
+    <string name="tinode_invite_body">Hey! Aruncă un ochi pe BLML Messenger. Descarcă-l de pe https://blml.app</string>
 
-    <string name="profile_action">Profil Tinode</string>
+    <string name="profile_action">Profil BLML</string>
     <string name="view_profile">Vezi Profil</string>
-    <string name="tinode_message">Trimite mesaj Tinode</string>
+    <string name="tinode_message">Trimite mesaj BLML</string>
     <string name="hint_topic_title">Numele grupului</string>
     <string name="group_members">Membrii grupului</string>
     <string name="name_required">Numele grupului este obligatoriu</string>
@@ -145,7 +145,7 @@
     <string name="hint_search_tags">Caută după tag</string>
     <string name="topic_not_found_or_invalid">Conversaţie negăsită sau invalidă</string>
     <string name="sending_disabled">Indisponibil</string>
-    <string name="download_title">Descărcare Tinode</string>
+    <string name="download_title">Descărcare BLML</string>
     <string name="some_permissions_missing">Te rugăm să aprobi toate permisiile.</string>
     <string name="unable_to_attach_file">Fişierul nu poate fi ataşat</string>
     <string name="canceled">renunţat</string>
@@ -214,7 +214,7 @@
     <string name="outgoing_call">Apel intrare</string>
     <string name="incoming_call">Apel ieşire</string>
 
-    <string name="default_contact_name">Utilizator Tinode %1$s</string>
+    <string name="default_contact_name">Utilizator BLML %1$s</string>
     <string name="permission_missing">Permisie necesară lipsă</string>
     <string name="enter_search_query">Introduceți interogarea de căutare</string>
     <string name="image_caption_hint">Legendă imagine</string>
@@ -309,12 +309,12 @@
     <string name="unable_to_play_video">Nu se poate reda acest videoclip.</string>
     <string name="video_call_channel_name">Apel video de grup</string>
     <string name="video_call_channel_description">Apeluri audio şi video</string>
-    <string name="tinode_video_call">Apel video Tinode</string>
+    <string name="tinode_video_call">Apel video BLML</string>
     <string name="answer_call">Răspunde</string>
     <string name="decline_call">Respinge</string>
     <string name="document_preview">Previzualizare document</string>
     <string name="action_call">Sună</string>
-    <string name="tinode_audio_call">Apel Tinode</string>
+    <string name="tinode_audio_call">Apel BLML</string>
     <string name="unable_to_place_call">Nu se poate efectua acest apel</string>
     <string name="phone_sms_explained">O să trişitem un SMS cu codul de confirmare la următorul număr.</string>
     <string name="phone_number_required">Numărul de telefon trebuie să fie valid</string>
