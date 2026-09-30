@@ -63,7 +63,11 @@ class RootSession:
             ctrl = frame.get("ctrl")
             if not ctrl or ctrl.get("id") != msg_id:
                 continue  # data/pres for something else; not our reply
-            if not 200 <= ctrl.get("code", 500) < 300:
+            code = ctrl.get("code", 500)
+            # 304 "not modified": the request asked for what is already true
+            # (e.g. activating an active account). Nothing failed, so it is
+            # not an error. Other 3xx codes (300 "validate credentials") are.
+            if code != 304 and not 200 <= code < 300:
                 raise TinodeError(f"{ctrl.get('code')} {ctrl.get('text')}")
             return ctrl
         raise TinodeError("timed out waiting for a reply")

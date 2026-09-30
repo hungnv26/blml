@@ -46,3 +46,35 @@ class ParseReportTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NotModifiedIsNotAnErrorTest(unittest.TestCase):
+    """Activating an already-active account returned a 500 page: Tinode answers
+    304 "not modified", which the client treated as a failure."""
+
+    def _client(self, code):
+        import json
+        from app.tinode import RootSession
+
+        class FakeWS:
+            def send(self, data):
+                self.sent = json.loads(data)
+
+            def recv(self):
+                msg_id = next(iter(self.sent.values()))["id"]
+                return json.dumps({"ctrl": {"id": msg_id, "code": code, "text": "x"}})
+
+        return RootSession(FakeWS())
+
+    def test_304_returns(self):
+        self.assertEqual(self._client(304).call({"set": {}})["code"], 304)
+
+    def test_300_still_raises(self):
+        from app.tinode import TinodeError
+        with self.assertRaises(TinodeError):
+            self._client(300).call({"set": {}})
+
+    def test_500_still_raises(self):
+        from app.tinode import TinodeError
+        with self.assertRaises(TinodeError):
+            self._client(500).call({"set": {}})
