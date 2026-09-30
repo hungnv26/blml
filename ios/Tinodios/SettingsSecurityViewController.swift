@@ -239,13 +239,30 @@ class SettingsSecurityViewController: UITableViewController {
         UiUtils.logoutAndRouteToLoginVC()
     }
 
+    // Kept alive while the Apple sheet (if any) is up.
+    private var federatedSignIn: FederatedSignIn?
+
     private func deleteAccount() {
         Cache.log.info("SettingsSecurityVC - deleting account")
-        tinode.delCurrentUser(hard: true)
-            .thenApply { _ in
-                UiUtils.logoutAndRouteToLoginVC()
-                return nil
+        // An account created with Sign in with Apple must have its Apple token
+        // revoked before it is deleted; this is a no-op for other accounts.
+        let federated = FederatedSignIn(presenter: self)
+        federatedSignIn = federated
+        federated.prepareForAccountDeletion { [weak self] ok in
+            guard let self = self else { return }
+            self.federatedSignIn = nil
+            guard ok else {
+                DispatchQueue.main.async {
+                    UiUtils.showToast(message: NSLocalizedString("Could not reach Apple to finish deleting the account. Please try again.", comment: "Error"))
+                }
+                return
             }
-            .thenCatch(UiUtils.ToastFailureHandler)
+            self.tinode.delCurrentUser(hard: true)
+                .thenApply { _ in
+                    UiUtils.logoutAndRouteToLoginVC()
+                    return nil
+                }
+                .thenCatch(UiUtils.ToastFailureHandler)
+        }
     }
 }

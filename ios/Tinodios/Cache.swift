@@ -8,7 +8,8 @@
 import UIKit
 import TinodeSDK
 import TinodiosDB
-import Firebase
+import FirebaseCore
+import FirebaseMessaging
 
 class Cache {
     private static let shared = Cache()

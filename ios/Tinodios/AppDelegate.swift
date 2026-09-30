@@ -5,7 +5,9 @@
 //  Copyright © 2019-2025 Tinode LLC. All rights reserved.
 //
 
-import Firebase
+import FirebaseCore
+import FirebaseMessaging
+import GoogleSignIn
 import Network
 import UIKit
 import TinodeSDK
@@ -251,6 +253,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             // App is active.
             completionHandler(.noData)
         }
+    }
+
+    // Google Sign-In returns to the app through its reversed-client-ID URL.
+    func application(_ app: UIApplication, open url: URL,
+                     options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        return GIDSignIn.sharedInstance.handle(url)
     }
 
     // Tapped on a web link. See if it's an app link.

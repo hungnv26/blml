@@ -4,7 +4,8 @@
 //  Copyright © 2019-2025 Tinode LLC. All rights reserved.
 //
 
-import Firebase
+import FirebaseCore
+import FirebaseMessaging
 import Foundation
 import TinodiosDB
 import TinodeSDK
@@ -186,8 +187,11 @@ class UiUtils {
             return
         }
 
-        // Configure FCM.
-        FirebaseApp.configure()
+        // Configure FCM. Sign in with Google/Apple may have started Firebase
+        // already on the login screen; configuring twice aborts the app.
+        if FirebaseApp.app() == nil {
+            FirebaseApp.configure()
+        }
         Messaging.messaging().delegate = appDelegate
         UNUserNotificationCenter.current().delegate = appDelegate
 
@@ -240,6 +244,7 @@ class UiUtils {
 
     public static func logoutAndRouteToLoginVC() {
         Cache.log.info("UiUtils - Invalidating cache and logging out.")
+        FederatedSignIn.signOut()
         SharedUtils.removeAuthToken()
         Cache.invalidate()
         UiUtils.routeToLoginVC()

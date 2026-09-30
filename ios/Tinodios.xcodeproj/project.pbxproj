@@ -21,6 +21,7 @@
 		0A35BA9E22836CCF00AA5E2F /* ContactsSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A35BA9D22836CCF00AA5E2F /* ContactsSynchronizer.swift */; };
 		B0C0A5E2260100020079A97E /* ContactsConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C0A5E1260100010079A97E /* ContactsConsent.swift */; };
 		B0C0A5E4260100040079A97E /* PhoneNumberPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C0A5E3260100030079A97E /* PhoneNumberPrompt.swift */; };
+		B0C0A5E6260100060079A97E /* FederatedSignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C0A5E5260100050079A97E /* FederatedSignIn.swift */; };
 		0A35BAA02283A37500AA5E2F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A35BA9F2283A37500AA5E2F /* Utils.swift */; };
 		B0AA5C34260000340079A97E /* WallpaperViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C18260000180079A97E /* WallpaperViewController.swift */; };
 		B0AA5C51260000510079A97E /* QRScanViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C50260000500079A97E /* QRScanViewController.swift */; };
@@ -216,6 +217,7 @@
 		0A35BA9D22836CCF00AA5E2F /* ContactsSynchronizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsSynchronizer.swift; sourceTree = "<group>"; };
 		B0C0A5E1260100010079A97E /* ContactsConsent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsConsent.swift; sourceTree = "<group>"; };
 		B0C0A5E3260100030079A97E /* PhoneNumberPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneNumberPrompt.swift; sourceTree = "<group>"; };
+		B0C0A5E5260100050079A97E /* FederatedSignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FederatedSignIn.swift; sourceTree = "<group>"; };
 		0A35BA9F2283A37500AA5E2F /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		B0AA5CF2260000F20079A97E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B0AA5CF1260000F10079A97E /* PrivacyInfo.xcprivacy */; };
 		B0AA5CF1260000F10079A97E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -478,6 +480,7 @@
 				0AD5552921C625BB0027FD16 /* ChatListInteractor.swift */,
 				0ACB5F0D22097651008FE740 /* ChatListPresenter.swift */,
 				0ACB5F0F22097665008FE740 /* ChatListRouter.swift */,
+				B0C0A5E5260100050079A97E /* FederatedSignIn.swift */,
 				B0C0A5E3260100030079A97E /* PhoneNumberPrompt.swift */,
 				0A0380D921B3CC8100A3FA0E /* ChatListViewController.swift */,
 				0A8EA5AF29838E5900B116EA /* CredentialsChangeViewController.swift */,
@@ -1047,6 +1050,7 @@
 				0A35BA9E22836CCF00AA5E2F /* ContactsSynchronizer.swift in Sources */,
 				B0C0A5E2260100020079A97E /* ContactsConsent.swift in Sources */,
 				B0C0A5E4260100040079A97E /* PhoneNumberPrompt.swift in Sources */,
+				B0C0A5E6260100060079A97E /* FederatedSignIn.swift in Sources */,
 				0A0D92D72840EFEF00B5B5B0 /* CallProviderDelegate.swift in Sources */,
 				B03066432805F2AA00497EF4 /* EntityTextAttachment.swift in Sources */,
 				B09C564A2469362A00D6615D /* AccountGeneralSettingsViewController.swift in Sources */,

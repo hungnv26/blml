@@ -5,6 +5,7 @@
 //  Copyright © 2019 Tinode. All rights reserved.
 //
 
+import AuthenticationServices
 import UIKit
 import os
 import SwiftKeychainWrapper
@@ -60,6 +61,48 @@ class LoginViewController: UIViewController {
         }
 
         styleWhatsAppLook()
+        addFederatedSignInButtons()
+    }
+
+    // Kept alive while a provider sheet is up.
+    private var federatedSignIn: FederatedSignIn?
+
+    /// Sign in with Apple and Google, under the password form. Apple's button
+    /// is always shown alongside Google's (guideline 4.8); Google's only once
+    /// Google sign-in is configured in Firebase.
+    private func addFederatedSignInButtons() {
+        guard let stack = signInButton.superview as? UIStackView else { return }
+
+        let apple = ASAuthorizationAppleIDButton(type: .signIn,
+                                                 style: traitCollection.userInterfaceStyle == .dark ? .white : .black)
+        apple.cornerRadius = 22
+        apple.addTarget(self, action: #selector(signInWithAppleClicked), for: .touchUpInside)
+        apple.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        stack.addArrangedSubview(apple)
+
+        if FederatedSignIn.isGoogleAvailable {
+            let google = UIButton(type: .system)
+            google.setTitle(NSLocalizedString("Sign in with Google", comment: "Button"), for: .normal)
+            google.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+            google.setTitleColor(.label, for: .normal)
+            google.backgroundColor = .secondarySystemBackground
+            google.layer.cornerRadius = 22
+            google.heightAnchor.constraint(equalToConstant: 44).isActive = true
+            google.addTarget(self, action: #selector(signInWithGoogleClicked), for: .touchUpInside)
+            stack.addArrangedSubview(google)
+        }
+    }
+
+    @objc private func signInWithAppleClicked() {
+        let federated = FederatedSignIn(presenter: self)
+        federatedSignIn = federated
+        federated.signInWithApple()
+    }
+
+    @objc private func signInWithGoogleClicked() {
+        let federated = FederatedSignIn(presenter: self)
+        federatedSignIn = federated
+        federated.signInWithGoogle()
     }
 
     // WhatsApp-style welcome screen: filled green pill button, soft rounded
