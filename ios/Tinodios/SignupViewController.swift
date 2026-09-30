@@ -33,6 +33,11 @@ class SignupViewController: UITableViewController {
                 "Sign-up needs a valid invite code. Ask whoever invited you for the current one.",
                 comment: "Sign-up rejected because the invite code was missing or wrong")
         }
+        if text.contains("409") || text.lowercased().contains("duplicate") {
+            return NSLocalizedString(
+                "That user name or phone number is already used by another account.",
+                comment: "Sign-up rejected: login or phone number taken")
+        }
         return String(format: NSLocalizedString("Failed to create account: %@",
                                                 comment: "Error message"), text)
     }
@@ -95,14 +100,27 @@ class SignupViewController: UITableViewController {
         // Show only required credential fields.
         if indexPath.section == SignupViewController.kSectionContacts {
             let method = self.credMethods?.first
+            // The phone row is always shown: a number is optional, but it is
+            // what lets people who have it in their contacts find you.
+            if indexPath.row == SignupViewController.kContactsTel {
+                return super.tableView(tableView, heightForRowAt: indexPath)
+            }
             if method == nil ||
-                (indexPath.row == SignupViewController.kContactsEmail && method! != Credential.kMethEmail) ||
-                (indexPath.row == SignupViewController.kContactsTel && method! != Credential.kMethPhone) {
+                (indexPath.row == SignupViewController.kContactsEmail && method! != Credential.kMethEmail) {
                 return CGFloat.leastNonzeroMagnitude
             }
         }
 
         return super.tableView(tableView, heightForRowAt: indexPath)
+    }
+
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        if section == SignupViewController.kSectionContacts {
+            return NSLocalizedString(
+                "Phone number is optional. People who have it in their contacts can find you on BLML.",
+                comment: "Sign-up: why the phone number is asked for")
+        }
+        return super.tableView(tableView, titleForFooterInSection: section)
     }
 
     @objc func textFieldDidChange(_ textField: UITextField) {
@@ -146,6 +164,18 @@ class SignupViewController: UITableViewController {
             }
         }
         guard !isError else { return }
+
+        // Optional phone number, when the server does not require one. The
+        // server confirms it on entry and it becomes the "tel:" tag that other
+        // people's address books match against.
+        if !(self.credMethods?.contains(Credential.kMethPhone) ?? false),
+           !(telTextField.text?.trimmingCharacters(in: .whitespaces).isEmpty ?? true) {
+            guard telTextField.isValidNumber, let phone = telTextField.phoneNumber else {
+                telTextField.markAsError()
+                return
+            }
+            creds.append(Credential(meth: Credential.kMethPhone, val: telTextField.utility.format(phone, toType: .e164)))
+        }
 
         func doSignUp(withPublicCard pub: TheCard, withCredentials creds: [Credential]) {
             let desc = MetaSetDesc<TheCard, String>(pub: pub, priv: nil)

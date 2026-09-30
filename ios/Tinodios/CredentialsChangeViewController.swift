@@ -153,17 +153,37 @@ class CredentialsChangeViewController: UITableViewController {
         me.setMeta(cred: newCred)
             .then(onSuccess: { msg in
                 if let ctrl = msg?.ctrl, 200 <= ctrl.code && ctrl.code < 300 {
+                    if ctrl.getBoolParam(for: "done") ?? false {
+                        // Confirmed on entry (server sends no code): replace
+                        // the old value now instead of waiting for a code.
+                        if let oldCred = self.currentCredential, oldCred.val != value {
+                            me.delCredential(oldCred).thenCatch({ err in
+                                Cache.log.error("Failed to delete old credential: %@", err.localizedDescription)
+                                return nil
+                            })
+                        }
+                        DispatchQueue.main.async {
+                            UiUtils.showToast(message: NSLocalizedString("Saved", comment: "Toast"), level: .info)
+                            self.navigationController?.popViewController(animated: true)
+                        }
+                        return nil
+                    }
                     self.confirmationSectionVisible = true
                     DispatchQueue.main.async {
                         self.newTelField.isEnabled = false
                         self.newEmailField.isEnabled = false
-                        UiUtils.showToast(message: "Confirmation code sent", level: .info)
+                        UiUtils.showToast(message: NSLocalizedString("Confirmation code sent", comment: "Toast"), level: .info)
                     }
                 } else {
                     UiUtils.showServerResponseErrorToast(for: msg)
                 }
                 return nil
-            }, onFailure: UiUtils.ToastFailureHandler)
+            }, onFailure: { err in
+                DispatchQueue.main.async {
+                    UiUtils.showToast(message: PhoneNumberPrompt.phoneErrorMessage(err))
+                }
+                return nil
+            })
             .thenFinally {
                 DispatchQueue.main.async {
                     self.tableView.reloadData()

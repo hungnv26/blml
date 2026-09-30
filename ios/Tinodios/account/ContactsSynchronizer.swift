@@ -7,6 +7,7 @@
 
 import Foundation
 import Contacts
+import PhoneNumberKit
 import TinodeSDK
 import TinodiosDB
 
@@ -108,7 +109,7 @@ class ContactsSynchronizer {
             contactHolder.displayName = "\(systemContact.givenName) \(systemContact.familyName)"
             contactHolder.imageThumbnail = systemContact.imageDataAvailable ? systemContact.thumbnailImageData : nil
             contactHolder.emails = systemContact.emailAddresses.map { String($0.value) }
-            contactHolder.phones = systemContact.phoneNumbers.map { $0.value.naiveE164 }
+            contactHolder.phones = systemContact.phoneNumbers.map { $0.value.e164 }
             return contactHolder
         }
     }
@@ -190,8 +191,22 @@ class ContactsSynchronizer {
 }
 
 extension CNPhoneNumber {
-    // Hack: simply filters out all non-digit characters.
-    var naiveE164: String {
+    /// The number in E.164 form ("+84912345678"), which is how phone numbers
+    /// are stored on accounts ("tel:+84912345678"), so address-book matching
+    /// works.
+    ///
+    /// Most people save numbers without a country code ("0912 345 678"). The
+    /// old conversion only stripped formatting, so such numbers went up as
+    /// "0912345678" and never matched anyone. They are now read in the
+    /// device's region — which is what the person saving them meant. Android
+    /// already does the same using the SIM country.
+    var e164: String {
+        if let parsed = try? Utils.phoneNumberKit.parse(
+            self.stringValue, withRegion: PhoneNumberUtility.defaultRegionCode(), ignoreType: true) {
+            return Utils.phoneNumberKit.format(parsed, toType: .e164)
+        }
+        // Not a number PhoneNumberKit understands: send the digits as before
+        // rather than dropping the contact.
         return self.value(forKey: "unformattedInternationalStringValue") as? String ?? ""
     }
 }

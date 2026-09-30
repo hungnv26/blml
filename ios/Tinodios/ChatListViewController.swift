@@ -232,6 +232,8 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        // Phonebook search only finds accounts with a number: ask once.
+        PhoneNumberPrompt.offerOnceIfMissing(from: self)
 
         self.interactor?.setup()
         self.interactor?.attachToMeTopic()

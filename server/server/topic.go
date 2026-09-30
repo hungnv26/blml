@@ -3065,7 +3065,13 @@ func (t *Topic) replySetCred(sess *Session, asUid types.Uid, authLevel auth.Leve
 		t.presSubsOnline("tags", "", nilPresParams, nilPresFilters, "")
 	}
 
-	sess.queueOut(decodeStoreErrorExplicitTs(err, set.Id, t.original(asUid), now, msg.Timestamp, nil))
+	reply := decodeStoreErrorExplicitTs(err, set.Id, t.original(asUid), now, msg.Timestamp, nil)
+	if err == nil && set.Cred.Response == "" && globals.validators[set.Cred.Method].autoConfirm {
+		// Tell the client the credential is already confirmed, so it does not
+		// wait for a code that will never be sent.
+		reply.Ctrl.Params = map[string]any{"what": "cred", "done": true}
+	}
+	sess.queueOut(reply)
 
 	return err
 }

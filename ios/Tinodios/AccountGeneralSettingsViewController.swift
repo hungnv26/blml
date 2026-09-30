@@ -315,83 +315,17 @@ extension AccountGeneralSettingsViewController {
         performSegue(withIdentifier: "Settings2CredChange", sender: container)
     }
 
-    /// Step 1: collect the number. Sent to the server, which then expects a
-    /// confirmation code before it writes the "tel:" tag that address-book sync
-    /// and phone search match on.
     private func promptForPhoneNumber() {
-        let alert = UIAlertController(
+        PhoneNumberPrompt.collect(
+            from: self, me: me,
             title: NSLocalizedString("Add phone number", comment: "Alert title"),
             message: NSLocalizedString("Other people can find you by this number, and it lets their address book match you automatically.", comment: "Alert message"),
-            preferredStyle: .alert)
-        alert.addTextField { field in
-            field.placeholder = NSLocalizedString("+61 412 345 678", comment: "Phone placeholder")
-            field.keyboardType = .phonePad
-            field.textContentType = .telephoneNumber
-        }
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "Alert action"), style: .cancel))
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Next", comment: "Alert action"), style: .default) { [weak self] _ in
-            guard let self = self, let raw = alert.textFields?.first?.text else { return }
-            // Normalize to E.164 — the server stores and matches the number as
-            // given, so an unnormalized one would never match a contact card.
-            var number = raw.trimmingCharacters(in: .whitespaces)
-            if let parsed = try? Utils.phoneNumberKit.parse(number) {
-                number = Utils.phoneNumberKit.format(parsed, toType: .e164)
-            }
-            guard !number.isEmpty else { return }
-
-            self.me.setMeta(cred: Credential(meth: Credential.kMethPhone, val: number)).then(
-                onSuccess: { [weak self] _ in
-                    DispatchQueue.main.async { self?.promptForConfirmationCode(number: number) }
-                    return nil
-                },
-                onFailure: { err in
-                    DispatchQueue.main.async {
-                        UiUtils.showToast(message: String(format: NSLocalizedString("Could not add the number: %@", comment: "Error"), err.localizedDescription))
-                    }
-                    return nil
-                })
-        })
-        present(alert, animated: true)
+            onChange: { [weak self] in self?.reloadData() })
     }
 
-    /// Step 2: confirm it. This server sends no SMS — it accepts a fixed code —
-    /// so the prompt says so rather than telling people to check their messages.
     private func promptForConfirmationCode(number: String, wrongCode: Bool = false) {
-        let prompt = wrongCode
-            ? NSLocalizedString("That code was not right. The code is 123456 — this server does not send an SMS.", comment: "Alert message after a wrong code")
-            : String(format: NSLocalizedString("Enter the confirmation code for %@. This server does not send an SMS — the code is 123456.", comment: "Alert message"), number)
-        let alert = UIAlertController(
-            title: NSLocalizedString("Confirm number", comment: "Alert title"),
-            message: prompt,
-            preferredStyle: .alert)
-        alert.addTextField { field in
-            field.placeholder = NSLocalizedString("Code", comment: "Placeholder")
-            field.keyboardType = .numberPad
-        }
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Later", comment: "Alert action"), style: .cancel) { [weak self] _ in
-            self?.reloadData()
-        })
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Confirm", comment: "Alert action"), style: .default) { [weak self] _ in
-            guard let self = self, let code = alert.textFields?.first?.text, !code.isEmpty else { return }
-            self.me.setMeta(cred: Credential(meth: Credential.kMethPhone, val: nil, resp: code, params: nil)).then(
-                onSuccess: { [weak self] _ in
-                    DispatchQueue.main.async {
-                        UiUtils.showToast(message: NSLocalizedString("Phone number confirmed", comment: "Toast"), level: .info)
-                        self?.reloadData()
-                    }
-                    return nil
-                },
-                onFailure: { [weak self] _ in
-                    // Re-ask rather than dropping out of the flow. A mistyped
-                    // digit otherwise left a pending, unconfirmable number
-                    // behind with no obvious way to finish.
-                    DispatchQueue.main.async {
-                        self?.promptForConfirmationCode(number: number, wrongCode: true)
-                    }
-                    return nil
-                })
-        })
-        present(alert, animated: true)
+        PhoneNumberPrompt.confirmCode(from: self, me: me, number: number, wrongCode: wrongCode,
+                                      onChange: { [weak self] in self?.reloadData() })
     }
 
     // Enable swipe to delete credentials.
