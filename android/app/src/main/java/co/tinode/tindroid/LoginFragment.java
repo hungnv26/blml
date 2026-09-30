@@ -53,6 +53,13 @@ public class LoginFragment extends Fragment implements MenuProvider, View.OnClic
         View fragment = inflater.inflate(R.layout.fragment_login, container, false);
         fragment.findViewById(R.id.signIn).setOnClickListener(this);
         fragment.findViewById(R.id.forgotPassword).setOnClickListener(this);
+
+        final Button google = fragment.findViewById(R.id.signInGoogle);
+        if (FederatedSignIn.isGoogleAvailable(requireContext())) {
+            google.setVisibility(View.VISIBLE);
+            google.setOnClickListener(v ->
+                    new FederatedSignIn((LoginActivity) requireActivity(), google).signInWithGoogle());
+        }
         return fragment;
     }
 

@@ -185,6 +185,10 @@ public class SignUpFragment extends Fragment
                 field.setVisibility(View.VISIBLE);
             }
 
+            // The phone field is always shown: a number is optional, but it is
+            // what lets people who have it in their contacts find you.
+            view.findViewById(R.id.phone).setVisibility(View.VISIBLE);
+
             View field = view.findViewById(R.id.newLogin);
             if (field != null) {
                 field.requestFocus();
@@ -233,14 +237,22 @@ public class SignUpFragment extends Fragment
             }
         }
 
+        final PhoneEdit phone = parent.findViewById(R.id.phone);
         if (Arrays.asList(mCredMethods).contains("tel")) {
-            final PhoneEdit phone = parent.findViewById(R.id.phone);
             if (!phone.isNumberValid()) {
                 phone.setError(getText(R.string.phone_number_required));
                 return;
             } else {
                 credentials.add(new Credential("tel", phone.getPhoneNumberE164()));
             }
+        } else if (!phone.getRawInput().trim().isEmpty()) {
+            // Optional number: the server confirms it on entry and it becomes the
+            // "tel:" tag other people's address books match against.
+            if (!phone.isNumberValid()) {
+                phone.setError(getText(R.string.phone_number_required));
+                return;
+            }
+            credentials.add(new Credential("tel", phone.getPhoneNumberE164()));
         }
 
         String fn = ((EditText) parent.findViewById(R.id.fullName)).getText().toString().trim();

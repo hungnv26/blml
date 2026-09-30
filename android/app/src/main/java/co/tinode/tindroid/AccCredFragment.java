@@ -3,6 +3,7 @@ package co.tinode.tindroid;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,8 @@ import co.tinode.tindroid.media.VxCard;
 import co.tinode.tindroid.widgets.PhoneEdit;
 import co.tinode.tinodesdk.MeTopic;
 import co.tinode.tinodesdk.PromisedReply;
+import co.tinode.tinodesdk.model.ServerMessage;
+import co.tinode.tinodesdk.ServerResponseException;
 import co.tinode.tinodesdk.model.Credential;
 import co.tinode.tinodesdk.model.MsgSetMeta;
 
@@ -165,6 +168,20 @@ public class AccCredFragment extends Fragment implements ChatsActivity.FormUpdat
                 .thenApply(new PromisedReply.SuccessListener() {
                     @Override
                     public PromisedReply onSuccess(Object result) {
+                        // A server without an SMS gateway confirms the value on
+                        // entry and says so: skip the code step, drop the old value.
+                        boolean done = result instanceof ServerMessage && ((ServerMessage) result).ctrl != null &&
+                                ((ServerMessage) result).ctrl.getBoolParam("done", false);
+                        if (done) {
+                            if (mOldValue != null && !mOldValue.equals(cred.val)) {
+                                me.delCredential(mMethod, mOldValue);
+                            }
+                            activity.runOnUiThread(() -> {
+                                Toast.makeText(activity, R.string.credential_saved, Toast.LENGTH_SHORT).show();
+                                activity.getSupportFragmentManager().popBackStack();
+                            });
+                            return null;
+                        }
                         activity.runOnUiThread(() -> {
                             button.setEnabled(true);
                             mNewValue = cred.val;
@@ -173,6 +190,18 @@ public class AccCredFragment extends Fragment implements ChatsActivity.FormUpdat
                         return null;
                     }
                 })
-                .thenCatch(new UiUtils.ToastFailureListener(activity));
+                .thenCatch(new PromisedReply.FailureListener() {
+                    @Override
+                    public PromisedReply onFailure(Exception err) {
+                        activity.runOnUiThread(() -> {
+                            button.setEnabled(true);
+                            boolean taken = err instanceof ServerResponseException &&
+                                    ((ServerResponseException) err).getCode() == 409;
+                            Toast.makeText(activity, taken ? R.string.phone_number_taken : R.string.action_failed,
+                                    Toast.LENGTH_SHORT).show();
+                        });
+                        return null;
+                    }
+                });
     }
 }

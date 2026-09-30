@@ -1549,6 +1549,25 @@ public class Tinode {
                 login, tags, desc, cred);
     }
 
+    /**
+     * Create a new account bound to the identity in a Firebase ID token (Sign in
+     * with Google). The server answers 404 to {@link #loginFirebase} when no
+     * account is bound yet; this is the follow-up.
+     */
+    public <Pu, Pr> PromisedReply<ServerMessage> createAccountFirebase(
+            String idToken, boolean login, MetaSetDesc<Pu, Pr> desc, Credential[] cred) {
+        return account(USER_NEW, null, null, AuthScheme.LOGIN_FIREBASE,
+                AuthScheme.encodeFirebaseToken(idToken), login, null, desc, cred);
+    }
+
+    /**
+     * Sign in with a Firebase ID token. Fails with a 404 ServerResponseException
+     * when the identity is valid but has no account yet.
+     */
+    public PromisedReply<ServerMessage> loginFirebase(String idToken) {
+        return login(AuthScheme.LOGIN_FIREBASE, AuthScheme.encodeFirebaseToken(idToken), null);
+    }
+
     protected PromisedReply<ServerMessage> updateAccountSecret(String uid,
                                                                String tmpScheme, String tmpSecret,
                                                                @SuppressWarnings("SameParameterValue") String scheme,

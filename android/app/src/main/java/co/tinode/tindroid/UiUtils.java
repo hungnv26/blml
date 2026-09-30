@@ -397,6 +397,9 @@ public class UiUtils {
     }
 
     static void doLogout(Context context) {
+        // Sign out of Firebase/Google too, so the next person on this device
+        // is not silently signed in as the previous one.
+        FederatedSignIn.signOut(context);
         CallManager.unregisterCallingAccount();
         TindroidApp.stopWatchingContacts();
         Cache.invalidate();

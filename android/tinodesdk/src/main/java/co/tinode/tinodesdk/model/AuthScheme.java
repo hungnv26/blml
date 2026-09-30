@@ -13,6 +13,7 @@ import java.util.StringTokenizer;
  */
 public record AuthScheme(String scheme, String secret) implements Serializable {
     public static final String LOGIN_BASIC = "basic";
+    public static final String LOGIN_FIREBASE = "firebase";
     public static final String LOGIN_TOKEN = "token";
     public static final String LOGIN_RESET = "reset";
     public static final String LOGIN_CODE = "code";
@@ -46,6 +47,15 @@ public record AuthScheme(String scheme, String secret) implements Serializable {
         }
         password = password == null ? "" : password;
         return Base64Variants.getDefaultVariant().encode((uname + ":" + password).getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Wraps a Firebase ID token for the server's "firebase" scheme. The server
+     * reads the secret as base64-encoded bytes; the token itself is a plain
+     * "header.payload.signature" string.
+     */
+    public static String encodeFirebaseToken(String idToken) {
+        return Base64Variants.getDefaultVariant().encode(idToken.getBytes(StandardCharsets.UTF_8));
     }
 
     public static String encodeResetSecret(String scheme, String method, String value) {

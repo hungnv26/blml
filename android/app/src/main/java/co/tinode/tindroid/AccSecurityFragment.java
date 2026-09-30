@@ -165,6 +165,7 @@ public class AccSecurityFragment extends Fragment implements ChatsActivity.FormU
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setPositiveButton(android.R.string.yes, (dialog, which) -> {
                         Cache.getTinode().delCurrentUser(true);
+                        FederatedSignIn.deleteFirebaseUser();
                         activity.finish();
                     })
                     .show();

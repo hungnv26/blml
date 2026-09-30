@@ -224,6 +224,8 @@ public class ChatsActivity extends BaseActivity
         // Passcode gate, run again here because on a cold start the account is
         // not loaded yet when the process first comes to the foreground.
         Passcode.enforce(this);
+        // Phonebook search only finds accounts with a number: ask once.
+        PhoneNumberOffer.offerOnceIfMissing(this);
 
         final Tinode tinode = Cache.getTinode();
         mTinodeListener = new ContactsEventListener(tinode.isConnected());
