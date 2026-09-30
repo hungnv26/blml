@@ -30,6 +30,7 @@ import (
 	_ "github.com/tinode/chat/server/auth/anon"
 	_ "github.com/tinode/chat/server/auth/basic"
 	_ "github.com/tinode/chat/server/auth/code"
+	_ "github.com/tinode/chat/server/auth/firebase"
 	_ "github.com/tinode/chat/server/auth/rest"
 	_ "github.com/tinode/chat/server/auth/token"
 	"github.com/tinode/chat/server/store/types"
@@ -131,6 +132,8 @@ type credValidator struct {
 	// AuthLevel(s) which require this validator.
 	requiredAuthLvl []auth.Level
 	addToTags       bool
+	// Confirm on entry, no code sent (see validatorConfig.AutoConfirm).
+	autoConfirm bool
 }
 
 var globals struct {
@@ -163,6 +166,8 @@ var globals struct {
 
 	// Accepted registration codes; empty means registration is open.
 	registrationCodes []string
+	// Auth schemes (real names) that skip the registration-code gate.
+	registrationCodeExempt map[string]bool
 	// Tag namespaces (prefixes) which are immutable to the client.
 	immutableTagNS map[string]bool
 	// Tag namespaces which are immutable on User and partially mutable on Topic:
@@ -225,6 +230,11 @@ type validatorConfig struct {
 	AddToTags bool `json:"add_to_tags"`
 	//  Authentication level which triggers this validator: "auth", "anon"... or ""
 	Required []string `json:"required"`
+	// Confirm credentials as soon as they are entered, without sending a code.
+	// For deployments that cannot send SMS/email but still want phone numbers
+	// and emails to be discoverable. A confirmed value still belongs to one
+	// account only.
+	AutoConfirm bool `json:"auto_confirm"`
 	// Validator params passed to validator unchanged.
 	Config json.RawMessage `json:"config"`
 }
@@ -287,6 +297,9 @@ type configType struct {
 	// to present one of these codes (as a "code:<value>" tag). Turns an open
 	// server into an invite-only one without needing email/SMS infrastructure.
 	RegistrationCodes []string `json:"registration_codes"`
+	// Authentication schemes exempt from the registration-code gate, e.g.
+	// ["firebase"] to let Google/Apple sign-ups in without an invite code.
+	RegistrationCodeExemptSchemes []string `json:"registration_code_exempt_schemes"`
 	// Maximum message size allowed from client. Intended to prevent malicious client from sending
 	// very large files inband (does not affect out of band uploads).
 	MaxMessageSize int `json:"max_message_size"`
@@ -460,8 +473,15 @@ func main() {
 	globals.apiKeySalt = config.APIKeySalt
 
 	globals.registrationCodes = config.RegistrationCodes
+	globals.registrationCodeExempt = make(map[string]bool, len(config.RegistrationCodeExemptSchemes))
+	for _, scheme := range config.RegistrationCodeExemptSchemes {
+		globals.registrationCodeExempt[strings.TrimSpace(scheme)] = true
+	}
 	if len(globals.registrationCodes) > 0 {
 		logs.Info.Printf("Registration is invite-only: %d code(s) accepted", len(globals.registrationCodes))
+		if len(globals.registrationCodeExempt) > 0 {
+			logs.Info.Println("Registration without a code is OPEN for schemes:", config.RegistrationCodeExemptSchemes)
+		}
 	} else {
 		logs.Info.Println("Registration is OPEN: anyone can create an account")
 	}
@@ -536,6 +556,10 @@ func main() {
 		globals.validators[name] = credValidator{
 			requiredAuthLvl: reqLevels,
 			addToTags:       vconf.AddToTags,
+			autoConfirm:     vconf.AutoConfirm,
+		}
+		if vconf.AutoConfirm {
+			logs.Warn.Printf("Validator '%s' confirms credentials WITHOUT verification (auto_confirm)", name)
 		}
 	}
 

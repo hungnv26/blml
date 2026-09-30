@@ -14,6 +14,7 @@ import (
 	"github.com/tinode/chat/server/push"
 	"github.com/tinode/chat/server/store"
 	"github.com/tinode/chat/server/store/types"
+	"github.com/tinode/chat/server/validate"
 )
 
 const (
@@ -82,7 +83,7 @@ func replyCreateUser(s *Session, msg *ClientComMessage, rec *auth.Rec) {
 	// present a valid one as a "code:<value>" tag. Checked before any account
 	// work so a wrong code costs nothing. The tag is stripped below so codes are
 	// never stored on the user or exposed via discovery.
-	if len(globals.registrationCodes) > 0 {
+	if len(globals.registrationCodes) > 0 && !globals.registrationCodeExempt[authhdl.GetRealName()] {
 		if !checkRegistrationCode(msg.Acc.Tags) {
 			logs.Warn.Println("create user: missing or invalid registration code, sid=", s.sid)
 			resp := ErrPermissionDenied(msg.Id, "", msg.Timestamp)
@@ -430,6 +431,18 @@ func addCreds(uid types.Uid, creds []MsgCredClient, extraTags []string,
 			continue
 		}
 
+		if globals.validators[cr.Method].autoConfirm && cr.Response == "" {
+			value, err := autoConfirmCred(uid, vld, cr)
+			if err != nil {
+				return nil, nil, err
+			}
+			validated = append(validated, cr.Method)
+			if globals.validators[cr.Method].addToTags {
+				extraTags = append(extraTags, cr.Method+":"+value)
+			}
+			continue
+		}
+
 		isNew, err := vld.Request(uid, cr.Value, lang, cr.Response, tmpToken)
 		if err != nil {
 			return nil, nil, err
@@ -458,6 +471,45 @@ func addCreds(uid types.Uid, creds []MsgCredClient, extraTags []string,
 		extraTags = nil
 	}
 	return validated, extraTags, nil
+}
+
+// autoConfirmCred saves a credential as confirmed without sending a code, for
+// validators configured with auto_confirm. The value is normalized by the
+// validator first (e.g. phone to E.164). A value already confirmed by another
+// account is rejected with ErrDuplicate; one already confirmed by this account
+// is accepted as a no-op. Returns the normalized value.
+func autoConfirmCred(uid types.Uid, vld validate.Validator, cr *MsgCredClient) (string, error) {
+	norm, err := vld.PreCheck(cr.Value, cr.Params)
+	if err != nil {
+		return "", err
+	}
+	value := strings.TrimPrefix(norm, cr.Method+":")
+
+	_, err = store.Users.UpsertCred(&types.Credential{
+		User:   uid.String(),
+		Method: cr.Method,
+		Value:  value,
+	})
+	if err == types.ErrDuplicate {
+		// Confirmed already: fine if by this same user, otherwise taken.
+		mine, gerr := store.Users.GetAllCreds(uid, cr.Method, true)
+		if gerr != nil {
+			return "", gerr
+		}
+		for i := range mine {
+			if mine[i].Value == value {
+				return value, nil
+			}
+		}
+		return "", types.ErrDuplicate
+	}
+	if err != nil {
+		return "", err
+	}
+	if err := store.Users.ConfirmCred(uid, cr.Method); err != nil {
+		return "", err
+	}
+	return value, nil
 }
 
 // validatedCreds returns the list of validated credentials including those validated in this call.

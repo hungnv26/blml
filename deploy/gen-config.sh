@@ -102,10 +102,16 @@ open(path, 'w').write(s)
 print("  email verification: " + ("REQUIRED" if enabled else "disabled"))
 PYEOF
 
-# Phone verification. A verified number becomes a "tel:<number>" tag, which is
-# what address-book contact sync and phone search look up. Without Twilio
-# credentials the server sends no SMS and accepts a fixed debug code — see the
-# warning printed below and the note in secrets.env.
+# Phone numbers. A confirmed number becomes a "tel:<number>" tag, which is what
+# address-book contact sync and phone search look up. With Twilio credentials
+# the server texts a code; without them it confirms a number as soon as it is
+# entered (auto_confirm) and sends nothing. A confirmed number still belongs to
+# one account only.
+#
+# This used to accept a fixed debug code ('123456') instead, which let anyone
+# confirm any number — including one already confirmed by someone else's
+# pending request. auto_confirm is honest about what it is and keeps the
+# one-account-per-number rule.
 python3 - "$OUT" <<'PYEOF'
 import json, os, re, sys
 path = sys.argv[1]
@@ -135,11 +141,9 @@ cfg = {
     "max_retries": 3,
 }
 sid, token = os.environ.get('TWILIO_SID', ''), os.environ.get('TWILIO_TOKEN', '')
-if sid and token:
+twilio = bool(sid and token)
+if twilio:
     cfg["twilio_conf"] = {"account_sid": sid, "auth_token": token}
-else:
-    # No SMS gateway: accept a fixed code instead of texting one.
-    cfg["debug_response"] = os.environ.get('PHONE_DEBUG_CODE', '123456')
 
 block = {
     "add_to_tags": True,
@@ -156,19 +160,57 @@ block = {
     # leaving that map empty for ordinary "auth" logins, so a phone number stays
     # optional: add one in Settings when you want to be findable by it.
     "required": ["root"] if enabled else [],
+    # No SMS gateway: confirm on entry instead of texting a code.
+    "auto_confirm": enabled and not twilio,
     "config": cfg,
 }
 rendered = '"tel": ' + json.dumps(block, indent='\t').replace('\n', '\n\t\t')
 s = s[:i] + rendered + s[j:]
 open(path, 'w').write(s)
 
-if enabled and "debug_response" in cfg:
-    print("  phone verification: ENABLED (DEBUG MODE — no SMS sent, code '%s' accepted;"
-          " anyone can claim any number)" % cfg["debug_response"])
+if enabled and not twilio:
+    print("  phone numbers: ENABLED, confirmed on entry (no SMS; one account per number)")
 elif enabled:
-    print("  phone verification: ENABLED via Twilio")
+    print("  phone numbers: ENABLED, verified by SMS via Twilio")
 else:
-    print("  phone verification: disabled")
+    print("  phone numbers: disabled")
+PYEOF
+
+# Sign in with Google / Apple. The apps sign in through Firebase Authentication
+# and present the Firebase ID token; the server verifies it with the same
+# service-account file the FCM push adapter uses. FIREBASE_SIGNIN_OPEN=true
+# lets these sign-ups in without the registration code (owner's decision,
+# 2026-09-30: open sign-up for Google/Apple, invite code kept for passwords).
+python3 - "$OUT" <<'PYEOF'
+import json, os, re, sys
+path = sys.argv[1]
+s = open(path).read()
+if os.environ.get('FIREBASE_SIGNIN', '').lower() != 'true':
+    print("  google/apple sign-in: disabled")
+    sys.exit(0)
+
+block = {
+    "credentials_file": "/etc/blml/fcm-service-account.json",
+    "providers": ["google.com", "apple.com"],
+    "email_tags": True,
+}
+i = s.find('"auth_config": {')
+if i < 0:
+    sys.exit("gen-config: auth_config not found")
+insert_at = i + len('"auth_config": {')
+rendered = '\n\t\t"firebase": ' + json.dumps(block, indent='\t').replace('\n', '\n\t\t') + ','
+s = s[:insert_at] + rendered + s[insert_at:]
+
+if os.environ.get('FIREBASE_SIGNIN_OPEN', '').lower() == 'true':
+    s = re.sub(r'\n\t"registration_code_exempt_schemes": \[[^\]]*\],', '', s)
+    entry = '\n\t"registration_code_exempt_schemes": ["firebase"],'
+    s, n = re.subn(r'(\n\t"api_key_salt": "[^"]*",)', lambda m: m.group(1) + entry, s, count=1)
+    if n != 1:
+        sys.exit("gen-config: api_key_salt not found for exempt schemes")
+    print("  google/apple sign-in: ENABLED, open (no invite code for these sign-ups)")
+else:
+    print("  google/apple sign-in: ENABLED, invite code still required")
+open(path, 'w').write(s)
 PYEOF
 
 # Voice/video calls. Upstream ships "enabled": false with placeholder ICE
