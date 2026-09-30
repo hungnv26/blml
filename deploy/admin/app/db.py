@@ -206,3 +206,68 @@ def uid_encoded(user_id: int) -> str | None:
         return None
     # Stored as `<scheme>:<login>`, e.g. `basic:noza` — not the bare login.
     return row["uname"].split(":", 1)[-1]
+
+
+# ── Reports ──────────────────────────────────────────────────────────────────
+
+def parse_report(content) -> dict | None:
+    """Extracts {action, target} from a report message.
+
+    Both apps send a Drafty document whose single EX entity carries the JSON
+    {"action": "report", "target": <topic>}. Anything else posted to `sys` is
+    not a report and is skipped. This reads messages addressed *to the
+    operator*, never anyone's conversation.
+    """
+    if not isinstance(content, dict):
+        return None
+    for ent in content.get("ent") or []:
+        data = (ent or {}).get("data") or {}
+        val = data.get("val")
+        if isinstance(val, dict) and val.get("action") == "report" and val.get("target"):
+            return {"action": "report", "target": str(val["target"])}
+    return None
+
+
+def list_reports(limit: int = 200) -> list:
+    """Reports newest first, with who sent them and whether they were reviewed."""
+    rows = query(
+        """
+        SELECT m.seqid AS seq, m.createdat, m.content,
+               u.id AS reporter_id, u.public->>'fn' AS reporter,
+               r.reviewed_at
+        FROM messages m
+        LEFT JOIN users u ON u.id = m."from"
+        LEFT JOIN admin.report_review r ON r.seq = m.seqid
+        WHERE m.topic = 'sys' AND m.delid = 0
+        ORDER BY m.createdat DESC
+        LIMIT %s
+        """, (limit,))
+    out = []
+    for row in rows:
+        rep = parse_report(row["content"])
+        if not rep:
+            continue
+        target = rep["target"]
+        info = None
+        if target.startswith("grp"):
+            info = query_one(
+                "SELECT public->>'fn' AS title, (SELECT count(*) FROM subscriptions s"
+                " WHERE s.topic = t.name AND s.deletedat IS NULL) AS members"
+                " FROM topics t WHERE t.name = %s", (target,))
+        out.append({
+            "seq": row["seq"], "createdat": row["createdat"],
+            "reporter_id": row["reporter_id"], "reporter": row["reporter"],
+            "target": target,
+            "kind": "group" if target.startswith("grp") else "person" if target.startswith("usr") else "other",
+            "title": (info or {}).get("title"), "members": (info or {}).get("members"),
+            "reviewed_at": row["reviewed_at"],
+        })
+    return out
+
+
+def open_report_count() -> int:
+    return sum(1 for r in list_reports() if not r["reviewed_at"])
+
+
+def mark_report_reviewed(seq: int) -> None:
+    execute("INSERT INTO admin.report_review (seq) VALUES (%s) ON CONFLICT (seq) DO NOTHING", (seq,))

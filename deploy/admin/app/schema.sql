@@ -51,3 +51,10 @@ CREATE TABLE IF NOT EXISTS admin.audit (
 
 CREATE INDEX IF NOT EXISTS audit_at_idx ON admin.audit (at DESC);
 CREATE INDEX IF NOT EXISTS audit_action_idx ON admin.audit (action, at DESC);
+
+-- Abuse reports are messages the apps post to Tinode's `sys` topic; this only
+-- records which ones the operator has dealt with. Keyed by the message seq.
+CREATE TABLE IF NOT EXISTS admin.report_review (
+    seq         INTEGER PRIMARY KEY,
+    reviewed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

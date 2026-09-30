@@ -62,9 +62,15 @@ async def _redirect_unauthenticated(request: Request, exc: HTTPException):
 
 
 def render(request: Request, name: str, **ctx) -> HTMLResponse:
+    # Open-report count for the nav badge. Never let it break a page — the
+    # login page renders through here too.
+    try:
+        open_reports = db.open_report_count() if request.cookies.get("blml_admin") else 0
+    except Exception:
+        open_reports = 0
     return templates.TemplateResponse(
         request=request, name=name,
-        context={"nav": request.url.path, **ctx})
+        context={"nav": request.url.path, "open_reports": open_reports, **ctx})
 
 
 # ── Auth ─────────────────────────────────────────────────────────────────────
@@ -143,6 +149,23 @@ def groups(request: Request, session: dict = Depends(current_session)):
     exists so retiring the old page does not remove a view the operator
     already had."""
     return render(request, "groups.html", topics=db.list_topics())
+
+
+# ── Reports ──────────────────────────────────────────────────────────────────
+
+@app.get("/reports", response_class=HTMLResponse)
+def reports(request: Request, session: dict = Depends(current_session)):
+    """Abuse reports sent from the apps' Block and report. The Terms promise a
+    review within 24 hours, so open ones are counted in the nav."""
+    return render(request, "reports.html", reports=db.list_reports())
+
+
+@app.post("/reports/{seq}/reviewed")
+def report_reviewed(request: Request, seq: int,
+                    session: dict = Depends(current_session)):
+    db.mark_report_reviewed(seq)
+    audit.record("report.reviewed", target=str(seq), ip=client_ip(request))
+    return RedirectResponse("/reports", status_code=303)
 
 
 # ── People ───────────────────────────────────────────────────────────────────

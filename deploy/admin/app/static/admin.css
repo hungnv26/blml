@@ -49,3 +49,8 @@ border-radius:7px;font:inherit;font-weight:600;cursor:pointer}
 .search{display:flex;gap:.5rem;margin-bottom:.5rem}
 .centre{margin:auto;padding:3rem 1rem;max-width:24rem}
 .centre h1{text-align:center}
+
+/* Open-report count in the nav. */
+.badge { display: inline-block; min-width: 1.4em; padding: 0 .4em; border-radius: 1em;
+         background: #c0392b; color: #fff; font-size: .75em; text-align: center; }
+tr.open td:first-child { border-left: 3px solid #c0392b; }

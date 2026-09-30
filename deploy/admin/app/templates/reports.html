@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block body %}
+<h1>Reports</h1>
+<p class="muted">Sent from Block and report in the apps. The Terms of Use promise a review within 24 hours. Only the report itself is shown &mdash; the console never reads the conversation.</p>
+<table>
+<tr><th>When</th><th>Reported</th><th>Kind</th><th>By</th><th>Status</th><th></th></tr>
+{% for r in reports %}
+<tr class="{{ '' if r.reviewed_at else 'open' }}">
+  <td>{{ r.createdat.strftime('%Y-%m-%d %H:%M') }}</td>
+  <td>{% if r.title %}{{ r.title }} <span class="muted small">({{ r.members }} members)</span><br>{% endif %}<span class="mono small">{{ r.target }}</span></td>
+  <td class="small">{{ r.kind }}</td>
+  <td>{% if r.reporter_id %}<a href="/people/{{ r.reporter_id }}">{{ r.reporter or 'unnamed' }}</a>{% else %}<span class="muted">unknown</span>{% endif %}</td>
+  <td class="small">{{ 'reviewed ' ~ r.reviewed_at.strftime('%Y-%m-%d') if r.reviewed_at else 'open' }}</td>
+  <td>{% if not r.reviewed_at %}<form method="post" action="/reports/{{ r.seq }}/reviewed"><button>Mark reviewed</button></form>{% endif %}</td>
+</tr>
+{% else %}<tr><td colspan="6" class="muted">No reports.</td></tr>{% endfor %}
+</table>
+{% endblock %}
