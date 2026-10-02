@@ -39,6 +39,11 @@ final class FederatedSignIn: NSObject {
 
     /// Google needs the OAuth client ID from GoogleService-Info.plist, which is
     /// only present once Google sign-in is enabled in the Firebase console.
+    /// Off until Sign in with Apple/Google is set up in Firebase Authentication
+    /// for project blml-80011 (both providers still answer CONFIGURATION_NOT_FOUND).
+    /// A sign-in button that can't sign anyone in gets the app rejected (2.1).
+    static let isEnabled = false
+
     static var isGoogleAvailable: Bool {
         ensureFirebase()
         return FirebaseApp.app()?.options.clientID != nil

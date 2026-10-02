@@ -80,7 +80,7 @@ class LoginViewController: UIViewController {
     /// is always shown alongside Google's (guideline 4.8); Google's only once
     /// Google sign-in is configured in Firebase.
     private func addFederatedSignInButtons() {
-        guard let stack = signInButton.superview as? UIStackView else { return }
+        guard FederatedSignIn.isEnabled, let stack = signInButton.superview as? UIStackView else { return }
 
         let apple = ASAuthorizationAppleIDButton(type: .signIn,
                                                  style: traitCollection.userInterfaceStyle == .dark ? .white : .black)
