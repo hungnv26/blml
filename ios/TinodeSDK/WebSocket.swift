@@ -58,12 +58,18 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate, URLSessionDelegate {
         self.delegate = delegate
     }
 
+    // connect() cancels the previous socket. Its cancellation still reports back
+    // through these callbacks, and taking it for the new connection dropping made
+    // the app show "offline" and reconnect in a loop. Only the current socket counts.
+
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
+        guard webSocketTask === socket else { return }
         self.state = .open
         self.delegate?.onConnected(connection: self)
     }
 
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+        guard webSocketTask === socket else { return }
         self.state = .closed
         self.delegate?.onDisconnected(connection: self, isServerOriginated: true, closeCode: closeCode, reason: String(decoding: reason ?? Data(), as: UTF8.self))
     }
@@ -74,6 +80,7 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate, URLSessionDelegate {
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        guard task === socket else { return }
         errorHandler(error)
     }
 
@@ -94,22 +101,26 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate, URLSessionDelegate {
     }
 
     func send(text: String) {
-        socket.send(URLSessionWebSocketTask.Message.string(text)) { error in
+        let task: URLSessionWebSocketTask = socket
+        task.send(URLSessionWebSocketTask.Message.string(text)) { error in
+            guard task === self.socket else { return }
             self.errorHandler(error)
         }
     }
 
     func send(data: Data) {
-        socket.send(URLSessionWebSocketTask.Message.data(data)) { error in
+        let task: URLSessionWebSocketTask = socket
+        task.send(URLSessionWebSocketTask.Message.data(data)) { error in
+            guard task === self.socket else { return }
             self.errorHandler(error)
         }
     }
 
     private func listen()  {
-        guard socket.state == .running else { return }
+        guard let task = socket, task.state == .running else { return }
 
-        socket.receive { [weak self] result in
-            guard let self = self else { return }
+        task.receive { [weak self] result in
+            guard let self = self, task === self.socket else { return }
 
             switch result {
             case .failure(let error):
