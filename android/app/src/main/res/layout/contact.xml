@@ -111,7 +111,7 @@
                 android:layout_height="24dp"
                 android:alpha="0.75"
                 android:baseline="-2dp"
-                android:contentDescription="@string/channel"
+                android:contentDescription="@string/verified"
                 android:visibility="gone"
                 app:srcCompat="@drawable/ic_verified" />
 
@@ -121,7 +121,7 @@
                 android:layout_height="24dp"
                 android:alpha="0.75"
                 android:baseline="-2dp"
-                android:contentDescription="@string/channel"
+                android:contentDescription="@string/staff"
                 android:visibility="gone"
                 app:srcCompat="@drawable/ic_verified_user" />
 
@@ -131,7 +131,7 @@
                 android:layout_height="24dp"
                 android:alpha="0.75"
                 android:baseline="-2dp"
-                android:contentDescription="@string/channel"
+                android:contentDescription="@string/danger"
                 android:visibility="gone"
                 app:srcCompat="@drawable/ic_danger" />
 

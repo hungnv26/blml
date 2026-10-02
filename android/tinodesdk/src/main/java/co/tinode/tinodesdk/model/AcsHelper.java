@@ -74,6 +74,11 @@ public class AcsHelper implements Serializable {
         return a == ah.a;
     }
 
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(a);
+    }
+
     public boolean equals(String s) {
         return a == decode(s);
     }

@@ -648,7 +648,7 @@ public class MessageDb implements BaseColumns {
         if (c.moveToFirst()) {
             do {
                 MsgRange range = c.isNull(1) ? new MsgRange(c.getInt(0)) :
-                        new MsgRange(c.getInt(0), c.getInt(0));
+                        new MsgRange(c.getInt(0), c.getInt(1));
                 found.add(range);
             } while (c.moveToNext());
         }

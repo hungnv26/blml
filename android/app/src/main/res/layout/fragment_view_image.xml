@@ -81,7 +81,6 @@
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:maxWidth="10dp"
                 android:paddingStart="@dimen/label_h_padding"
                 android:paddingEnd="@dimen/label_h_padding"
                 android:orientation="vertical">

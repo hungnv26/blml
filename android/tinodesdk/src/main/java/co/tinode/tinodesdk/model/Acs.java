@@ -68,7 +68,7 @@ public class Acs implements Serializable {
                 if (want == null) {
                     want = new AcsHelper();
                 }
-                change = change || want.update(ac.want);
+                change = want.update(ac.want) || change;
             }
 
             if (change) {
@@ -150,14 +150,23 @@ public class Acs implements Serializable {
         int change = 0;
         if (am != null) {
             if (am.get("given") != null) {
+                if (given == null) {
+                    given = new AcsHelper();
+                }
                 change += given.merge(new AcsHelper(am.get("given"))) ? 1 : 0;
             }
 
             if (am.get("want") != null) {
+                if (want == null) {
+                    want = new AcsHelper();
+                }
                 change += want.merge(new AcsHelper(am.get("want"))) ? 1 : 0;
             }
 
             if (am.get("mode") != null) {
+                if (mode == null) {
+                    mode = new AcsHelper();
+                }
                 change += mode.merge(new AcsHelper(am.get("mode"))) ? 1 : 0;
             } else if (change > 0) {
                 AcsHelper m2 = AcsHelper.and(want, given);

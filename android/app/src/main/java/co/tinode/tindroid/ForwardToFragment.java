@@ -166,7 +166,7 @@ public class ForwardToFragment extends BottomSheetDialogFragment implements Mess
 
         query = query.toLowerCase(Locale.ROOT);
         VxCard pub = (VxCard) t.getPub();
-        if (pub.fn != null && pub.fn.toLowerCase(Locale.ROOT).contains(query)) {
+        if (pub != null && pub.fn != null && pub.fn.toLowerCase(Locale.ROOT).contains(query)) {
             return true;
         }
 

@@ -21,7 +21,7 @@ public class MsgClientPub implements Serializable {
     public MsgClientPub() {
     }
 
-    public MsgClientPub(String id, String topic, Boolean noecho, Object content, Map<String, Object> head) {
+    public MsgClientPub(String id, String topic, boolean noecho, Object content, Map<String, Object> head) {
         this.id = id;
         this.topic = topic;
         this.noecho = noecho ? true : null;

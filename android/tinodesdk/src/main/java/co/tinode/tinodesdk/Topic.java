@@ -622,7 +622,8 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
     protected void setSeqAndFetch(final int seq) {
         if (seq > mDesc.seq) {
             // Fetch only if not attached. If it's attached it will be fetched elsewhere.
-            if (!isAttached()) {
+            // Never subscribe to a topic the user has blocked.
+            if (!isAttached() && !isBlockedByMe()) {
                 try {
                     subscribe(null, getMetaGetBuilder().withLaterData().build()).thenApply(
                             new PromisedReply.SuccessListener<>() {
@@ -638,6 +639,31 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
                     Log.w(TAG, "Failed to sync data", ex);
                 }
             }
+        }
+    }
+
+    /**
+     * Messages were deleted while the topic is not attached ({pres what="del"} on 'me'): fetch
+     * the deletions so the cache and the chat-list preview drop them.
+     *
+     * @param clear the latest delete transaction ID reported by the server.
+     */
+    protected void setDelAndFetch(final int clear) {
+        if (clear <= getMaxDel() || isAttached() || isBlockedByMe()) {
+            return;
+        }
+        try {
+            subscribe(null, getMetaGetBuilder().withLaterDel(null).build()).thenApply(
+                    new PromisedReply.SuccessListener<>() {
+                        @Override
+                        public PromisedReply<ServerMessage> onSuccess(ServerMessage msg) {
+                            leave();
+                            return null;
+                        }
+                    }
+            );
+        } catch (Exception ex) {
+            Log.w(TAG, "Failed to sync deletions", ex);
         }
     }
 
@@ -875,6 +901,17 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
         return mDesc.acs == null || !mDesc.acs.isJoiner(Acs.Side.GIVEN);
     }
 
+    /** Reason ('what') of a 403 to joining a group without an invitation. */
+    public static final String INVITE_ONLY = "invite-only";
+
+    /**
+     * Check if the current user has blocked this topic: J is missing on the 'want' side.
+     * A blocked topic must not be subscribed to with a plain {sub}, and gets no read receipts.
+     */
+    public boolean isBlockedByMe() {
+        return mDesc.acs != null && mDesc.acs.isWantDefined() && !mDesc.acs.isJoiner(Acs.Side.WANT);
+    }
+
     /**
      * Check if user has permission to hard-delete messages (D).
      */
@@ -1101,6 +1138,14 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
                                 mTinode.stopTrackingTopic(topicName);
                                 expunge(true);
                             }
+                        } else if (err instanceof ServerResponseException sre &&
+                                sre.getCode() == ServerMessage.STATUS_FORBIDDEN &&
+                                INVITE_ONLY.equals(sre.getReason()) &&
+                                (mDesc.acs == null || !mDesc.acs.isModeDefined())) {
+                            // Invite-only group opened by ID or QR by a non-member: don't keep
+                            // an empty placeholder chat in the list.
+                            mTinode.stopTrackingTopic(topicName);
+                            expunge(true);
                         }
 
                         // Rethrow exception to trigger the next failure handler.
@@ -1269,7 +1314,6 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
                     .thenApply(new PromisedReply.SuccessListener<>() {
                         @Override
                         public PromisedReply<ServerMessage> onSuccess(ServerMessage result) {
-                            mAttached++;
                             return publish(content, head, msgId);
                         }
                     })
@@ -1609,6 +1653,7 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
     public PromisedReply<ServerMessage> delMessages(final int fromId, final int toId, final boolean hard) {
         if (mStore != null) {
             mStore.msgMarkToDelete(this, fromId, toId, hard);
+            mTinode.refreshLastMessage(getName());
         }
         if (mAttached > 0) {
             return mTinode.delMessage(getName(), fromId, toId, hard).thenApply(new PromisedReply.SuccessListener<>() {
@@ -1641,6 +1686,7 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
     public PromisedReply<ServerMessage> delMessages(final MsgRange[] ranges, final boolean hard) {
         if (mStore != null) {
             mStore.msgMarkToDelete(this, ranges, hard);
+            mTinode.refreshLastMessage(getName());
         }
 
         if (mAttached > 0) {
@@ -1721,6 +1767,8 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
      */
     protected int noteReadRecv(NoteType what, boolean fromMe, int seq) {
         int result = 0;
+        // No delivery or read receipts to someone the user has blocked.
+        fromMe = fromMe || isBlockedByMe();
 
         try {
             switch (what) {
@@ -2198,6 +2246,14 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
     protected void routeMetaDel(int clear, MsgRange[] delseq) {
         if (mStore != null) {
             mStore.msgDelete(this, clear, delseq);
+            // The chat list preview may be one of the deleted messages: refresh it and let the
+            // chat list (a 'me' listener) redraw.
+            if (mTinode.refreshLastMessage(getName()) && !isMeType()) {
+                MeTopic<?> me = mTinode.getMeTopic();
+                if (me != null) {
+                    me.mMeNotifier.notifySubsUpdated();
+                }
+            }
         }
         setMaxDel(clear);
         mNotifier.notifyData(null);
@@ -2265,7 +2321,12 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
                 break;
 
             case DEL:
-                routeMetaDel(pres.clear, pres.delseq);
+                if (pres.delseq != null) {
+                    routeMetaDel(pres.clear, pres.delseq);
+                } else if (isAttached()) {
+                    // No ranges in the notification: ask for them.
+                    getMeta(getMetaGetBuilder().withLaterDel(null).build());
+                }
                 break;
 
             case TERM:

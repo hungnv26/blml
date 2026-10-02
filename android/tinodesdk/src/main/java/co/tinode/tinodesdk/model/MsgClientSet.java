@@ -63,39 +63,44 @@ public class MsgClientSet<Pu,Pr> implements Serializable {
             msm = new MsgClientSet<>(id, topic);
         }
 
-        public void with(MetaSetDesc<Pu,Pr> desc) {
+        public Builder<Pu,Pr> with(MetaSetDesc<Pu,Pr> desc) {
             msm.desc = desc;
             if (desc == null) {
                 msm.nulls |= MsgSetMeta.NULL_DESC;
             }
+            return this;
         }
 
-        public void with(MetaSetSub sub) {
+        public Builder<Pu,Pr> with(MetaSetSub sub) {
             msm.sub = sub;
             if (sub == null) {
                 msm.nulls |= MsgSetMeta.NULL_SUB;
             }
+            return this;
         }
 
-        public void with(String[] tags) {
+        public Builder<Pu,Pr> with(String[] tags) {
             msm.tags = tags;
             if (tags == null || tags.length == 0) {
                 msm.nulls |= MsgSetMeta.NULL_TAGS;
             }
+            return this;
         }
 
-        public void with(Credential cred) {
+        public Builder<Pu,Pr> with(Credential cred) {
             msm.cred = cred;
             if (cred == null) {
                 msm.nulls |= MsgSetMeta.NULL_CRED;
             }
+            return this;
         }
 
-        public void with(Map<String,Object> aux) {
+        public Builder<Pu,Pr> with(Map<String,Object> aux) {
             msm.aux = aux;
             if (aux == null || aux.isEmpty()) {
                 msm.nulls |= MsgSetMeta.NULL_AUX;
             }
+            return this;
         }
 
         public MsgClientSet<Pu,Pr> build() {

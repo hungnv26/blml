@@ -81,6 +81,13 @@ public class ChatsFragment extends Fragment implements ActionMode.Callback, UiUt
                 ((Toolbar) activity.findViewById(R.id.toolbar)).setNavigationOnClickListener(v ->
                         activity.getSupportFragmentManager().popBackStack());
             }
+            if (mIsBanned) {
+                // Nothing to start from the Blocked list.
+                View fab = view.findViewById(R.id.startNewChat);
+                if (fab != null) {
+                    fab.setVisibility(View.GONE);
+                }
+            }
         } else {
             if (bar != null) {
                 bar.setDisplayHomeAsUpEnabled(false);
@@ -100,7 +107,8 @@ public class ChatsFragment extends Fragment implements ActionMode.Callback, UiUt
         rv.setHasFixedSize(true);
         rv.addItemDecoration(new HorizontalListDivider(activity));
         mAdapter = new ChatsAdapter(activity, topicName -> {
-            if (mActionMode != null || mIsBanned || activity.isFinishing() || activity.isDestroyed()) {
+            // A blocked chat opens too: it shows the cached messages and an Unblock bar.
+            if (mActionMode != null || activity.isFinishing() || activity.isDestroyed()) {
                 return;
             }
             Intent intent = new Intent(activity, MessageActivity.class);
@@ -108,6 +116,9 @@ public class ChatsFragment extends Fragment implements ActionMode.Callback, UiUt
             intent.putExtra(Const.INTENT_EXTRA_TOPIC, topicName);
             activity.startActivity(intent);
         }, t -> (t.isArchived() == mIsArchive) && (t.isJoiner() != mIsBanned));
+        if (mIsArchive || mIsBanned) {
+            mAdapter.hideSavedRow();
+        }
         rv.setAdapter(mAdapter);
 
         // Progress indicator.
@@ -191,6 +202,15 @@ public class ChatsFragment extends Fragment implements ActionMode.Callback, UiUt
         } else {
             mIsArchive = false;
             mIsBanned = false;
+        }
+
+        if (mIsArchive || mIsBanned) {
+            // ChatsActivity.onResume resets the toolbar to the app name; restore the list's title.
+            final ActionBar bar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+            if (bar != null) {
+                bar.setDisplayHomeAsUpEnabled(true);
+                bar.setTitle(mIsArchive ? R.string.archived_chats : R.string.blocked_contacts);
+            }
         }
 
         mAdapter.resetContent(requireActivity());
@@ -406,10 +426,15 @@ public class ChatsFragment extends Fragment implements ActionMode.Callback, UiUt
         } else if (id == R.id.action_unblock) {
             final ComTopic<VxCard> topic =
                     (ComTopic<VxCard>) Cache.getTinode().getTopic(selection.iterator().next());
-            topic.subscribe().thenApply(new PromisedReply.SuccessListener<>() {
+            final boolean wasAttached = topic.isAttached();
+            UiUtils.unblockTopic(topic, null).thenApply(new PromisedReply.SuccessListener<>() {
                 @Override
                 public PromisedReply<ServerMessage> onSuccess(ServerMessage result) {
-                    mAdapter.resetContent(activity);
+                    // Leave only after the subscription is confirmed, otherwise {leave} overtakes {sub}.
+                    if (!wasAttached) {
+                        topic.leave();
+                    }
+                    activity.runOnUiThread(() -> mAdapter.resetContent(activity));
                     return null;
                 }
             }).thenCatch(new PromisedReply.FailureListener<>() {
@@ -422,7 +447,6 @@ public class ChatsFragment extends Fragment implements ActionMode.Callback, UiUt
                     return null;
                 }
             });
-            topic.leave();
             mode.finish();
             return true;
         }

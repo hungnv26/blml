@@ -34,7 +34,9 @@ public class RippleFrameLayout extends FrameLayout {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             if (mOverlay != null) {
                 Drawable background = mOverlay.getBackground();
-                background.setHotspot(ev.getX(), ev.getY());
+                if (background != null) {
+                    background.setHotspot(ev.getX(), ev.getY());
+                }
             }
         }
 

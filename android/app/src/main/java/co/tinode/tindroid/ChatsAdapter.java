@@ -65,6 +65,8 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
     // conversation. Hidden while a search is running: a pinned row that
     // ignores the query looks like a result that does not match.
     private boolean mPinSaved = true;
+    // False in the Archived and Blocked lists: Saved messages is neither.
+    private boolean mShowSavedRow = true;
 
     ChatsAdapter(Context context, ClickListener clickListener, @Nullable Filter filter) {
         super();
@@ -138,6 +140,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             holder.bindSaved(savedTopic());
             return;
         }
+        final int adapterPosition = position;
         position -= pinnedCount();
         if (holder.viewType == R.layout.contact) {
             if (mTopics.size() <= position) {
@@ -150,7 +153,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                 return;
             }
             Storage.Message msg = Cache.getTinode().getLastMessage(topic.getName());
-            holder.bind(position, topic, msg, mSelectionTracker != null &&
+            holder.bind(adapterPosition, topic, msg, mSelectionTracker != null &&
                     mSelectionTracker.isSelected(topic.getName()));
         }
     }
@@ -208,6 +211,12 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
         return R.layout.contact;
     }
 
+    /** Don't pin Saved messages on top: used by the Archived and Blocked lists. */
+    void hideSavedRow() {
+        mShowSavedRow = false;
+        mPinSaved = false;
+    }
+
     void setSelectionTracker(SelectionTracker<String> selectionTracker) {
         mSelectionTracker = selectionTracker;
     }
@@ -215,7 +224,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
     void setTextFilter(@Nullable String text) {
         // The pinned row steps aside for a search, and the slf topic rejoins
         // the ordinary filtered list so it can still be found.
-        mPinSaved = TextUtils.isEmpty(text);
+        mPinSaved = mShowSavedRow && TextUtils.isEmpty(text);
         mTextFilter = new Filter() {
             private final String mQuery = text;
             @Override

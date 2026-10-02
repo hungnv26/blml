@@ -522,6 +522,40 @@ public class TinodeTest {
     /**
      * Assert that object is instance of class
      */
+    /**
+     * Frames written to logcat must not carry credentials, invite codes or message text.
+     */
+    @Test
+    public void testRedactFrameForLog() {
+        String login = "{\"login\":{\"id\":\"1\",\"scheme\":\"basic\",\"secret\":\"dXNlcjpwYXNz\"}}";
+        String out = Tinode.redactFrameForLog(login);
+        assertFalse(out.contains("dXNlcjpwYXNz"));
+        assertTrue(out.contains("\"scheme\":\"basic\""));
+
+        String acc = "{\"acc\":{\"user\":\"new\",\"secret\":\"c2VjcmV0\",\"tags\":[\"code:ABC123\",\"basic:alice\"]," +
+                "\"cred\":[{\"meth\":\"tel\",\"val\":\"+61491570104\",\"resp\":\"123456\"}]}}";
+        out = Tinode.redactFrameForLog(acc);
+        assertFalse(out.contains("c2VjcmV0"));
+        assertFalse(out.contains("ABC123"));
+        assertFalse(out.contains("+61491570104"));
+        assertFalse(out.contains("123456"));
+        assertTrue(out.contains("basic:alice"));
+
+        String pub = "{\"pub\":{\"topic\":\"usrX\",\"content\":{\"txt\":\"hello secret text\"}}}";
+        out = Tinode.redactFrameForLog(pub);
+        assertFalse(out.contains("hello secret text"));
+        assertTrue(out.contains("usrX"));
+
+        String ctrl = "{\"ctrl\":{\"code\":200,\"params\":{\"token\":\"tok-tok\",\"user\":\"usrX\"}}}";
+        assertFalse(Tinode.redactFrameForLog(ctrl).contains("tok-tok"));
+
+        String fnd = "{\"set\":{\"topic\":\"fnd\",\"desc\":{\"public\":\"tel:+61491570104\"}}}";
+        assertFalse(Tinode.redactFrameForLog(fnd).contains("+61491570104"));
+
+        assertEquals("0", Tinode.redactFrameForLog("0"));
+        assertFalse(Tinode.redactFrameForLog("{\"login\":{\"secret\":\"abc").contains("abc"));
+    }
+
     private void assertIsInstance(Object obj, Class<?> clazz) {
         assertTrue("Expected " + clazz.getName() + " but got " + obj.getClass().getName(),
                 clazz.isInstance(obj));

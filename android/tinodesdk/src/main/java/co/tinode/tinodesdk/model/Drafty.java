@@ -432,7 +432,9 @@ public class Drafty implements Serializable {
                     text.append(b.txt);
                 }
                 if (b.fmt != null) {
+                    StringBuilder blockText = new StringBuilder(b.txt != null ? b.txt : "");
                     for (Style s : b.fmt) {
+                        s.toGraphemeCounts(blockText);
                         s.at += offset;
                         fmt.add(s);
                     }

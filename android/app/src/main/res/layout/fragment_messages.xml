@@ -88,6 +88,8 @@
 
             <include layout="@layout/fragment_enable_peer" />
 
+            <include layout="@layout/fragment_blocked_by_me" />
+
             <include layout="@layout/fragment_forward_message" />
 
             <include layout="@layout/fragment_record_audio" />

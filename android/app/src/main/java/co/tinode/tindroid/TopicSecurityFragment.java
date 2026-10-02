@@ -17,6 +17,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 import co.tinode.tindroid.media.VxCard;
 import co.tinode.tinodesdk.ComTopic;
 import co.tinode.tinodesdk.PromisedReply;
@@ -85,7 +86,7 @@ public class TopicSecurityFragment extends Fragment implements MessageActivity.D
                         Const.ACTION_UPDATE_SUB, "ASDO"));
 
         fragment.findViewById(R.id.buttonClearMessages).setOnClickListener(v -> {
-            int confirm = mTopic.isDeleter() ? R.string.confirm_delmsg_for_all : R.string.confirm_delmsg_for_self;
+            int confirm = canClearForAll() ? R.string.confirm_delmsg_for_all : R.string.confirm_delmsg_for_self;
             showConfirmationDialog(null, R.string.clear_messages, confirm, ACTION_DELMSG);
         });
 
@@ -98,6 +99,14 @@ public class TopicSecurityFragment extends Fragment implements MessageActivity.D
                         R.string.confirm_delete_topic, ACTION_DELETE));
 
         fragment.findViewById(R.id.buttonBlock).setOnClickListener(view12 -> {
+            if (mTopic.isBlockedByMe() && activity instanceof MessageActivity) {
+                // Already blocked: the button reads "Unblock Contact". Unblock, attach and
+                // go back to the chat.
+                ((MessageActivity) activity).unblockTopic();
+                getParentFragmentManager().popBackStack(null,
+                        FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                return;
+            }
             VxCard pub = mTopic.getPub();
             String topicTitle = pub != null ? pub.fn : null;
             topicTitle = TextUtils.isEmpty(topicTitle) ?
@@ -124,12 +133,15 @@ public class TopicSecurityFragment extends Fragment implements MessageActivity.D
     @SuppressWarnings("unchecked")
     // onStart sets up the form with values and views which do not change + sets up listeners.
     public void onStart() {
-        final Bundle args = getArguments();
-        if (args == null) {
-            return;
-        }
+        super.onStart();
 
         final Activity activity = requireActivity();
+
+        final Bundle args = getArguments();
+        if (args == null) {
+            activity.finish();
+            return;
+        }
 
         final View fragment = getView();
         if (fragment == null) {
@@ -197,6 +209,8 @@ public class TopicSecurityFragment extends Fragment implements MessageActivity.D
             reportChannel.setVisibility(View.GONE);
             reportContact.setVisibility(View.VISIBLE);
             blockContact.setVisibility(View.VISIBLE);
+            ((TextView) blockContact).setText(mTopic.isBlockedByMe() ?
+                    R.string.unblock_contact : R.string.block_contact);
         } else {
             // Slf topic
             fragment.findViewById(R.id.singleUserPermissionsWrapper).setVisibility(View.GONE);
@@ -211,8 +225,6 @@ public class TopicSecurityFragment extends Fragment implements MessageActivity.D
 
         notifyContentChanged();
         notifyDataSetChanged();
-
-        super.onStart();
     }
 
     public void notifyDataSetChanged() {
@@ -247,6 +259,12 @@ public class TopicSecurityFragment extends Fragment implements MessageActivity.D
         ((TextView) fragment.findViewById(R.id.anonPermissions)).setText(mTopic.getAnonAcsStr());
     }
 
+    // Clearing for everyone deletes other people's messages: the server allows that only to
+    // group members with D. In 1:1 chats, and for everyone else, clear for me only.
+    private boolean canClearForAll() {
+        return mTopic.isGrpType() && mTopic.isDeleter();
+    }
+
     // Confirmation dialog "Do you really want to do X?"
     //  uid - user to apply action to
     //  message_id - id of the string resource to use as an explanation.
@@ -270,6 +288,7 @@ public class TopicSecurityFragment extends Fragment implements MessageActivity.D
         confirmBuilder.setPositiveButton(android.R.string.yes, (dialog, which) -> {
             PromisedReply<ServerMessage> response = null;
             switch (what) {
+                case ACTION_DELETE:
                 case ACTION_LEAVE:
                     response = mTopic.delete(true);
                     break;
@@ -287,7 +306,7 @@ public class TopicSecurityFragment extends Fragment implements MessageActivity.D
                     response = mTopic.updateMode(null, "-JP");
                     break;
                 case ACTION_DELMSG:
-                    response = mTopic.delMessages(true);
+                    response = mTopic.delMessages(canClearForAll());
             }
 
             if (response != null) {

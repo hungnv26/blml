@@ -75,12 +75,18 @@ public class ThumbnailTransformer implements Drafty.Transformer {
                             .target(new Target() {
                                 @Override
                                 public void onSuccess(@NonNull Drawable drawable) {
-                                    Bitmap bmp = UtilsBitmap.bitmapFromDrawable(drawable);
-                                    bmp = UtilsBitmap.scaleSquareBitmap(bmp, Const.REPLY_THUMBNAIL_DIM);
-                                    byte[] bits = UtilsBitmap.bitmapToBytes(bmp, "image/jpeg");
-                                    node.putData("val", Base64.encodeToString(bits, Base64.NO_WRAP));
-                                    node.putData("size", bits.length);
-                                    node.putData("mime", "image/jpeg");
+                                    try {
+                                        Bitmap bmp = UtilsBitmap.bitmapFromDrawable(drawable);
+                                        bmp = UtilsBitmap.scaleSquareBitmap(bmp, Const.REPLY_THUMBNAIL_DIM);
+                                        byte[] bits = UtilsBitmap.bitmapToBytes(bmp, "image/jpeg");
+                                        node.putData("val", Base64.encodeToString(bits, Base64.NO_WRAP));
+                                        node.putData("size", bits.length);
+                                        node.putData("mime", "image/jpeg");
+                                    } catch (Exception ex) {
+                                        node.clearData("val");
+                                        node.clearData("size");
+                                        node.clearData("mime");
+                                    }
                                     try {
                                         done.resolve(null);
                                     } catch (Exception ignored) {}

@@ -24,7 +24,7 @@
     <!-- access mode definitions -->
     <string name="modeReadOnly">A sola lettura</string>
     <string name="modeAdmin">admin</string>
-    <string name="modeOwner">proprieatrio</string>
+    <string name="modeOwner">proprietario</string>
     <string name="modeBlocked">bloccato</string>
     <!-- mode-like access statuses -->
     <string name="modeInvited">invitato</string>
@@ -113,7 +113,7 @@
     <string name="confirm_leave_topic">Vuoi realmente lasciare questa conversazione?</string>
     <string name="confirm_delete_topic">Vuoi realmente cancellare questa conversazione per tutti?</string>
     <string name="confirm_delete_multiple_topics">Vuoi realmente cancellare queste chats?</string>
-    <string name="modeWriteOnly">Sola lettura</string>
+    <string name="modeWriteOnly">Sola scrittura</string>
     <string name="read_receipts_enabled">Invia ricevute di lettura</string>
     <string name="typing_notifications_enabled">Mostra notifiche di digitazione</string>
     <string name="logout">Disconnettiti</string>

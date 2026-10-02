@@ -280,12 +280,18 @@ public class CallFragment extends Fragment {
     @Override
     public void onDestroyView() {
         stopMediaAndSignal();
-        Cache.getTinode().removeListener(mTinodeListener);
-        mTopic.remListener(mTopicListener);
+        if (mTinodeListener != null) {
+            Cache.getTinode().removeListener(mTinodeListener);
+        }
+        if (mTopic != null) {
+            mTopic.remListener(mTopicListener);
+        }
 
-        TindroidApp.setAudioMode(mAudioSettings.audioMode);
-        TindroidApp.setMicrophoneMute(mAudioSettings.microphone);
-        TindroidApp.setSpeakerphoneOn(mAudioSettings.speakerphone);
+        if (mAudioSettings != null) {
+            TindroidApp.setAudioMode(mAudioSettings.audioMode);
+            TindroidApp.setMicrophoneMute(mAudioSettings.microphone);
+            TindroidApp.setSpeakerphoneOn(mAudioSettings.speakerphone);
+        }
         TindroidApp.abandonAudioFocus();
 
         super.onDestroyView();
@@ -416,6 +422,9 @@ public class CallFragment extends Fragment {
     }
 
     private void muteVideo() {
+        if (mVideoCapturerAndroid == null) {
+            return;
+        }
         try {
             mVideoCapturerAndroid.stopCapture();
             mLocalVideoView.setVisibility(View.INVISIBLE);
@@ -426,6 +435,9 @@ public class CallFragment extends Fragment {
     }
 
     private void unmuteVideo() {
+        if (mVideoCapturerAndroid == null) {
+            return;
+        }
         mVideoCapturerAndroid.startCapture(CAMERA_RESOLUTION_WIDTH, CAMERA_RESOLUTION_HEIGHT, CAMERA_FPS);
         mLocalVideoView.setVisibility(View.VISIBLE);
         sendToPeer(VIDEO_UNMUTED_EVENT);
@@ -489,6 +501,7 @@ public class CallFragment extends Fragment {
         if (!initIceServers()) {
             Toast.makeText(activity, R.string.video_calls_unavailable, Toast.LENGTH_LONG).show();
             handleCallClose(activity);
+            return;
         }
 
         initVideos();
@@ -531,9 +544,8 @@ public class CallFragment extends Fragment {
                     SurfaceTextureHelper.create("CaptureThread", mRootEglBase.getEglBaseContext());
             mVideoSource = mPeerConnectionFactory.createVideoSource(mVideoCapturerAndroid.isScreencast());
             mVideoCapturerAndroid.initialize(surfaceTextureHelper, activity, mVideoSource.getCapturerObserver());
+            mLocalVideoTrack = mPeerConnectionFactory.createVideoTrack("100", mVideoSource);
         }
-
-        mLocalVideoTrack = mPeerConnectionFactory.createVideoTrack("100", mVideoSource);
 
         mVideoOff = mAudioOnly;
         if (mVideoCapturerAndroid != null && !mVideoOff) {
@@ -542,7 +554,9 @@ public class CallFragment extends Fragment {
         }
 
         // VideoRenderer is ready => add the renderer to the VideoTrack.
-        mLocalVideoTrack.addSink(mLocalVideoView);
+        if (mLocalVideoTrack != null) {
+            mLocalVideoTrack.addSink(mLocalVideoView);
+        }
         mLocalVideoView.setMirror(true);
         mRemoteVideoView.setMirror(false);
 
@@ -673,7 +687,7 @@ public class CallFragment extends Fragment {
         stopSoundEffect();
 
         // Close fragment.
-        if (mCallSeqID > 0) {
+        if (mCallSeqID > 0 && mTopic != null) {
             mTopic.videoCallHangUp(mCallSeqID);
         }
 
@@ -764,7 +778,7 @@ public class CallFragment extends Fragment {
             Log.d(TAG, "onStateChange: remote data channel state: " + mChannel.state().toString());
             switch (mChannel.state()) {
                 case OPEN:
-                    sendToPeer(!mVideoOff && mVideoSource.state() == MediaSource.State.LIVE ?
+                    sendToPeer(!mVideoOff && mVideoSource != null && mVideoSource.state() == MediaSource.State.LIVE ?
                             VIDEO_UNMUTED_EVENT : VIDEO_MUTED_EVENT);
                     break;
                 case CLOSED:

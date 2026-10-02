@@ -134,9 +134,8 @@ public class SubscriberDb implements BaseColumns {
     public static long insert(SQLiteDatabase db, long topicId, BaseDb.Status status, Subscription sub) {
         // Log.d(TAG, "Inserting sub for " + topicId + "/" + sub.user);
         long id = -1;
+        db.beginTransaction();
         try {
-            db.beginTransaction();
-
             StoredSubscription ss = new StoredSubscription();
 
             ss.userId = UserDb.getId(db, sub.user);
@@ -145,7 +144,6 @@ public class SubscriberDb implements BaseColumns {
             }
             if (ss.userId <= 0) {
                 Log.e(TAG, "Failed to insert user: " + ss.userId);
-                db.endTransaction();
                 return -1;
             }
 
@@ -172,14 +170,18 @@ public class SubscriberDb implements BaseColumns {
             }
             ss.id = db.insert(TABLE_NAME, null, values);
 
-            db.setTransactionSuccessful();
-            sub.setLocal(ss);
+            id = ss.id;
+
+            if (ss.id > 0) {
+                db.setTransactionSuccessful();
+                sub.setLocal(ss);
+            }
 
         } catch (SQLException ex) {
             Log.e(TAG, "Exception while inserting", ex);
+        } finally {
+            db.endTransaction();
         }
-
-        db.endTransaction();
 
         return id;
     }

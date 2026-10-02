@@ -49,6 +49,7 @@ public class SendToActivity extends BaseActivity {
             Log.d(TAG, "Unable to share this type of content: '" + type +
                     "', uri=" + uri + "; text=" + text);
             finish();
+            return;
         }
 
         setContentView(R.layout.activity_send_to);

@@ -4,8 +4,8 @@
     <string name="tinode_url" translatable="false">https://blml.app</string>
     <string name="emulator_host_name" translatable="false">10.0.2.2:6060</string>
     <string name="contact_us_uri" translatable="false">mailto:support@blml.app</string>
-    <string name="terms_of_use_uri" translatable="false">https://blml.app/terms.html</string>
-    <string name="privacy_policy_uri" translatable="false">https://blml.app/privacy.html</string>
+    <string name="terms_of_use_uri" translatable="false">https://hungngo.net/blml/terms</string>
+    <string name="privacy_policy_uri" translatable="false">https://chat.blml.app/privacy</string>
     <string name="app_name" translatable="false">BLML</string>
     <string name="chats_title">Chats</string>
     <string name="app_name_full" translatable="false">BLML</string>
@@ -65,7 +65,8 @@
 
     <string name="avatar">Avatar picture</string>
     <string name="image_is_unavailable">Image is unavailable</string>
-    <string name="error_login_failed">Login failed: </string>
+    <string name="error_login_failed">Login failed</string>
+    <string name="error_wrong_login">Wrong user name or password.</string>
     <string name="login_required">Login required</string>
     <string name="password_required">Password required</string>
     <string name="error_invite_code_invalid">Sign-up needs a valid invite code. Ask whoever invited you for the current one.</string>
@@ -260,6 +261,10 @@
     <string name="licenses">Licenses</string>
     <string name="invalid_file" translatable="false">invalid</string>
     <string name="blocked_contacts">Blocked contacts</string>
+    <string name="you_blocked_contact">You blocked this contact</string>
+    <string name="group_invite_only">This group is invite-only. Ask a member to add you.</string>
+    <string name="action_unblock">Unblock</string>
+    <string name="unblock_contact">Unblock Contact</string>
     <string name="action_restore">Unblock</string>
     <string name="send_to">Send to…</string>
     <string name="never">never</string>
@@ -269,6 +274,9 @@
     <string name="this_is_channel">Broadcast channel (only admins can post)</string>
     <string name="channel_explained">Channels allow unlimited read-only subscribers. This selection is permanent.</string>
     <string name="channel">channel</string>
+    <string name="verified">verified</string>
+    <string name="staff">staff</string>
+    <string name="danger">danger</string>
     <string name="unavailable">unavailable</string>
     <string name="picture">Picture</string>
     <string name="attachment">Attachment</string>
@@ -277,7 +285,8 @@
     <string name="accept_avatar_button_hint">Accept avatar</string>
     <string name="next_button_hint">Next</string>
     <string name="your_name">Your name</string>
-    <string name="description_optional">Invite code (required)</string>
+    <string name="description_optional">Description (optional)</string>
+    <string name="invite_code_required">Invite code (required)</string>
     <string name="change_avatar">Change avatar</string>
     <string name="badge_verified">Verified/official</string>
     <string name="badge_staff">Staff-managed</string>
@@ -314,6 +323,7 @@
     <string name="in_progress_call">in progress</string>
     <string name="busy_call">busy</string>
     <string name="toggle_camera_button">Toggle camera</string>
+    <string name="toggle_speakerphone_button">Toggle speakerphone</string>
     <string name="toggle_microphone_button">Mute/unmute call</string>
     <string name="finish_call_button">Finish call</string>
     <string name="video_calls_unavailable">Video calls unavailable</string>
@@ -375,6 +385,7 @@
     <string name="invalid_email">That does not look like an email address</string>
     <string name="action_delete_for_me">Delete for me</string>
     <string name="action_recall">Recall for everyone</string>
+    <string name="recall_refused">Couldn\'t delete for everyone: you can only recall your own recent messages. It was deleted for you only.</string>
     <string name="action_select_multiple">Select multiple</string>
     <string name="hint_enter_code">Configuration code</string>
     <string name="code_required">Code required</string>
@@ -451,9 +462,12 @@
     <string name="federated_name_hint">Your name</string>
     <string name="federated_phone_hint">Phone number (optional)</string>
     <string name="read_terms">Read the Terms</string>
+    <!-- Shown above the SIGN UP button. %1$s is the Terms of Use URL, %2$s the Privacy Policy URL. -->
+    <string name="sign_up_terms">By signing up you agree to the &lt;a href="%1$s"&gt;Terms of Use&lt;/a&gt; and &lt;a href="%2$s"&gt;Privacy Policy&lt;/a&gt;.</string>
     <string name="agree_and_create">Agree &amp; Create</string>
     <string name="federated_sign_in_failed">Sign-in failed. Please try again.</string>
     <string name="phone_number_taken">This phone number is already used by another account.</string>
+    <string name="email_address_taken">This email address is already used by another account.</string>
     <string name="credential_saved">Saved</string>
     <string name="not_now">Not now</string>
     <string name="save">Save</string>

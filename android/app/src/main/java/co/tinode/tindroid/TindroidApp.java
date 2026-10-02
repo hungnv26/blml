@@ -93,6 +93,7 @@ public class TindroidApp extends Application implements DefaultLifecycleObserver
     private static TindroidApp sContext;
 
     private static ContentObserver sContactsObserver = null;
+    private static HandlerThread sContactsThread = null;
 
     // The Tinode cache is linked from here so it's never garbage collected.
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
@@ -166,10 +167,10 @@ public class TindroidApp extends Application implements DefaultLifecycleObserver
             }
 
             // Create and start a new thread set up as a looper.
-            HandlerThread thread = new HandlerThread("ContactsObserverHandlerThread");
-            thread.start();
+            sContactsThread = new HandlerThread("ContactsObserverHandlerThread");
+            sContactsThread.start();
 
-            sContactsObserver = new ContactsObserver(acc, new Handler(thread.getLooper()));
+            sContactsObserver = new ContactsObserver(acc, new Handler(sContactsThread.getLooper()));
             // Observer which triggers sync when contacts change.
             sContext.getContentResolver().registerContentObserver(ContactsContract.Contacts.CONTENT_URI,
                     true, sContactsObserver);
@@ -179,6 +180,11 @@ public class TindroidApp extends Application implements DefaultLifecycleObserver
     static synchronized void stopWatchingContacts() {
         if (sContactsObserver != null) {
             sContext.getContentResolver().unregisterContentObserver(sContactsObserver);
+            sContactsObserver = null;
+        }
+        if (sContactsThread != null) {
+            sContactsThread.quitSafely();
+            sContactsThread = null;
         }
     }
 
@@ -298,10 +304,15 @@ public class TindroidApp extends Application implements DefaultLifecycleObserver
             // such as X-Amz-Signature or X-Goog-Date.
             // Credential is removed because X-Amz-Credential contains current date.
             String[] tempKeys = {"credential", "date", "signature"};
-            Set<String> query = uri.getQueryParameterNames();
-            query.removeIf(key -> Arrays.stream(tempKeys).anyMatch(key.toLowerCase()::contains));
-            uri.buildUpon().clearQuery().query(query.toString());
-            return uri.toString();
+            Uri.Builder ub = uri.buildUpon().clearQuery();
+            for (String key : uri.getQueryParameterNames()) {
+                if (Arrays.stream(tempKeys).noneMatch(key.toLowerCase()::contains)) {
+                    for (String val : uri.getQueryParameters(key)) {
+                        ub.appendQueryParameter(key, val);
+                    }
+                }
+            }
+            return ub.build().toString();
         }, Uri.class);
         crb.add((chain, continuation) -> {
             // Rewrite relative URIs to absolute.

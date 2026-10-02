@@ -15,6 +15,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import org.jetbrains.annotations.NotNull;
@@ -36,11 +39,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
@@ -84,6 +89,18 @@ import co.tinode.tinodesdk.model.Subscription;
 @SuppressWarnings("WeakerAccess")
 public class Tinode {
     private static final String TAG = "Tinode";
+
+    // Wire frames are logged in debug builds only, and even then with credentials and
+    // message content masked (see redactFrameForLog).
+    private static final boolean LOG_FRAMES = BuildConfig.DEBUG;
+    private static final String REDACTED = "<redacted>";
+    // Keys whose values are never written to the log: login/acc secrets and tokens,
+    // credential values and responses, message content, push device id, TURN credential.
+    private static final Set<String> REDACTED_KEYS = new HashSet<>(Arrays.asList(
+            "secret", "token", "val", "resp", "content", "dev", "credential"));
+    // Keys redacted only when the value is a plain string: fnd queries (phone numbers, emails).
+    private static final Set<String> REDACTED_STRING_KEYS = new HashSet<>(Arrays.asList(
+            "public", "private"));
 
     private static final String PROTOVERSION = "0";
     private static final String VERSION = "0.25";
@@ -874,7 +891,9 @@ public class Tinode {
         if (message == null || message.isEmpty())
             return;
 
-        Log.d(TAG, "in: " + message);
+        if (LOG_FRAMES) {
+            Log.d(TAG, "in: " + redactFrameForLog(message));
+        }
 
         mNotifier.onRawMessage(message);
 
@@ -986,8 +1005,8 @@ public class Tinode {
      * @param keepConnection if <code>true</code> do not terminate new connection.
      */
     public void oobNotification(Map<String, String> data, String authToken, boolean keepConnection) {
-        // This log entry is permanent, not just temporary for debugging.
-        Log.d(TAG, "oob: " + data);
+        // Log only the routing fields: the payload may carry message text.
+        Log.d(TAG, "oob: what=" + data.get("what") + " topic=" + data.get("topic") + " seq=" + data.get("seq"));
 
         String what = data.get("what");
         String topicName = data.get("topic");
@@ -1009,6 +1028,11 @@ public class Tinode {
                 if (topic != null && topic.isAttached()) {
                     // No need to fetch: topic is already subscribed and got data through normal channel.
                     // Assuming that data was available.
+                    break;
+                }
+
+                if (topic != null && topic.isBlockedByMe()) {
+                    // Blocked by the user: do not subscribe and do not send a receipt.
                     break;
                 }
 
@@ -1387,6 +1411,29 @@ public class Tinode {
     }
 
     /**
+     * Resolve or reject the pending device-token promise exactly once. The field is cleared
+     * first: rejecting a promise nobody listens to rethrows the error, which used to leave the
+     * completed promise in place, so the next failed login died with
+     * "Promise is already completed" instead of the server's answer.
+     */
+    private void completeDeviceTokenPromise(ServerMessage result, Exception err) {
+        PromisedReply<ServerMessage> promise = mDeviceTokenPromise;
+        mDeviceTokenPromise = null;
+        if (promise == null || promise.isDone()) {
+            return;
+        }
+        try {
+            if (err != null) {
+                promise.reject(err);
+            } else {
+                promise.resolve(result);
+            }
+        } catch (Exception ignored) {
+            // No one is waiting for the result.
+        }
+    }
+
+    /**
      * Send device token to server assuming all preconditions are met.
      * @param token token to send to the server (could be NULL_VALUE).
      * @return PromisedReply with the result of the call.
@@ -1399,10 +1446,7 @@ public class Tinode {
                     @Override
                     public PromisedReply<ServerMessage> onSuccess(ServerMessage result) throws Exception {
                         mPendingDeviceToken = null;
-                        if (mDeviceTokenPromise != null) {
-                            mDeviceTokenPromise.resolve(result);
-                            mDeviceTokenPromise = null;
-                        }
+                        completeDeviceTokenPromise(result, null);
                         // Save the token to DB for future use.
                         mDeviceToken = NULL_VALUE.equals(token) ? null : token;
                         if (mStore != null) {
@@ -1414,10 +1458,7 @@ public class Tinode {
                     @Override
                     public <E extends Exception> PromisedReply<ServerMessage> onFailure(E err) throws Exception {
                         mPendingDeviceToken = null;
-                        if (mDeviceTokenPromise != null) {
-                            mDeviceTokenPromise.reject(err);
-                            mDeviceTokenPromise = null;
-                        }
+                        completeDeviceTokenPromise(null, err);
                         throw err;
                     }
                 });
@@ -1763,15 +1804,14 @@ public class Tinode {
                         mLoginInProgress = false;
                         if (err instanceof ServerResponseException sre) {
                             final int code = sre.getCode();
-                            if (code == ServerMessage.STATUS_UNAUTHORIZED || code == ServerMessage.STATUS_NOT_FOUND) {
+                            if (code == ServerMessage.STATUS_UNAUTHORIZED ||
+                                    (code == ServerMessage.STATUS_NOT_FOUND &&
+                                            !AuthScheme.LOGIN_FIREBASE.equals(scheme))) {
                                 mLoginCredentials = null;
                                 mAuthToken = null;
                                 mAuthTokenExpires = null;
                                 mPendingDeviceToken = null;
-                                if (mDeviceTokenPromise != null) {
-                                    mDeviceTokenPromise.reject(err);
-                                    mDeviceTokenPromise = null;
-                                }
+                                completeDeviceTokenPromise(null, err);
                             }
 
                             mConnAuth = false;
@@ -1828,12 +1868,7 @@ public class Tinode {
         }
 
         mPendingDeviceToken = null;
-        if (mDeviceTokenPromise != null) {
-            try {
-                mDeviceTokenPromise.reject(new ServerResponseException(503, "disconnected"));
-                mDeviceTokenPromise = null;
-            } catch (Exception ignored) {}
-        }
+        completeDeviceTokenPromise(null, new ServerResponseException(503, "disconnected"));
 
         // Best effort to clear device token on logout.
         // The app logs out even if the token request has failed.
@@ -2114,8 +2149,58 @@ public class Tinode {
         if (mConnection == null || !mConnection.isConnected()) {
             throw new NotConnectedException("No connection");
         }
-        Log.d(TAG, "out: " + message);
+        if (LOG_FRAMES) {
+            Log.d(TAG, "out: " + redactFrameForLog(message));
+        }
         mConnection.send(message);
+    }
+
+    /**
+     * Mask credentials and message content in a wire frame before it is logged.
+     *
+     * @param frame JSON frame as sent or received.
+     * @return copy of the frame safe to write to the log.
+     */
+    static String redactFrameForLog(String frame) {
+        if (frame == null || frame.length() <= 1) {
+            // Null or network probe "0".
+            return frame;
+        }
+        try {
+            JsonNode root = sJsonMapper.readTree(frame);
+            redactNode(root);
+            return sJsonMapper.writeValueAsString(root);
+        } catch (Exception ignored) {
+            return "<unparsable frame, " + frame.length() + " chars>";
+        }
+    }
+
+    private static void redactNode(JsonNode node) {
+        if (node instanceof ObjectNode) {
+            ObjectNode obj = (ObjectNode) node;
+            List<String> names = new ArrayList<>();
+            obj.fieldNames().forEachRemaining(names::add);
+            for (String name : names) {
+                JsonNode child = obj.get(name);
+                if (REDACTED_KEYS.contains(name) ||
+                        (REDACTED_STRING_KEYS.contains(name) && child.isTextual())) {
+                    obj.put(name, REDACTED);
+                } else {
+                    redactNode(child);
+                }
+            }
+        } else if (node instanceof ArrayNode) {
+            ArrayNode arr = (ArrayNode) node;
+            for (int i = 0; i < arr.size(); i++) {
+                JsonNode child = arr.get(i);
+                if (child.isTextual() && child.asText().startsWith("code:")) {
+                    // Invite code tag.
+                    arr.set(i, TextNode.valueOf("code:" + REDACTED));
+                } else {
+                    redactNode(child);
+                }
+            }
+        }
     }
 
     /**
@@ -2376,6 +2461,40 @@ public class Tinode {
                 p.second = msg;
             }
         }
+    }
+
+    /**
+     * Messages were deleted in the topic: reload its latest remaining message from the store,
+     * so the chat list does not keep previewing a deleted (recalled) message.
+     *
+     * @param topicName name of the topic where messages were deleted.
+     * @return true if the preview changed.
+     */
+    <ML extends Iterator<Storage.Message> & Closeable> boolean refreshLastMessage(@Nullable String topicName) {
+        if (topicName == null || mStore == null) {
+            return false;
+        }
+        Pair<Topic, Storage.Message> p = mTopics.get(topicName);
+        if (p == null || p.second == null) {
+            return false;
+        }
+        final Storage.Message old = p.second;
+        Storage.Message last = null;
+        ML latest = mStore.getLatestMessagePreviews();
+        if (latest != null) {
+            while (latest.hasNext()) {
+                Storage.Message msg = latest.next();
+                if (topicName.equals(msg.getTopic())) {
+                    last = msg;
+                    break;
+                }
+            }
+            try {
+                latest.close();
+            } catch (IOException ignored) {}
+        }
+        p.second = last;
+        return last == null || last.getSeqId() != old.getSeqId();
     }
 
     /**

@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.text.HtmlCompat;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -92,6 +95,13 @@ public class SignUpFragment extends Fragment
                     show(getChildFragmentManager()));
         // Handle click on the sign-up button.
         fragment.findViewById(R.id.signUp).setOnClickListener(this);
+
+        // "By signing up you agree to the Terms of Use and Privacy Policy", with tappable links.
+        TextView terms = fragment.findViewById(R.id.signUpTerms);
+        terms.setText(HtmlCompat.fromHtml(getString(R.string.sign_up_terms,
+                getString(R.string.terms_of_use_uri), getString(R.string.privacy_policy_uri)),
+                HtmlCompat.FROM_HTML_MODE_LEGACY));
+        terms.setMovementMethod(LinkMovementMethod.getInstance());
 
         return fragment;
     }
@@ -349,30 +359,24 @@ public class SignUpFragment extends Fragment
                                 if (!SignUpFragment.this.isVisible() || parent.isFinishing() || parent.isDestroyed()) {
                                     return null;
                                 }
+                                final String cause = err instanceof ServerResponseException ?
+                                        ((ServerResponseException) err).getReason() : null;
+                                final boolean fieldError = "auth".equals(cause) || "email".equals(cause);
                                 parent.runOnUiThread(() -> {
                                     signUp.setEnabled(true);
-                                    if (err instanceof ServerResponseException) {
-                                        final String cause = ((ServerResponseException) err).getReason();
-                                        if (cause != null) {
-                                            switch (cause) {
-                                                case "auth":
-                                                    // Invalid login
-                                                    ((EditText) parent.findViewById(R.id.newLogin))
-                                                            .setError(getText(R.string.login_rejected));
-                                                    break;
-                                                case "email":
-                                                    // Duplicate email:
-                                                    ((EditText) parent.findViewById(R.id.email))
-                                                            .setError(getText(R.string.email_rejected));
-                                                    break;
-                                            }
-                                        }
-                                    } else {
-                                        Log.w(TAG, "Failed create account", err);
-                                        Toast.makeText(parent, parent.getString(R.string.action_failed),
-                                                Toast.LENGTH_SHORT).show();
+                                    if ("auth".equals(cause)) {
+                                        // Invalid login
+                                        ((EditText) parent.findViewById(R.id.newLogin))
+                                                .setError(getText(R.string.login_rejected));
+                                    } else if ("email".equals(cause)) {
+                                        // Duplicate email:
+                                        ((EditText) parent.findViewById(R.id.email))
+                                                .setError(getText(R.string.email_rejected));
                                     }
                                 });
+                                if (fieldError) {
+                                    return null;
+                                }
                                 // A 403 here means the invite code was missing or wrong —
                                 // nothing else about sign-up is permission checked. Report
                                 // that rather than appending an HTTP status to a generic

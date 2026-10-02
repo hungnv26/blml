@@ -212,7 +212,7 @@ public class LetterTileDrawable extends Drawable {
         } else {
             mLetter = null;
         }
-        mHashCode = TextUtils.isEmpty(identifier) ? 0 : Math.abs(identifier.hashCode());
+        mHashCode = TextUtils.isEmpty(identifier) ? 0 : (identifier.hashCode() & 0x7fffffff);
 
         mColor = pickColor(mContactType, disabled ? 0 : mHashCode);
         return this;

@@ -43,6 +43,7 @@ public class SqlStore implements Storage {
 
     @Override
     public void setMyUid(String uid, String hostURI) {
+        mMyId = -1;
         mDbh.setUid(uid, hostURI);
         mDbh.updateCredentials(null);
     }
@@ -83,6 +84,7 @@ public class SqlStore implements Storage {
 
     public void logout() {
         // Clear the database.
+        mMyId = -1;
         mDbh.setUid(null, null);
         mDbh.clearDb();
     }
@@ -574,6 +576,7 @@ public class SqlStore implements Storage {
             }
         } catch (SQLiteBlobTooBigException ex) {
             Log.w(TAG, "Failed to read message (misconfigured server):", ex);
+            c.close();
         }
         return (R) list;
     }

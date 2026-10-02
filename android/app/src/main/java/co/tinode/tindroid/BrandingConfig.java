@@ -146,20 +146,24 @@ public class BrandingConfig {
             }
             */
             String json = body.string();
+            Map<String, String> config = readConfig(json.getBytes());
+            if (config == null) {
+                Log.w(TAG, "Received invalid client config");
+                return;
+            }
             try (FileOutputStream fos = context.openFileOutput(CONFIG_FILE_NAME, Context.MODE_PRIVATE)) {
                 fos.write(json.getBytes());
             }
-            Map<String, String> config = readConfig(json.getBytes());
             String assetBase = config.get(KEY_ASSET_BASE);
             if (TextUtils.isEmpty(assetBase)) {
                 return;
             }
             String iconSmall = config.get(KEY_ICON_SMALL);
-            if (!TextUtils.isEmpty(assetBase)) {
+            if (!TextUtils.isEmpty(iconSmall)) {
                 saveAsset(context, httpClient, assetBase + iconSmall, KEY_ICON_SMALL);
             }
             String iconLarge = config.get(KEY_ICON_LARGE);
-            if (!TextUtils.isEmpty(assetBase)) {
+            if (!TextUtils.isEmpty(iconLarge)) {
                 saveAsset(context, httpClient, assetBase + iconLarge, KEY_ICON_LARGE);
             }
             setRawConfig(context, config);
@@ -175,12 +179,12 @@ public class BrandingConfig {
                                 scheme != null && "https".equals(scheme.toLowerCase(Locale.ROOT)))
                         .apply();
             }
-        } catch (IOException ex) {
+        } catch (IOException | IllegalStateException ex) {
             Log.w(TAG, "Failed to fetch client config", ex);
-        }
-
-        if (listener != null) {
-            listener.onReady(getConfig(context));
+        } finally {
+            if (listener != null) {
+                listener.onReady(getConfig(context));
+            }
         }
     }
 

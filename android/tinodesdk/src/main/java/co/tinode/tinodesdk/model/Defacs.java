@@ -35,6 +35,11 @@ public class Defacs implements Serializable {
         return (Objects.equals(auth, rhs.auth)) && (Objects.equals(anon, rhs.anon));
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(auth, anon);
+    }
+
     public String getAuth() {
         return auth != null ? auth.toString() : null;
     }

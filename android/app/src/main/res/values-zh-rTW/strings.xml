@@ -187,7 +187,7 @@
     <string name="action_unarchive">取消封存</string>
     <string name="action_invite">邀請</string>
     <string name="tags_management">標籤</string>
-    <string name="contacts">連略人</string>
+    <string name="contacts">聯絡人</string>
     <string name="manage">管理</string>
     <string name="delete_credential_title">刪除聯絡人</string>
     <string name="delete_credential_confirmation">您確定要移除 %1$s:%2$s 嗎？</string>
@@ -220,7 +220,7 @@
     <string name="about_the_app">關於應用程式</string>
     <string name="general">一般</string>
     <string name="delete_account">刪除帳號</string>
-    <string name="help">Help</string>
+    <string name="help">說明</string>
     <string name="security">安全性</string>
     <string name="notifications">通知</string>
     <string name="help_explained">支援、法律聲明、關於</string>

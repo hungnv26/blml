@@ -19,7 +19,7 @@ public class CallInProgress {
     // Call seq id.
     private int mSeq;
     // True if this call is established and connected between this client and the peer.
-    private boolean mConnected = false;
+    private volatile boolean mConnected = false;
     // True if the call is outgoing.
     private final boolean mIsOutgoing;
 
@@ -53,7 +53,7 @@ public class CallInProgress {
         }
     }
 
-    public void setCallConnected() {
+    public synchronized void setCallConnected() {
         mConnected = true;
         if (mConnection != null && mConnection.getState() == Connection.STATE_INITIALIZING) {
             mConnection.setInitialized();
@@ -71,11 +71,11 @@ public class CallInProgress {
         }
     }
 
-    public boolean isConnectionUseful() {
+    public synchronized boolean isConnectionUseful() {
         return mConnection != null && mConnection.getState() != Connection.STATE_DISCONNECTED;
     }
 
-    public boolean setAudioRoute(int route) {
+    public synchronized boolean setAudioRoute(int route) {
         if (mConnection != null) {
             mConnection.setAudioRoute(route);
             return true;
@@ -83,7 +83,7 @@ public class CallInProgress {
         return false;
     }
 
-    public int getAudioRoute() {
+    public synchronized int getAudioRoute() {
         CallAudioState state = mConnection != null ? mConnection.getCallAudioState() : null;
         return state != null ? state.getRoute() : CallAudioState.ROUTE_EARPIECE;
     }

@@ -214,6 +214,7 @@ public class WallpaperFragment extends Fragment {
         // strip when the server serves no photo wallpapers.
         mTabLayout.setVisibility(adapter.getItemCount() > 1 ? View.VISIBLE : View.GONE);
 
+        syncSelectionFromPrefs();
     }
 
     private void syncSelectionFromPrefs() {
@@ -394,7 +395,13 @@ public class WallpaperFragment extends Fragment {
                 seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        if (!fromUser) {
+                            return;
+                        }
                         mBlur = progress;
+                        if (TextUtils.isEmpty(mName)) {
+                            return;
+                        }
                         Context context = requireContext();
                         saveWallpaper(context, mName, mSize, mBlur);
                         Fragment parent = getParentFragment();

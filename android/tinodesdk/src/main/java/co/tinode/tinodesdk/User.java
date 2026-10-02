@@ -37,9 +37,7 @@ public class User<P> implements LocalData {
     public User(String uid, Description<P,?> desc) {
         this.uid = uid;
         updated = desc.updated;
-        try {
-            pub = desc.pub;
-        } catch (ClassCastException ignored) {}
+        pub = desc.pub;
     }
 
     private boolean mergePub(P pub) {

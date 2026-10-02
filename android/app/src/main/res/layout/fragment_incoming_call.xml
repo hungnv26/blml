@@ -137,7 +137,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/fab_margin"
-        android:contentDescription="@string/toggle_microphone_button"
+        android:contentDescription="@string/answer_call"
         android:src="@drawable/ic_call"
         android:tint="@color/white"
         app:elevation="@dimen/fab_elevation"

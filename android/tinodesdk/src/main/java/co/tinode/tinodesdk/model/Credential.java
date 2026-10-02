@@ -66,13 +66,20 @@ public class Credential implements Comparable<Credential>, Serializable {
 
     @Override
     public int compareTo(Credential other) {
-        int r = meth.compareTo(other.meth);
+        int r = compareStrings(meth, other.meth);
         if (r ==0) {
-            r = val.compareTo(other.val);
+            r = compareStrings(val, other.val);
         }
         if (r == 0) {
-            r = done.compareTo(other.done);
+            r = Boolean.compare(isDone(), other.isDone());
         }
         return r;
+    }
+
+    private static int compareStrings(String a, String b) {
+        if (a == null) {
+            return b == null ? 0 : -1;
+        }
+        return b == null ? 1 : a.compareTo(b);
     }
 }

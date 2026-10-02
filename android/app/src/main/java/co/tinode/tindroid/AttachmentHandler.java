@@ -324,9 +324,9 @@ public class AttachmentHandler extends Worker {
                 Uri dst = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
                 result = resolver.insert(dst, cv);
                 if (result != null) {
-                    try {
-                        new ParcelFileDescriptor.
-                                AutoCloseOutputStream(resolver.openFileDescriptor(result, "w")).write(bits);
+                    try (ParcelFileDescriptor.AutoCloseOutputStream out = new ParcelFileDescriptor.
+                            AutoCloseOutputStream(resolver.openFileDescriptor(result, "w"))) {
+                        out.write(bits);
                     } catch (IOException ex) {
                         Log.w(TAG, "Failed to save attachment to media storage", ex);
                         Toast.makeText(activity, R.string.failed_to_save_download, Toast.LENGTH_SHORT).show();
@@ -819,7 +819,7 @@ public class AttachmentHandler extends Worker {
 
                 msgDraft = draftyAudio(uploadDetails.mimeType, uploadDetails.previewBits,
                         uploadDetails.valueBits, uploadDetails.valueRef, uploadDetails.duration,
-                        uploadDetails.fileName, uploadDetails.valueBits.length);
+                        uploadDetails.fileName, uploadDetails.fileSize);
                 break;
 
             case FILE:
@@ -874,10 +874,11 @@ public class AttachmentHandler extends Worker {
 
         // Make sure the image dimensions are not too large.
         if (bmp.getWidth() > Const.MAX_BITMAP_SIZE || bmp.getHeight() > Const.MAX_BITMAP_SIZE) {
-            bmp = UtilsBitmap.scaleBitmap(bmp, Const.MAX_BITMAP_SIZE, Const.MAX_BITMAP_SIZE, false);
-
-            byte[] bits = UtilsBitmap.bitmapToBytes(bmp, uploadDetails.mimeType);
-            uploadDetails.fileSize = bits.length;
+            Bitmap scaled = UtilsBitmap.scaleBitmap(bmp, Const.MAX_BITMAP_SIZE, Const.MAX_BITMAP_SIZE, false);
+            if (scaled != bmp) {
+                bmp.recycle();
+            }
+            bmp = scaled;
         }
 
         // Also ensure the image has correct orientation.

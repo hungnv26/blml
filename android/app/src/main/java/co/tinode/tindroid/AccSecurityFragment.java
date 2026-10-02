@@ -95,6 +95,7 @@ public class AccSecurityFragment extends Fragment implements ChatsActivity.FormU
         final MeTopic<VxCard> me = Cache.getTinode().getMeTopic();
 
         if (me == null) {
+            super.onResume();
             return;
         }
 
@@ -110,12 +111,10 @@ public class AccSecurityFragment extends Fragment implements ChatsActivity.FormU
 
         if (countBanned.get() > 0) {
             activity.findViewById(R.id.bannedUsersPanel).setVisibility(View.VISIBLE);
-            activity.findViewById(R.id.buttonBlockedUsers).setOnClickListener(v -> {
-                // Start ChatsActivity + Chats Fragment with Bundle "banned" = true.
-                Intent intent = new Intent(activity, ChatsActivity.class);
-                intent.putExtra(ChatsActivity.TAG_FRAGMENT_NAME, ChatsActivity.FRAGMENT_BANNED);
-                activity.startActivity(intent);
-            });
+            // Show the list in this activity: starting a second ChatsActivity with a fragment
+            // extra trapped Back, which kept returning to the blocked list.
+            activity.findViewById(R.id.buttonBlockedUsers).setOnClickListener(v ->
+                    ((ChatsActivity) activity).showFragment(ChatsActivity.FRAGMENT_BANNED, null));
         } else {
             activity.findViewById(R.id.bannedUsersPanel).setVisibility(View.GONE);
         }

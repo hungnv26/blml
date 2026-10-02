@@ -57,7 +57,7 @@ public class QRScanActivity extends AppCompatActivity {
         setTitle(R.string.scan_qr_code);
 
         mCameraPreview = findViewById(R.id.cameraPreviewView);
-        mQrScanner = new QRCodeScanner(this, UiUtils.TOPIC_URI_PREFIX, this::goToTopic);
+        mQrScanner = new QRCodeScanner(this, this::goToTopic);
 
         findViewById(R.id.scanFromPhoto).setOnClickListener(v ->
                 mPhotoPickerLauncher.launch(new PickVisualMediaRequest.Builder()

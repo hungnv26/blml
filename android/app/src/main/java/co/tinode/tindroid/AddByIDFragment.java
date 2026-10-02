@@ -109,7 +109,7 @@ public class AddByIDFragment extends Fragment {
             qrFrame.setDisplayedChild(FRAME_CAMERA);
 
             if (mQrScanner == null) {
-                mQrScanner = new QRCodeScanner(activity, UiUtils.TOPIC_URI_PREFIX, this::goToTopic);
+                mQrScanner = new QRCodeScanner(activity, this::goToTopic);
             }
 
             if (!UiUtils.isPermissionGranted(activity, Manifest.permission.CAMERA)) {

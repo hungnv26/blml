@@ -184,7 +184,6 @@
             android:drawablePadding="4sp"
             android:text="@string/blocked_contacts"
             android:textColor="?android:textColorPrimary"
-            android:visibility="invisible"
             app:drawableTint="?android:textColorPrimary"
             app:drawableStartCompat="@drawable/ic_block" />
 

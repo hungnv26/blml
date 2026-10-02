@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 
@@ -43,6 +44,7 @@ public class ComposeExtras {
     private static final String TAG = "ComposeExtras";
     private static final int LINK_TITLE_TIMEOUT_MS = 3000;
     private static final int MAX_TITLE_LEN = 120;
+    private static final ExecutorService LINK_TITLE_EXECUTOR = Executors.newSingleThreadExecutor();
 
     // ── @mentions ───────────────────────────────────────────────────────────
 
@@ -138,8 +140,10 @@ public class ComposeExtras {
                     // Appending a second entity left two overlapping mentions on
                     // the same span, the first pointing at nobody — so replace
                     // the existing value when there is one.
-                    if (!replaceMentionValue(d, at, token.length(), e.getValue())) {
-                        d = appendEntity(d, "MN", singleton("val", e.getValue()), at, token.length());
+                    int cpAt = txt.codePointCount(0, at);
+                    int cpLen = token.codePointCount(0, token.length());
+                    if (!replaceMentionValue(d, cpAt, cpLen, e.getValue())) {
+                        d = appendEntity(d, "MN", singleton("val", e.getValue()), cpAt, cpLen);
                     }
                 }
                 from = after;
@@ -255,7 +259,7 @@ public class ComposeExtras {
 
     /** Asks our own server for the page title. Never blocks longer than 3s. */
     public static void fetchLinkTitle(Context ctx, String link, TitleListener listener) {
-        Executors.newSingleThreadExecutor().execute(() -> {
+        LINK_TITLE_EXECUTOR.execute(() -> {
             HttpURLConnection conn = null;
             try {
                 SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ctx);
@@ -271,15 +275,15 @@ public class ComposeExtras {
                     listener.onTitle(null);
                     return;
                 }
-                StringBuilder sb = new StringBuilder();
+                java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
                 try (InputStream is = conn.getInputStream()) {
                     byte[] buf = new byte[4096];
                     int n;
-                    while ((n = is.read(buf)) > 0) {
-                        sb.append(new String(buf, 0, n, "UTF-8"));
+                    while ((n = is.read(buf)) > 0 && bos.size() < 64 * 1024) {
+                        bos.write(buf, 0, n);
                     }
                 }
-                String title = new JSONObject(sb.toString()).optString("title", "");
+                String title = new JSONObject(bos.toString("UTF-8")).optString("title", "");
                 if (title.length() > MAX_TITLE_LEN) {
                     title = title.substring(0, MAX_TITLE_LEN);
                 }

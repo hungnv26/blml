@@ -69,7 +69,7 @@ public class BrandingFragment extends Fragment {
 
         mCameraPreview = view.findViewById(R.id.cameraPreviewView);
         if (mQrScanner == null) {
-            mQrScanner = new QRCodeScanner(activity, URI_PREFIX, this::configIDReceived);
+            mQrScanner = new QRCodeScanner(activity, this::configIDReceived);
         }
     }
 

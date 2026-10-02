@@ -59,7 +59,13 @@ public class QuotedSpan implements LeadingMarginSpan, LineBackgroundSpan {
         } else {
             Path background = new Path();
             Path stripe = new Path();
-            if (start == myStart) {
+            if (start == myStart && end >= myEnd) {
+                // Single line.
+                background.addRoundRect(left, top, right, bottom, mCornerRadius, mCornerRadius, Path.Direction.CW);
+                stripe.addRoundRect(left, top, left + mStripeWidth, bottom,
+                        new float[]{mCornerRadius, mCornerRadius, 0, 0, 0, 0, mCornerRadius, mCornerRadius},
+                        Path.Direction.CW);
+            } else if (start == myStart) {
                 // Fist line.
                 background.addRoundRect(left, top, right, bottom,
                         new float[]{mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, 0, 0, 0, 0},

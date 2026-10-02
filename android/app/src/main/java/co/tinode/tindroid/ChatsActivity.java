@@ -105,7 +105,16 @@ public class ChatsActivity extends BaseActivity
         });
         // Re-tapping the already-selected tab should do nothing, not rebuild the
         // fragment and lose its scroll position.
-        mBottomNav.setOnItemReselectedListener(item -> {});
+        // But from a sub-screen of the tab (Archived or Blocked under Chats) the tap returns to
+        // the tab's root list; it used to do nothing, which left Blocked contacts on screen.
+        mBottomNav.setOnItemReselectedListener(item -> {
+            if (item.getItemId() == R.id.nav_chats) {
+                Fragment visible = UiUtils.getVisibleFragment(getSupportFragmentManager());
+                if (visible != null && !FRAGMENT_CHATLIST.equals(visible.getTag())) {
+                    getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                }
+            }
+        });
 
         // Pressing Back pops a fragment without going through showFragment, so
         // the bar has to follow the back stack too.
@@ -248,6 +257,8 @@ public class ChatsActivity extends BaseActivity
         final Intent intent = getIntent();
         String tag = intent.getStringExtra(TAG_FRAGMENT_NAME);
         if (!TextUtils.isEmpty(tag)) {
+            // Consume the request: onResume runs again on every return to this activity.
+            intent.removeExtra(TAG_FRAGMENT_NAME);
             showFragment(tag, null);
         }
     }

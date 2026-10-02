@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
@@ -253,9 +254,9 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
                         File temp = File.createTempFile("VID_" + System.currentTimeMillis(),
                                 ".video", activity.getCacheDir());
                         temp.deleteOnExit();
-                        OutputStream out = new BufferedOutputStream(Files.newOutputStream(temp.toPath()));
-                        out.write(bits);
-                        out.close();
+                        try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(temp.toPath()))) {
+                            out.write(bits);
+                        }
                         mVideoView.setControllerAutoShow(false);
                         MediaItem mediaItem = MediaItem.fromUri(Uri.fromFile(temp));
                         mExoPlayer.setMediaItem(mediaItem);
@@ -360,7 +361,14 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
     public void onPause() {
         super.onPause();
         mExoPlayer.stop();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mVideoView.setPlayer(null);
         mExoPlayer.release();
+        mExoPlayer = null;
     }
 
     private Uri writeToTempFile(Context ctx, byte[] bits, String prefix, String suffix) {
@@ -369,9 +377,9 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
             File temp = File.createTempFile(prefix, suffix, ctx.getCacheDir());
             temp.deleteOnExit();
             fileUri = Uri.fromFile(temp);
-            OutputStream os = Files.newOutputStream(temp.toPath());
-            os.write(bits);
-            os.close();
+            try (OutputStream os = Files.newOutputStream(temp.toPath())) {
+                os.write(bits);
+            }
         } catch (IOException ex) {
             Log.w(TAG, "Unable to create temp file for video " + prefix, ex);
         }
@@ -441,9 +449,11 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
         outputArgs.putInt(AttachmentHandler.ARG_DURATION, (int) mExoPlayer.getDuration());
 
         // Capture current video frame for use as a poster (video preview).
+        final int videoWidth = mVideoWidth;
+        final int videoHeight = mVideoHeight;
         videoFrameCapture(bmp -> {
             if (bmp != null) {
-                if (mVideoWidth > Const.MAX_POSTER_SIZE || mVideoHeight > Const.MAX_POSTER_SIZE) {
+                if (videoWidth > Const.MAX_POSTER_SIZE || videoHeight > Const.MAX_POSTER_SIZE) {
                     bmp = UtilsBitmap.scaleBitmap(bmp, Const.MAX_POSTER_SIZE, Const.MAX_POSTER_SIZE, false);
                 }
                 byte[] bitmapBits = UtilsBitmap.bitmapToBytes(bmp, "image/jpeg");
@@ -453,15 +463,19 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
                         outputArgs.putParcelable(AttachmentHandler.ARG_PRE_URI, fileUri);
                     }
                 } else {
-                    outputArgs.putByteArray(AttachmentHandler.ARG_PREVIEW,
-                            UtilsBitmap.bitmapToBytes(bmp, "image/jpeg"));
+                    outputArgs.putByteArray(AttachmentHandler.ARG_PREVIEW, bitmapBits);
                 }
                 outputArgs.putString(AttachmentHandler.ARG_PRE_MIME_TYPE, "image/jpeg");
             }
 
-            AttachmentHandler.enqueueMsgAttachmentUploadRequest(activity,
-                    AttachmentHandler.ARG_OPERATION_VIDEO, outputArgs);
-            activity.getSupportFragmentManager().popBackStack();
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (!isAdded() || activity.isFinishing() || activity.isDestroyed()) {
+                    return;
+                }
+                AttachmentHandler.enqueueMsgAttachmentUploadRequest(activity,
+                        AttachmentHandler.ARG_OPERATION_VIDEO, outputArgs);
+                activity.getSupportFragmentManager().popBackStack();
+            });
         });
     }
 
@@ -474,12 +488,14 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
             height = DEFAULT_HEIGHT;
         }
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        HandlerThread handlerThread = null;
         try {
-            HandlerThread handlerThread = new HandlerThread("videoFrameCapture");
-            handlerThread.start();
             @OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)
             View surfaceView = mVideoView.getVideoSurfaceView();
             if (surfaceView instanceof SurfaceView) {
+                final HandlerThread thread = new HandlerThread("videoFrameCapture");
+                handlerThread = thread;
+                thread.start();
                 PixelCopy.request((SurfaceView) surfaceView, bitmap, result -> {
                     if (result == PixelCopy.SUCCESS) {
                         callback.done(bitmap);
@@ -487,14 +503,17 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
                         Log.w(TAG, "Failed to capture frame: " + result);
                         callback.done(null);
                     }
-                    handlerThread.quitSafely();
-                }, new Handler(handlerThread.getLooper()));
+                    thread.quitSafely();
+                }, new Handler(thread.getLooper()));
             } else {
                 callback.done(null);
                 Log.w(TAG, "Wrong type of video surface: " +
                         (surfaceView != null ? surfaceView.getClass().getName() : "null"));
             }
         } catch (IllegalArgumentException ex) {
+            if (handlerThread != null) {
+                handlerThread.quitSafely();
+            }
             callback.done(null);
             Log.w(TAG, "Failed to capture frame", ex);
         }

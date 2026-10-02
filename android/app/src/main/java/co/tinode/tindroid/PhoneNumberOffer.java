@@ -62,39 +62,41 @@ class PhoneNumberOffer {
         box.setPadding(pad, 0, pad, 0);
         box.addView(input);
 
-        new AlertDialog.Builder(activity)
+        final AlertDialog dialog = new AlertDialog.Builder(activity)
                 .setTitle(R.string.add_phone_title)
                 .setMessage(R.string.add_phone_message)
                 .setView(box)
                 .setNegativeButton(R.string.not_now, null)
-                .setPositiveButton(R.string.save, (d, w) -> {
-                    String e164 = FederatedSignIn.toE164(input.getText().toString().trim());
-                    if (e164 == null) {
-                        Toast.makeText(activity, R.string.phone_number_required, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    // noinspection unchecked
-                    me.setMeta(new MsgSetMeta.Builder().with(new Credential("tel", e164)).build())
-                            .thenApply(new PromisedReply.SuccessListener() {
-                                @Override
-                                public PromisedReply onSuccess(Object result) {
-                                    activity.runOnUiThread(() -> Toast.makeText(activity,
-                                            R.string.credential_saved, Toast.LENGTH_SHORT).show());
-                                    return null;
-                                }
-                            })
-                            .thenCatch(new PromisedReply.FailureListener() {
-                                @Override
-                                public PromisedReply onFailure(Exception err) {
-                                    boolean taken = err instanceof ServerResponseException &&
-                                            ((ServerResponseException) err).getCode() == 409;
-                                    activity.runOnUiThread(() -> Toast.makeText(activity,
-                                            taken ? R.string.phone_number_taken : R.string.action_failed,
-                                            Toast.LENGTH_SHORT).show());
-                                    return null;
-                                }
-                            });
-                })
+                .setPositiveButton(R.string.save, null)
                 .show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String e164 = FederatedSignIn.toE164(input.getText().toString().trim());
+            if (e164 == null) {
+                Toast.makeText(activity, R.string.phone_number_required, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            dialog.dismiss();
+            // noinspection unchecked
+            me.setMeta(new MsgSetMeta.Builder().with(new Credential("tel", e164)).build())
+                    .thenApply(new PromisedReply.SuccessListener() {
+                        @Override
+                        public PromisedReply onSuccess(Object result) {
+                            activity.runOnUiThread(() -> Toast.makeText(activity,
+                                    R.string.credential_saved, Toast.LENGTH_SHORT).show());
+                            return null;
+                        }
+                    })
+                    .thenCatch(new PromisedReply.FailureListener() {
+                        @Override
+                        public PromisedReply onFailure(Exception err) {
+                            boolean taken = err instanceof ServerResponseException &&
+                                    ((ServerResponseException) err).getCode() == 409;
+                            activity.runOnUiThread(() -> Toast.makeText(activity,
+                                    taken ? R.string.phone_number_taken : R.string.action_failed,
+                                    Toast.LENGTH_SHORT).show());
+                            return null;
+                        }
+                    });
+        });
     }
 }

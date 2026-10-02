@@ -101,7 +101,7 @@ public class TheCard implements Serializable, Mergeable {
                 if (df == null || sf == null) {
                     // Either source or destination is null, replace.
                     f.set(dst, sf);
-                    updated = sf == df || updated;
+                    updated = sf != df || updated;
                 } else if (df instanceof Mergeable) {
                     // Complex mergeable types, use merge().
                     updated = ((Mergeable) df).merge((Mergeable) sf) || updated;
@@ -184,6 +184,8 @@ public class TheCard implements Serializable, Mergeable {
         dst.comm = Contact.copyArray(src.comm);
         // Shallow copy of the photo
         dst.photo = src.photo != null ? src.photo.copy() : null;
+        dst.bday = src.bday != null ? src.bday.copy() : null;
+        dst.note = src.note;
 
         return dst;
     }
@@ -365,7 +367,7 @@ public class TheCard implements Serializable, Mergeable {
          */
         public Photo(byte[] bits, String type) {
             this.data = bits;
-            this.type = type;
+            this.type = subtype(type);
         }
 
         /**
@@ -376,7 +378,18 @@ public class TheCard implements Serializable, Mergeable {
          */
         public Photo(String ref, String type) {
             this.ref = ref;
-            this.type = type;
+            // Clear any old in-band image on the server, same as the web client.
+            this.data = Tinode.NULL_BYTES;
+            this.type = subtype(type);
+        }
+
+        // vCard photo 'type' is the subtype only ('jpeg', not 'image/jpeg'), same as iOS and web.
+        // Accept a full mime type from callers and keep the part after 'image/'.
+        private static String subtype(String type) {
+            if (type != null && type.startsWith("image/")) {
+                return type.substring("image/".length());
+            }
+            return type;
         }
 
         /**

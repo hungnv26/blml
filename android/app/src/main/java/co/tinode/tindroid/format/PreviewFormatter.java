@@ -111,8 +111,11 @@ public class PreviewFormatter extends AbstractDraftyFormatter<SpannableStringBui
     @Override
     protected SpannableStringBuilder handleAudio(Context ctx, List<SpannableStringBuilder> content, Map<String, Object> data) {
         SpannableStringBuilder node = annotatedIcon(ctx, R.drawable.ic_mic_ol, 0);
+        if (node == null) {
+            return null;
+        }
         node.append(" ");
-        int duration = getIntVal("duration", data);
+        int duration = data != null ? getIntVal("duration", data) : 0;
         if (duration > 0) {
             node.append(millisToTime(duration, false));
         } else {

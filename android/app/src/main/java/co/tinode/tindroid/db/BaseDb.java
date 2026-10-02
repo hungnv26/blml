@@ -54,12 +54,15 @@ public class BaseDb extends SQLiteOpenHelper {
     @SuppressLint("UnsafeOptInUsageError")
     @NonNull
     public static BaseDb getInstance() {
-        if (sInstance == null) {
-            sInstance = new BaseDb(TindroidApp.getAppContext());
-            sInstance.mAcc = AccountDb.getActiveAccount(sInstance.getReadableDatabase());
-            sInstance.mStore = new SqlStore(sInstance);
+        synchronized (BaseDb.class) {
+            if (sInstance == null) {
+                BaseDb inst = new BaseDb(TindroidApp.getAppContext());
+                inst.mAcc = AccountDb.getActiveAccount(inst.getReadableDatabase());
+                inst.mStore = new SqlStore(inst);
+                sInstance = inst;
+            }
+            return sInstance;
         }
-        return sInstance;
     }
 
     @Override

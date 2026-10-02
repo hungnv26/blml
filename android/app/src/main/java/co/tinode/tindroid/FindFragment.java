@@ -343,6 +343,8 @@ public class FindFragment extends Fragment implements UiUtils.ProgressIndicator,
     }
 
     private static final Pattern sSingleTagTest = Pattern.compile("[\\s,:]");
+    // Digits with optional leading '+' and the usual separators: looks like a phone number.
+    private static final Pattern sPhoneLikeTest = Pattern.compile("^\\+?[0-9][0-9 ().-]{5,}$");
     private String doSearch(String query) {
         query = query.trim();
         query = !TextUtils.isEmpty(query) ? query : null;
@@ -364,9 +366,15 @@ public class FindFragment extends Fragment implements UiUtils.ProgressIndicator,
             return query;
         }
 
+        String phone = sPhoneLikeTest.matcher(query).matches() ?
+                UiUtils.toE164(query, UiUtils.phoneRegion(requireContext())) : null;
         if (TextUtils.isEmpty(query)) {
             query = Tinode.NULL_VALUE;
-        } else if (!sSingleTagTest.matcher(query).matches()) {
+        } else if (phone != null) {
+            // A phone number in local or international format, possibly with spaces:
+            // "0491 570 104" -> "tel:+61491570104". Numbers are stored in E.164.
+            query = Tinode.TAG_PHONE + phone;
+        } else if (!sSingleTagTest.matcher(query).find()) {
             // No colons, spaces or commas. Try as email, phone, or alias.
             String email = UtilsString.asEmail(query);
             if (email != null) {

@@ -272,7 +272,7 @@ public class MsgRange implements Comparable<MsgRange>, Serializable {
                 return new MsgRange[0];
             }
             // Partial clipping at the top.
-            return new MsgRange[]{new MsgRange(src.getLower(), clip.getUpper())};
+            return new MsgRange[]{new MsgRange(clip.getUpper(), src.getUpper())};
         }
 
         // Range on the lower end.

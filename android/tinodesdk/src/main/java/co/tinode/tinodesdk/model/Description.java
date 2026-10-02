@@ -151,7 +151,7 @@ public class Description<DP, DR> implements Serializable {
             changed = mergePriv(desc.priv) || changed;
         }
 
-        if (desc.online != null && desc.online != online) {
+        if (desc.online != null && !desc.online.equals(online)) {
             online = desc.online;
             changed = true;
         }
@@ -241,7 +241,7 @@ public class Description<DP, DR> implements Serializable {
 
         }
 
-        if (sub.online != null && sub.online != online) {
+        if (sub.online != null && !sub.online.equals(online)) {
             online = sub.online;
             changed = true;
         }

@@ -31,7 +31,6 @@ import androidx.lifecycle.LifecycleOwner;
 public class QRCodeScanner {
     private final static String TAG = "QRCodeScanner";
     private final Activity mParent;
-    private final String mPrefix;
     private final SuccessListener mSuccessListener;
 
     private final ExecutorService mQRCodeAnalysisExecutor = Executors.newSingleThreadExecutor();
@@ -39,11 +38,11 @@ public class QRCodeScanner {
             new BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build();
     private boolean mIsCameraActive = false;
     private boolean mIsScanning = false;
+    private volatile BarcodeScanner mScanner = null;
     ProcessCameraProvider mCameraProvider = null;
 
-    public QRCodeScanner(@NonNull Activity context, String prefix, @NonNull SuccessListener listener) {
+    public QRCodeScanner(@NonNull Activity context, @NonNull SuccessListener listener) {
         mParent = context;
-        mPrefix = prefix;
         mSuccessListener = listener;
     }
 
@@ -53,6 +52,7 @@ public class QRCodeScanner {
         }
 
         mIsCameraActive = true;
+        mScanner = BarcodeScanning.getClient(mBarcodeScannerOptions);
 
         final ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
                 ProcessCameraProvider.getInstance(mParent);
@@ -84,6 +84,11 @@ public class QRCodeScanner {
         if (mCameraProvider != null) {
             mCameraProvider.unbindAll();
         }
+        BarcodeScanner scanner = mScanner;
+        mScanner = null;
+        if (scanner != null) {
+            scanner.close();
+        }
     }
 
     @OptIn(markerClass = ExperimentalGetImage.class)
@@ -96,7 +101,11 @@ public class QRCodeScanner {
 
         InputImage image = InputImage.fromMediaImage(mediaImage,
                 imageProxy.getImageInfo().getRotationDegrees());
-        BarcodeScanner scanner = BarcodeScanning.getClient(mBarcodeScannerOptions);
+        BarcodeScanner scanner = mScanner;
+        if (scanner == null) {
+            imageProxy.close();
+            return;
+        }
         mIsScanning = true;
         scanner.process(image)
                 .addOnSuccessListener(barcodes -> {
@@ -105,14 +114,14 @@ public class QRCodeScanner {
                     for (Barcode barcode: barcodes) {
                         String rawValue = barcode.getRawValue();
                         if (rawValue == null) {
-                            return;
+                            continue;
                         }
                         // Codes from iOS carry "tinode:topic/", ones from older
-                        // Android builds "tinode:id/"; mPrefix stays as the
-                        // caller's canonical form for anything it prepends.
+                        // Android builds "tinode:id/".
                         String id = co.tinode.tindroid.UiUtils.topicFromQrCode(rawValue);
                         if (!TextUtils.isEmpty(id)) {
                             mSuccessListener.onScanSuccessful(id);
+                            break;
                         }
                     }
                 })

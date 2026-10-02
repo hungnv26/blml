@@ -55,7 +55,8 @@ public class FBaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onNewToken(@NonNull final String token) {
         super.onNewToken(token);
-        Log.d(TAG, "New registration token: " + token);
+        // The FCM token is a credential for this device: never log its value.
+        Log.d(TAG, "New registration token received");
         broadcastToken(token);
     }
 
@@ -351,6 +352,7 @@ public class FBaseMessagingService extends FirebaseMessagingService {
                         // The server notifies us of the call that we've already accepted. Do nothing.
                         return;
                     }
+                    // fall through
                 case "busy":
                 case "declined":
                 case "disconnected":
@@ -435,7 +437,7 @@ public class FBaseMessagingService extends FirebaseMessagingService {
         if (strColor != null) {
             try {
                 color = Color.parseColor(strColor);
-            } catch (IllegalAccessError ignored) {
+            } catch (IllegalArgumentException ignored) {
             }
         }
         return color;

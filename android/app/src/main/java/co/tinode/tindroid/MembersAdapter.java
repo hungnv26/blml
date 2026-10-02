@@ -110,7 +110,11 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.ViewHold
         }
 
         mCurrentMembers.add(user);
-        notifyItemInserted(getItemCount() - 1);
+        if (mCurrentMembers.size() == 1) {
+            notifyDataSetChanged();
+        } else {
+            notifyItemInserted(mCurrentMembers.size() - 1);
+        }
     }
 
     boolean remove(@NonNull String unique) {
@@ -123,7 +127,11 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.ViewHold
             Member m = mCurrentMembers.get(i);
             if (unique.equals(m.unique) && m.removable) {
                 mCurrentMembers.remove(i);
-                notifyItemRemoved(i);
+                if (mCurrentMembers.isEmpty()) {
+                    notifyDataSetChanged();
+                } else {
+                    notifyItemRemoved(i);
+                }
                 return true;
             }
         }
@@ -251,7 +259,11 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.ViewHold
                         // Notify parent ContactsAdapter that the user was removed.
                         mOnCancel.onClick(foundUser.unique, foundUser.position);
                     }
-                    notifyItemRemoved(position);
+                    if (mCurrentMembers.isEmpty()) {
+                        notifyDataSetChanged();
+                    } else {
+                        notifyItemRemoved(position);
+                    }
                 });
             } else {
                 close.setVisibility(View.GONE);

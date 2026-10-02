@@ -197,7 +197,9 @@ public class AccCredFragment extends Fragment implements ChatsActivity.FormUpdat
                             button.setEnabled(true);
                             boolean taken = err instanceof ServerResponseException &&
                                     ((ServerResponseException) err).getCode() == 409;
-                            Toast.makeText(activity, taken ? R.string.phone_number_taken : R.string.action_failed,
+                            int takenMsg = "email".equals(mMethod) ?
+                                    R.string.email_address_taken : R.string.phone_number_taken;
+                            Toast.makeText(activity, taken ? takenMsg : R.string.action_failed,
                                     Toast.LENGTH_SHORT).show();
                         });
                         return null;

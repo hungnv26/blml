@@ -28,6 +28,7 @@ import androidx.lifecycle.Lifecycle;
 import androidx.preference.PreferenceManager;
 import co.tinode.tindroid.account.Utils;
 import co.tinode.tinodesdk.PromisedReply;
+import co.tinode.tinodesdk.ServerResponseException;
 import co.tinode.tinodesdk.Tinode;
 import co.tinode.tinodesdk.model.AuthScheme;
 import co.tinode.tinodesdk.model.ServerMessage;
@@ -189,7 +190,13 @@ public class LoginFragment extends Fragment implements MenuProvider, View.OnClic
                             @Override
                             public PromisedReply<ServerMessage> onFailure(Exception err) {
                                 Log.w(TAG, "Login failed", err);
-                                parent.reportError(err, signIn, 0, R.string.error_login_failed);
+                                if (err instanceof ServerResponseException &&
+                                        ((ServerResponseException) err).getCode() == ServerMessage.STATUS_UNAUTHORIZED) {
+                                    // Plain words instead of "authentication failed (401)".
+                                    parent.reportError(null, signIn, 0, R.string.error_wrong_login);
+                                } else {
+                                    parent.reportError(err, signIn, 0, R.string.error_login_failed);
+                                }
                                 return null;
                             }
                         });

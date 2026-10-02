@@ -89,6 +89,7 @@ import co.tinode.tindroid.media.VxCard;
 import co.tinode.tinodesdk.ComTopic;
 import co.tinode.tinodesdk.MeTopic;
 import co.tinode.tinodesdk.PromisedReply;
+import co.tinode.tinodesdk.ServerResponseException;
 import co.tinode.tinodesdk.Storage;
 import co.tinode.tinodesdk.Tinode;
 import co.tinode.tinodesdk.Topic;
@@ -209,7 +210,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                     if (selected != null) {
                         final Topic topic = Cache.getTinode().getTopic(mTopicName);
                         if (topic != null) {
-                            showDeleteMessageConfirmationDialog(mActivity, selected, topic.isDeleter());
+                            showDeleteMessageConfirmationDialog(mActivity, selected,
+                                    canDeleteForAll(topic, selected));
                         }
                     }
                     return true;
@@ -397,6 +399,40 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         }
     }
 
+    /**
+     * "Delete for everyone" is offered for your own messages, or for anyone's messages if you
+     * own or administer the group (the server's rule: group users with D, i.e. the owner and
+     * admins given D; in P2P, D does not cover the peer's messages). Never in Saved messages or
+     * channels, and only while the server still allows it (msgDelAge): older messages are
+     * silently kept by the server.
+     */
+    private boolean canDeleteForAll(Topic topic, int[] positions) {
+        if (topic == null || positions == null || positions.length == 0 ||
+                topic.isSlfType() || ComTopic.isChannel(mTopicName)) {
+            return false;
+        }
+        boolean admin = topic.isGrpType() && topic.isDeleter();
+        long maxAge = 0;
+        Object age = Cache.getTinode().getServerParam(Tinode.MSG_DELETE_AGE);
+        if (age instanceof Number) {
+            maxAge = (long) (((Number) age).doubleValue() * 1000);
+        }
+        long now = System.currentTimeMillis();
+        for (int pos : positions) {
+            StoredMessage msg = getMessage(pos);
+            if (msg == null) {
+                return false;
+            }
+            if (!admin && !msg.isMine()) {
+                return false;
+            }
+            if (maxAge > 0 && msg.ts != null && now - msg.ts.getTime() > maxAge) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @SuppressWarnings("unchecked")
     private void sendDeleteMessages(final int[] positions, final boolean hard) {
         if (positions == null || positions.length == 0) {
@@ -442,6 +478,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         }
 
         if (!toDelete.isEmpty()) {
+            final UiUtils.ToastFailureListener toastFailure = new UiUtils.ToastFailureListener(mActivity);
             topic.delMessages(toDelete, hard)
                     .thenApply(new PromisedReply.SuccessListener<ServerMessage>() {
                         @Override
@@ -450,7 +487,25 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                             mActivity.runOnUiThread(() -> updateSelectionMode());
                             return null;
                         }
-                    }, new UiUtils.ToastFailureListener(mActivity));
+                    }, new PromisedReply.FailureListener<ServerMessage>() {
+                        @Override
+                        public PromisedReply<ServerMessage> onFailure(Exception err) {
+                            if (hard && err instanceof ServerResponseException &&
+                                    ((ServerResponseException) err).getCode() == ServerMessage.STATUS_FORBIDDEN) {
+                                // The server refused to delete for everyone. The messages are already
+                                // gone locally and the refused request would be retried on every
+                                // reconnect, so turn it into delete-for-me and say so.
+                                topic.delMessages(toDelete, false);
+                                runLoader(false);
+                                mActivity.runOnUiThread(() -> {
+                                    updateSelectionMode();
+                                    Toast.makeText(mActivity, R.string.recall_refused, Toast.LENGTH_LONG).show();
+                                });
+                                return null;
+                            }
+                            return toastFailure.onFailure(err);
+                        }
+                    });
         } else if (discarded > 0) {
             runLoader(false);
             updateSelectionMode();
@@ -1015,34 +1070,48 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
     /** Target seq → reactions on that message. */
     private final Map<Integer, List<Reaction>> mReactions = new HashMap<>();
 
+    private final java.util.concurrent.Executor mReactionsExecutor =
+            java.util.concurrent.Executors.newSingleThreadExecutor();
+
     private void loadReactions() {
-        mReactions.clear();
-        if (mTopicName == null) {
+        final String topicName = mTopicName;
+        if (topicName == null) {
+            mReactions.clear();
             return;
         }
-        SQLiteDatabase db = BaseDb.getInstance().getReadableDatabase();
-        long topicId = TopicDb.getId(db, mTopicName);
-        if (topicId < 0) {
-            return;
-        }
-        try (Cursor c = MessageDb.queryReactions(db, topicId)) {
-            while (c.moveToNext()) {
-                int seq = c.getInt(0);
-                String sender = c.getString(1);
-                Map<String, Object> head = BaseDb.deserialize(c.getString(2));
-                if (head == null) {
-                    continue;
-                }
-                Object emoji = head.get("reaction");
-                Object ref = head.get("ref");
-                if (emoji instanceof String && ref instanceof Number) {
-                    mReactions.computeIfAbsent(((Number) ref).intValue(), k -> new ArrayList<>())
-                            .add(new Reaction((String) emoji, sender, seq));
+        mReactionsExecutor.execute(() -> {
+            Map<Integer, List<Reaction>> loaded = new HashMap<>();
+            SQLiteDatabase db = BaseDb.getInstance().getReadableDatabase();
+            long topicId = TopicDb.getId(db, topicName);
+            if (topicId >= 0) {
+                try (Cursor c = MessageDb.queryReactions(db, topicId)) {
+                    while (c.moveToNext()) {
+                        int seq = c.getInt(0);
+                        String sender = c.getString(1);
+                        Map<String, Object> head = BaseDb.deserialize(c.getString(2));
+                        if (head == null) {
+                            continue;
+                        }
+                        Object emoji = head.get("reaction");
+                        Object ref = head.get("ref");
+                        if (emoji instanceof String && ref instanceof Number) {
+                            loaded.computeIfAbsent(((Number) ref).intValue(), k -> new ArrayList<>())
+                                    .add(new Reaction((String) emoji, sender, seq));
+                        }
+                    }
+                } catch (Exception ex) {
+                    Log.w(TAG, "Failed to load reactions", ex);
                 }
             }
-        } catch (Exception ex) {
-            Log.w(TAG, "Failed to load reactions", ex);
-        }
+            mActivity.runOnUiThread(() -> {
+                if (!topicName.equals(mTopicName)) {
+                    return;
+                }
+                mReactions.clear();
+                mReactions.putAll(loaded);
+                notifyDataSetChanged();
+            });
+        });
     }
 
     /** "❤️😆 3" pill text: the distinct emoji, then how many reactions in
@@ -1136,7 +1205,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         if (!ComTopic.isChannel(mTopicName)) {
             addSheetRow(list, dialog, R.string.action_delete_for_me, R.drawable.ic_delete_outline, true, () ->
                     sendDeleteMessages(new int[]{pos}, false));
-            if (topic.isDeleter()) {
+            if (canDeleteForAll(topic, new int[]{pos})) {
                 addSheetRow(list, dialog, R.string.action_recall, R.drawable.ic_delete_red, true, () ->
                         sendDeleteMessages(new int[]{pos}, true));
             }
@@ -1231,6 +1300,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
     }
 
     private void toggleSelectionAt(int pos) {
+        if (mSelectedItems == null) {
+            return;
+        }
         if (mSelectedItems.get(pos)) {
             mSelectedItems.delete(pos);
         } else {

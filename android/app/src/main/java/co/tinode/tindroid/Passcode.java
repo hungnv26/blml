@@ -160,7 +160,8 @@ public class Passcode {
             return false;
         }
         for (int i = 0; i < code.length(); i++) {
-            if (!Character.isDigit(code.charAt(i))) {
+            char ch = code.charAt(i);
+            if (ch < '0' || ch > '9') {
                 return false;
             }
         }

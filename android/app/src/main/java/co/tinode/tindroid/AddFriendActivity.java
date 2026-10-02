@@ -173,11 +173,9 @@ public class AddFriendActivity extends AppCompatActivity {
         texts.setOrientation(LinearLayout.VERTICAL);
         texts.setPadding((int) (16 * dp), 0, 0, 0);
         TextView title = new TextView(this);
-        title.setTextSize(16);
         title.setTextAppearance(android.R.style.TextAppearance_Material_Body1);
         title.setText(pub != null && pub.fn != null ? pub.fn : uid);
         TextView subtitle = new TextView(this);
-        subtitle.setTextSize(13);
         subtitle.setTextAppearance(android.R.style.TextAppearance_Material_Small);
         subtitle.setText(R.string.in_group_with_you);
         texts.addView(title);

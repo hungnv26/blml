@@ -1,7 +1,7 @@
 package co.tinode.tinodesdk;
 
 /**
- * Exception generated in response to a packet containing an error code.
+ * Attempt to perform an operation while not connected to the server.
  */
 public class NotConnectedException extends IllegalStateException {
 

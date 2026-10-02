@@ -200,13 +200,11 @@ public class UserDb implements BaseColumns {
                         " WHERE " +
                         COLUMN_NAME_ACCOUNT_ID + "=" + BaseDb.getInstance().getAccountId() +
                         " AND " +
-                        COLUMN_NAME_UID + "='" + (uid != null ? uid : UID_NULL) + "'";
-        Cursor c = db.rawQuery(sql, null);
-        if (c.getCount() > 0) {
+                        COLUMN_NAME_UID + "=?";
+        try (Cursor c = db.rawQuery(sql, new String[]{uid != null ? uid : UID_NULL})) {
             if (c.moveToFirst()) {
                 id = c.getLong(0);
             }
-            c.close();
         }
         return id;
     }
@@ -220,9 +218,9 @@ public class UserDb implements BaseColumns {
                         " WHERE " +
                         COLUMN_NAME_ACCOUNT_ID + "=" + BaseDb.getInstance().getAccountId() +
                         " AND " +
-                        COLUMN_NAME_UID + "='" + (uid != null ? uid : UID_NULL) + "'";
+                        COLUMN_NAME_UID + "=?";
 
-        Cursor c = db.rawQuery(sql, null);
+        Cursor c = db.rawQuery(sql, new String[]{uid != null ? uid : UID_NULL});
         if (c.moveToFirst()) {
             user = new User<>(uid);
             StoredUser.deserialize(user, c);

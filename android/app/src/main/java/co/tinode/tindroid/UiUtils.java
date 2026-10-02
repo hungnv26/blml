@@ -32,6 +32,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -63,7 +64,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
@@ -90,9 +96,12 @@ import co.tinode.tinodesdk.PromisedReply;
 import co.tinode.tinodesdk.ServerResponseException;
 import co.tinode.tinodesdk.Tinode;
 import co.tinode.tinodesdk.Topic;
+import co.tinode.tinodesdk.model.AccessChange;
 import co.tinode.tinodesdk.model.Acs;
 import co.tinode.tinodesdk.model.Credential;
 import co.tinode.tinodesdk.model.MetaSetDesc;
+import co.tinode.tinodesdk.model.MetaSetSub;
+import co.tinode.tinodesdk.model.MsgGetMeta;
 import co.tinode.tinodesdk.model.MsgSetMeta;
 import co.tinode.tinodesdk.model.PrivateType;
 import co.tinode.tinodesdk.model.ServerMessage;
@@ -108,6 +117,8 @@ import io.nayuki.qrcodegen.QrCode;
  */
 public class UiUtils {
     private static final String TAG = "UiUtils";
+
+    private static final ExecutorService CONTACTS_EXECUTOR = Executors.newSingleThreadExecutor();
 
     private static final int COLOR_GREEN_BORDER = 0xFF4CAF50;
     private static final int COLOR_RED_BORDER = 0xFFE57373;
@@ -417,6 +428,81 @@ public class UiUtils {
         ContentResolver.setSyncAutomatically(acc, Utils.SYNC_AUTHORITY, true);
     }
 
+    /**
+     * Lift a block set by {@code updateMode(null, "-JP")}: ask for J and P back explicitly.
+     * A plain {sub} does not lift a block.
+     *
+     * @param topic the blocked topic.
+     * @param get   what to fetch if the topic has to be subscribed; may be null.
+     * @return promise of the server's answer. If the topic was not attached, it is attached now.
+     */
+    static PromisedReply<ServerMessage> unblockTopic(ComTopic<VxCard> topic, @Nullable MsgGetMeta get) {
+        if (topic.isAttached()) {
+            return topic.updateMode(null, "+JP");
+        }
+        Acs am = new Acs(topic.getAccessMode());
+        am.update(new AccessChange("+JP", null));
+        return topic.subscribe(new MsgSetMeta.Builder<VxCard, PrivateType>()
+                .with(new MetaSetSub(am.getWant())).build(), get);
+    }
+
+    /**
+     * Region for reading phone numbers written in local format ("0491 570 104"): the country
+     * of the user's own number if known, then the SIM, the network and the device locale.
+     */
+    public static String phoneRegion(Context context) {
+        final PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+        final Tinode tinode = Cache.getTinode();
+        final MeTopic<?> me = tinode != null ? tinode.getMeTopic() : null;
+        final Credential[] creds = me != null ? me.getCreds() : null;
+        if (creds != null) {
+            for (Credential cred : creds) {
+                if (Credential.METH_PHONE.equals(cred.meth) && cred.val != null) {
+                    try {
+                        String region = util.getRegionCodeForNumber(util.parse(cred.val, null));
+                        if (!TextUtils.isEmpty(region) && !"ZZ".equals(region)) {
+                            return region;
+                        }
+                    } catch (NumberParseException ignored) {}
+                }
+            }
+        }
+        String region = null;
+        TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        if (tm != null) {
+            region = tm.getSimCountryIso();
+            if (TextUtils.isEmpty(region)) {
+                region = tm.getNetworkCountryIso();
+            }
+        }
+        if (TextUtils.isEmpty(region)) {
+            region = context.getResources().getConfiguration().getLocales().get(0).getCountry();
+        }
+        return region != null ? region.toUpperCase(Locale.ROOT) : null;
+    }
+
+    /**
+     * Convert a phone number in local or international format to E.164.
+     *
+     * @return the number in E.164 format or null if it is not a valid number in the region.
+     */
+    @Nullable
+    public static String toE164(String raw, String region) {
+        if (TextUtils.isEmpty(raw)) {
+            return null;
+        }
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+        try {
+            Phonenumber.PhoneNumber number = util.parse(raw, region);
+            if (!util.isValidNumber(number)) {
+                return null;
+            }
+            return util.format(number, PhoneNumberUtil.PhoneNumberFormat.E164);
+        } catch (NumberParseException e) {
+            return null;
+        }
+    }
+
     static boolean isPermissionGranted(Context context, String permission) {
         return ActivityCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
     }
@@ -433,7 +519,7 @@ public class UiUtils {
 
     static void onContactsPermissionsGranted(Activity activity) {
         // Run in background without blocking the main thread.
-        Executors.newSingleThreadExecutor().execute(() -> {
+        CONTACTS_EXECUTOR.execute(() -> {
             Account acc = Utils.getSavedAccount(AccountManager.get(activity), Cache.getTinode().getMyId());
             if (acc == null) {
                 return;
@@ -442,6 +528,8 @@ public class UiUtils {
             Collection<ComTopic<VxCard>> topics = tinode.getFilteredTopics(Topic::isP2PType);
             ContactsManager.updateContacts(activity, acc, tinode, topics);
             TindroidApp.startWatchingContacts(activity, acc);
+            // Upload the address book now so phonebook matches show without an app restart.
+            requestImmediateContactsSync(acc);
         });
     }
 
@@ -936,7 +1024,7 @@ public class UiUtils {
                         final String[] split = docId.split(":");
                         final String type = split[0];
 
-                        if ("primary".equalsIgnoreCase(type)) {
+                        if ("primary".equalsIgnoreCase(type) && split.length > 1) {
                             return Environment.getExternalStorageDirectory() + "/" + split[1];
                         }
                         // TODO: handle non-primary volumes
@@ -986,13 +1074,14 @@ public class UiUtils {
                         } else if ("audio".equals(type)) {
                             contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
                         }
-                        if (contentUri != null) {
+                        if (contentUri != null && split.length > 1) {
                             final String selection = "_id=?";
                             final String[] selectionArgs = new String[]{split[1]};
                             return getResolverData(context, contentUri, selection, selectionArgs);
                         } else {
                             Log.w(TAG, "Unknown MediaProvider type " + type);
                         }
+                        break;
                     }
                     default:
                         Log.w(TAG, "Unknown content authority " + uri.getAuthority());

@@ -69,8 +69,6 @@ public class IncomingCallFragment extends Fragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
         View v = inflater.inflate(R.layout.fragment_incoming_call, container, false);
         ((MotionLayout) v.findViewById(R.id.incomingCallMainLayout)).setTransitionListener(this);
 

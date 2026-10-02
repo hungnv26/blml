@@ -111,6 +111,8 @@ public class AccountInfoFragment extends Fragment implements ChatsActivity.FormU
 
     @Override
     public void onResume() {
+        super.onResume();
+
         final AppCompatActivity activity = (AppCompatActivity) requireActivity();
         final MeTopic<VxCard> me = Cache.getTinode().getMeTopic();
 
@@ -120,8 +122,6 @@ public class AccountInfoFragment extends Fragment implements ChatsActivity.FormU
 
         // Assign initial form values.
         updateFormValues(activity, me);
-
-        super.onResume();
     }
 
     @SuppressLint("SetTextI18n")

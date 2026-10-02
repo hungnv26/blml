@@ -117,7 +117,9 @@ public class WaveDrawable extends Drawable implements Runnable {
         mBuffer = new float[maxBars];
 
         // Recalculate frame duration (2 pixels per frame).
-        mFrameDuration = Math.max(mDuration / mEffectiveWidth * 2, MIN_FRAME_DURATION);
+        mFrameDuration = mEffectiveWidth > 0
+                ? Math.max(mDuration / mEffectiveWidth * 2, MIN_FRAME_DURATION)
+                : MIN_FRAME_DURATION;
 
         if (mOriginal != null) {
             resampleBars(mOriginal, mBuffer);
@@ -242,7 +244,9 @@ public class WaveDrawable extends Drawable implements Runnable {
 
     public void setDuration(int millis) {
         mDuration = millis;
-        mFrameDuration = Math.max(mDuration / mEffectiveWidth * 2, MIN_FRAME_DURATION);
+        mFrameDuration = mEffectiveWidth > 0
+                ? Math.max(mDuration / mEffectiveWidth * 2, MIN_FRAME_DURATION)
+                : MIN_FRAME_DURATION;
     }
 
     public void seekTo(@FloatRange(from = 0f, to = 1f) float fraction) {
@@ -266,9 +270,8 @@ public class WaveDrawable extends Drawable implements Runnable {
             mBuffer[mContains] = amplitude;
             mContains++;
         } else {
-            mIndex ++;
-            mIndex %= mBuffer.length;
             mBuffer[mIndex] = amplitude;
+            mIndex = (mIndex + 1) % mBuffer.length;
         }
 
         float max = 0f;

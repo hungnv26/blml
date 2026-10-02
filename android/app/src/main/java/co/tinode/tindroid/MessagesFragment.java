@@ -170,6 +170,7 @@ public class MessagesFragment extends Fragment implements MenuProvider {
     private boolean mChatInvitationShown = false;
 
     private boolean mSendOnEnter = false;
+    private boolean mLinkLookupPending = false;
 
     private UiUtils.MsgAction mTextAction = UiUtils.MsgAction.NONE;
     private int mQuotedSeqID = -1;
@@ -571,6 +572,9 @@ public class MessagesFragment extends Fragment implements MenuProvider {
             }
         });
 
+        view.findViewById(R.id.unblockButton).setOnClickListener(v ->
+                ((MessageActivity) activity).unblockTopic());
+
         view.findViewById(R.id.enablePeerButton).setOnClickListener(view1 -> {
             // Enable peer.
             Acs am = new Acs(mTopic.getAccessMode());
@@ -582,7 +586,7 @@ public class MessagesFragment extends Fragment implements MenuProvider {
 
         // Monitor status of attachment uploads and update messages accordingly.
         WorkManager.getInstance(activity).getWorkInfosByTagLiveData(AttachmentHandler.TAG_UPLOAD_WORK)
-                .observe(activity, workInfos -> {
+                .observe(getViewLifecycleOwner(), workInfos -> {
                     for (WorkInfo wi : workInfos) {
                         WorkInfo.State state = wi.getState();
                         switch (state) {
@@ -856,6 +860,9 @@ public class MessagesFragment extends Fragment implements MenuProvider {
 
                 if (mAudioRecorder == null) {
                     initAudioRecorder(activity);
+                    if (mAudioRecorder == null) {
+                        return;
+                    }
                 }
                 try {
                     mAudioRecorder.start();
@@ -864,6 +871,7 @@ public class MessagesFragment extends Fragment implements MenuProvider {
                 } catch (RuntimeException ex) {
                     Log.e(TAG, "Failed to start audio recording", ex);
                     Toast.makeText(activity, R.string.audio_recording_failed, Toast.LENGTH_SHORT).show();
+                    releaseAudio(false);
                     return;
                 }
 
@@ -917,6 +925,12 @@ public class MessagesFragment extends Fragment implements MenuProvider {
             WaveDrawable wd = (WaveDrawable) wave.getBackground();
             wd.start();
             initAudioPlayer(wd, playButton, pauseButton);
+            if (mAudioPlayer == null) {
+                pauseButton.setVisibility(View.GONE);
+                playButton.setVisibility(View.VISIBLE);
+                wd.stop();
+                return;
+            }
             mAudioPlayer.start();
         });
         pauseButton.setOnClickListener(v -> {
@@ -1001,7 +1015,10 @@ public class MessagesFragment extends Fragment implements MenuProvider {
                     acs.isReader(Acs.Side.GIVEN) ? View.GONE : View.VISIBLE);
         }
 
-        if (!mTopic.isWriter() || mTopic.isBlocked() || mTopic.isDeleted()) {
+        if (mTopic.isP2PType() && mTopic.isBlockedByMe()) {
+            // "You blocked this contact. UNBLOCK" instead of the composer.
+            setSendPanelVisible(activity, R.id.blockedByMePanel);
+        } else if (!mTopic.isWriter() || mTopic.isBlocked() || mTopic.isDeleted()) {
             setSendPanelVisible(activity, R.id.sendMessageDisabled);
         } else if (mContentToForward != null) {
             showContentToForward(activity, mForwardSender, mContentToForward);
@@ -1024,7 +1041,8 @@ public class MessagesFragment extends Fragment implements MenuProvider {
             }
         }
 
-        if (acs.isJoiner(Acs.Side.GIVEN) && acs.getExcessive().toString().contains("RW")) {
+        if (acs.isJoiner(Acs.Side.GIVEN) && acs.getExcessive().toString().contains("RW") &&
+                !mTopic.isBlockedByMe()) {
             showChatInvitationDialog();
         }
     }
@@ -1226,6 +1244,7 @@ public class MessagesFragment extends Fragment implements MenuProvider {
         } catch (SecurityException | IOException | IllegalStateException ex) {
             Log.e(TAG, "Unable to play recording", ex);
             Toast.makeText(requireContext(), R.string.unable_to_play_audio, Toast.LENGTH_SHORT).show();
+            mAudioPlayer.release();
             mAudioPlayer = null;
         }
     }
@@ -1454,6 +1473,10 @@ public class MessagesFragment extends Fragment implements MenuProvider {
             return;
         }
 
+        if (mLinkLookupPending) {
+            return;
+        }
+
         String message = inputField.getText().toString().trim();
         if (!message.isEmpty()) {
             // A bare link gets the page title appended as a second line. The
@@ -1462,7 +1485,9 @@ public class MessagesFragment extends Fragment implements MenuProvider {
             String link = ComposeExtras.firstLink(message);
             if (link != null && mTextAction != UiUtils.MsgAction.EDIT) {
                 final String original = message;
+                mLinkLookupPending = true;
                 ComposeExtras.fetchLinkTitle(activity, link, title -> activity.runOnUiThread(() -> {
+                    mLinkLookupPending = false;
                     String enriched = (title != null && !original.contains(title))
                             ? original + "\n— " + title : original;
                     sendComposed(activity, inputField, enriched);

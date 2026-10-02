@@ -246,6 +246,9 @@ public class PasswordResetFragment extends Fragment implements MenuProvider {
         String password = ((EditText) parent.findViewById(R.id.editPassword)).getText().toString().trim();
         wrapper = parent.findViewById(R.id.editPasswordWrapper);
         wrapper.setError(password.isEmpty() ? getString(R.string.password_required) : null);
+        if (code.isEmpty() || password.isEmpty()) {
+            return;
+        }
 
         Cache.getTinode().updateAccountBasic(AuthScheme.codeInstance(code, method, value), null, password)
                 .thenApply(new PromisedReply.SuccessListener<>() {

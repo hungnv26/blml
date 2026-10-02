@@ -13,6 +13,8 @@ import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.core.widget.TextViewCompat;
+
 /**
  * A keyboard-sized panel of stickers, shown in place of the soft keyboard.
  * Mirrors ios/Tinodios/widgets/EmojiPickerView.swift — keep the two in step.
@@ -224,7 +226,9 @@ public class StickerPanelView extends LinearLayout {
             t.setGravity(Gravity.CENTER);
             // Bigger cells on the common page deserve a bigger glyph. Pairs
             // ("🎂🎉") are wider than one glyph; auto-size shrinks, not clips.
-            t.setTextSize(TypedValue.COMPLEX_UNIT_SP, mCat.perRow <= 5 ? 30 : 24);
+            t.setMaxLines(1);
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(t, 12, mCat.perRow <= 5 ? 30 : 24,
+                    1, TypedValue.COMPLEX_UNIT_SP);
             t.setTextColor(Color.BLACK);
             t.setText(mCat.emoji[position]);
             return t;

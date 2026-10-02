@@ -233,7 +233,7 @@
     <string name="user_default_permissions_explained">Outros iniciam uma conversa com você com essas permissões</string>
     <string name="confirm_delmsg_for_all">Deseja realmente remover todas as mensagens para todos os participantes?</string>
     <string name="confirm_delmsg_for_self">Deseja realmente remover todas as mensagens? Elas serão removidas apenas para você.</string>
-    <string name="licenses">Lizenzen</string>
+    <string name="licenses">Licenças</string>
 
     <string name="blocked_contacts">Contatos bloqueados</string>
     <string name="action_restore">Desbloquear</string>
@@ -268,7 +268,7 @@
     <string name="topic_settings">Configurações da conversa</string>
     <string name="group_security_explained">Permissão, deixar ou reportar a conversa</string>
     <string name="hint_search_contacts">Procurar contatos</string>
-    <string name="hint_contact_name">Name do contato</string>
+    <string name="hint_contact_name">Nome do contato</string>
     <string name="report_channel">Reportar canal</string>
     <string name="lock_recording_for_long_messages">Gravação bloqueada para mensagens longas</string>
     <string name="deleted">Removido</string>
@@ -276,11 +276,11 @@
     <string name="play_record_audio_button_hint">Ouvir gravação de áudio</string>
     <string name="audio_recording_failed">Falha para gravar áudio</string>
     <string name="delete_recording_hint">Remover gravação</string>
-    <string name="stop_recording_button_hint">Remover gravação</string>
+    <string name="stop_recording_button_hint">Parar gravação de áudio</string>
     <string name="button_hint_start_audio">Iniciar gravação de áudio</string>
-    <string name="unable_to_play_audio">Não foi possívl reproduzir esta mensagem de áudio</string>
+    <string name="unable_to_play_audio">Não foi possível reproduzir esta mensagem de áudio</string>
     <string name="audio">Áudio</string>
-    <string name="record_audio_button_hint">Reproduzir audio da gravação</string>
+    <string name="record_audio_button_hint">Segure para gravar uma mensagem de voz</string>
     <string name="video_calls_unavailable">Chamada de vídeo indisponível</string>
     <string name="action_video_call">Chamada de vídeo</string>
     <string name="outgoing_call">Chamada de saída</string>

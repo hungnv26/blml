@@ -121,7 +121,9 @@ public class MediaControl {
                             tinode.getRequestHeaders(), null);
                 } catch (SecurityException | IOException ex) {
                     Log.w(TAG, "Failed to add URI data source ", ex);
+                    mAudioControlCallback.reset();
                     Toast.makeText(mContext, R.string.unable_to_play_audio, Toast.LENGTH_SHORT).show();
+                    return false;
                 }
             } else {
                 mAudioControlCallback.reset();
@@ -135,7 +137,9 @@ public class MediaControl {
                 mAudioPlayer.setDataSource(new MemoryAudioSource(source));
             } catch (IllegalArgumentException ex) {
                 Log.w(TAG, "Unable to play audio: invalid data");
+                mAudioControlCallback.reset();
                 Toast.makeText(mContext, R.string.unable_to_play_audio, Toast.LENGTH_SHORT).show();
+                return false;
             }
         } else {
             mAudioControlCallback.reset();
@@ -252,6 +256,9 @@ public class MediaControl {
 
         @Override
         public int readAt(long position, byte[] destination, int offset, int size) {
+            if (position >= mData.length) {
+                return -1;
+            }
             size = Math.min(mData.length - (int) position, size);
             System.arraycopy(mData, (int) position, destination, offset, size);
             return size;

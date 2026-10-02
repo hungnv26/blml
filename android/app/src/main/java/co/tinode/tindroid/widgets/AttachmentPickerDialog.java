@@ -42,6 +42,11 @@ public class AttachmentPickerDialog extends BottomSheetDialogFragment {
     private final ActivityResultLauncher<String> mVideoPermissionLauncher;
     private final Uri mDestVideoUri;
 
+    // Required for fragment re-creation by the system. Launchers are lost then, so the dialog dismisses itself.
+    public AttachmentPickerDialog() {
+        this(null, null, null, null, null, null, null, null);
+    }
+
     protected AttachmentPickerDialog(@Nullable ActivityResultLauncher<PickVisualMediaRequest> galleryLauncher,
                                   @Nullable ActivityResultLauncher<Uri> cameraLauncher,
                                   @Nullable ActivityResultLauncher<Void> cameraPreviewLauncher,
@@ -60,6 +65,14 @@ public class AttachmentPickerDialog extends BottomSheetDialogFragment {
         mVideoLauncher = videoLauncher;
         mVideoPermissionLauncher = videoPermissionLauncher;
         mDestVideoUri = destVideoUri;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            dismissAllowingStateLoss();
+        }
     }
 
     @Nullable

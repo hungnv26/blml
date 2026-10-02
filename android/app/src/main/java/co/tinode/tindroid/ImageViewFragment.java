@@ -265,21 +265,21 @@ public class ImageViewFragment extends Fragment implements MenuProvider {
             final ContentResolver resolver = activity.getContentResolver();
             // Resize image to ensure it's under the maximum in-band size.
             try {
-                InputStream is = resolver.openInputStream(uri);
-                if (is != null) {
-                    bmp = BitmapFactory.decodeStream(is, null, null);
-                    is.close();
+                try (InputStream is = resolver.openInputStream(uri)) {
+                    if (is != null) {
+                        bmp = BitmapFactory.decodeStream(is, null, null);
+                    }
                 }
                 // Make sure the bitmap is properly oriented in preview.
-                is = resolver.openInputStream(uri);
-                if (is != null) {
-                    ExifInterface exif = new ExifInterface(is);
-                    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                            ExifInterface.ORIENTATION_UNDEFINED);
-                    if (bmp != null) {
-                        bmp = UtilsBitmap.rotateBitmap(bmp, orientation);
+                try (InputStream is = resolver.openInputStream(uri)) {
+                    if (is != null) {
+                        ExifInterface exif = new ExifInterface(is);
+                        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                                ExifInterface.ORIENTATION_UNDEFINED);
+                        if (bmp != null) {
+                            bmp = UtilsBitmap.rotateBitmap(bmp, orientation);
+                        }
                     }
-                    is.close();
                 }
             } catch (IOException ex) {
                 Log.w(TAG, "Failed to read image from " + uri, ex);

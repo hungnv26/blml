@@ -37,7 +37,7 @@ public class LargeFileHelper {
     private final String mAuthToken;
     private final String mUserAgent;
 
-    private boolean mCanceled = false;
+    private volatile boolean mCanceled = false;
 
     private int mReqId = 1;
 
@@ -208,10 +208,11 @@ public class LargeFileHelper {
         return mCanceled;
     }
 
-    private int copyStream(@NotNull InputStream in, @NotNull OutputStream out, long size, @Nullable FileHelperProgress p)
+    private long copyStream(@NotNull InputStream in, @NotNull OutputStream out, long size, @Nullable FileHelperProgress p)
             throws IOException, CancellationException {
         byte[] buffer = new byte[BUFFER_SIZE];
-        int len, sent = 0;
+        int len;
+        long sent = 0;
         while ((len = in.read(buffer)) != -1) {
             if (mCanceled) {
                 throw new CancellationException("Cancelled");

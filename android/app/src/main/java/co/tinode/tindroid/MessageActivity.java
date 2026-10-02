@@ -415,8 +415,6 @@ public class MessageActivity extends BaseActivity
         String name = intent.getStringExtra(Const.INTENT_EXTRA_TOPIC);
         if (!TextUtils.isEmpty(name)) {
             return name;
-        } else {
-            name = Tinode.parseTinodeUrl(name);
         }
 
         // Check if activity was launched from a background push notification.
@@ -479,9 +477,42 @@ public class MessageActivity extends BaseActivity
     }
 
     private void topicAttach() {
+        topicAttach(false);
+    }
+
+    /**
+     * Lift the block on this chat and attach to it. Called from the "You blocked this contact" bar.
+     */
+    void unblockTopic() {
+        if (mTopic == null || !mTopic.isBlockedByMe()) {
+            return;
+        }
+        if (mTopic.isAttached()) {
+            UiUtils.unblockTopic(mTopic, null).thenApply(new PromisedReply.SuccessListener<>() {
+                @Override
+                public PromisedReply<ServerMessage> onSuccess(ServerMessage result) {
+                    runOnUiThread(() -> maybeShowMessagesFragmentOnAttach());
+                    return null;
+                }
+            }).thenCatch(new UiUtils.ToastFailureListener(this));
+            return;
+        }
+        topicAttach(true);
+    }
+
+    private void topicAttach(boolean unblock) {
         if (mTopic.isDeleted()) {
             UiUtils.setupToolbar(this, mTopic.getPub(), mTopicName,
                     false, null, true, 0);
+            maybeShowMessagesFragmentOnAttach();
+            return;
+        }
+
+        if (!unblock && mTopic.isP2PType() && mTopic.isBlockedByMe()) {
+            // The user has blocked this contact. Do not subscribe: it would fetch and acknowledge
+            // the blocked person's messages. Show what is cached and an Unblock bar instead.
+            UiUtils.setupToolbar(this, mTopic.getPub(), mTopicName,
+                    false, null, false, 0);
             maybeShowMessagesFragmentOnAttach();
             return;
         }
@@ -504,7 +535,10 @@ public class MessageActivity extends BaseActivity
             builder = builder.withTags();
         }
 
-        mTopic.subscribe(null, builder.build())
+        PromisedReply<ServerMessage> subscribed = unblock ?
+                UiUtils.unblockTopic(mTopic, builder.build()) :
+                mTopic.subscribe(null, builder.build());
+        subscribed
                 .thenApply(new PromisedReply.SuccessListener<>() {
                     @Override
                     public PromisedReply<ServerMessage> onSuccess(ServerMessage result) {
@@ -536,6 +570,14 @@ public class MessageActivity extends BaseActivity
                                 int code = ((ServerResponseException) err).getCode();
                                 if (code == 404) {
                                     showFragment(FRAGMENT_INVALID, null, false);
+                                } else if (code == ServerMessage.STATUS_FORBIDDEN &&
+                                        Topic.INVITE_ONLY.equals(((ServerResponseException) err).getReason())) {
+                                    // Joining a group by ID/QR without an invitation.
+                                    runOnUiThread(() -> {
+                                        Toast.makeText(MessageActivity.this, R.string.group_invite_only,
+                                                Toast.LENGTH_LONG).show();
+                                        finish();
+                                    });
                                 }
                             }
                         }
@@ -599,24 +641,20 @@ public class MessageActivity extends BaseActivity
         if (id == R.id.action_view_contact) {
             showFragment(FRAGMENT_INFO, null, true);
             return true;
-        } else if (mTopic != null) {
-            if (id == R.id.action_archive) {
-                mTopic.updateArchived(true);
-                return true;
-            } else if (id == R.id.action_unarchive) {
-                mTopic.updateArchived(false);
-                return true;
-            } else if (id == R.id.action_audio_call || id == R.id.action_video_call) {
-                try {
-                    CallManager.placeOutgoingCall(this, mTopicName, id == R.id.action_audio_call);
-                } catch (IllegalStateException | SecurityException | UnsupportedOperationException ex) {
-                    Log.w(TAG, "Unable to place outgoing call", ex);
-                    Toast.makeText(this, R.string.calling_not_supported, Toast.LENGTH_SHORT).show();
-                }
-                return true;
+        } else if (id == R.id.action_archive) {
+            mTopic.updateArchived(true);
+            return true;
+        } else if (id == R.id.action_unarchive) {
+            mTopic.updateArchived(false);
+            return true;
+        } else if (id == R.id.action_audio_call || id == R.id.action_video_call) {
+            try {
+                CallManager.placeOutgoingCall(this, mTopicName, id == R.id.action_audio_call);
+            } catch (IllegalStateException | SecurityException | UnsupportedOperationException ex) {
+                Log.w(TAG, "Unable to place outgoing call", ex);
+                Toast.makeText(this, R.string.calling_not_supported, Toast.LENGTH_SHORT).show();
             }
-        } else {
-            Toast.makeText(this, R.string.action_failed, Toast.LENGTH_SHORT).show();
+            return true;
         }
 
         return false;

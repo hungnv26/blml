@@ -35,6 +35,7 @@ public class OverlaidImageView extends AppCompatImageView {
      */
     public void enableOverlay(boolean on) {
         mShowOverlay = on;
+        invalidate();
     }
 
     @Override

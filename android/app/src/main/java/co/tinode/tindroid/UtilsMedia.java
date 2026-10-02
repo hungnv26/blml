@@ -59,14 +59,15 @@ public class UtilsMedia {
     private static Uri createTempUri(Context context, String prefix, String suffix) throws IOException {
         String imageFileName = prefix +
                 new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date()) + "_";
-        File file = File.createTempFile(imageFileName, suffix,
-                context.getExternalFilesDir(Environment.DIRECTORY_PICTURES));
+        File path = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        if (path == null) {
+            throw new IOException("External pictures directory is unavailable");
+        }
 
         // Make sure path exists.
-        File path = file.getParentFile();
-        if (path != null) {
-            path.mkdirs();
-        }
+        path.mkdirs();
+
+        File file = File.createTempFile(imageFileName, suffix, path);
 
         return FileProvider.getUriForFile(context, "co.tinode.tindroid.provider", file);
     }

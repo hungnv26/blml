@@ -115,7 +115,7 @@ public class PhoneEdit extends FrameLayout {
                     return;
                 }
                 editing = true;
-                if (edited.length() > 0) {
+                if (edited.length() > 0 && mFormatter != null) {
                     char[] source = edited.toString().toCharArray();
                     String result = "";
                     for (char ch : source) {
@@ -156,8 +156,10 @@ public class PhoneEdit extends FrameLayout {
     private List<CountryCode> readCountryList(Locale locale) throws IOException, JSONException {
         AssetManager am = getResources().getAssets();
         // Read dialing codes.
-        InputStream is = am.open("dcodes.json", AssetManager.ACCESS_BUFFER);
-        String data = readJSONString(is);
+        String data;
+        try (InputStream is = am.open("dcodes.json", AssetManager.ACCESS_BUFFER)) {
+            data = readJSONString(is);
+        }
         JSONArray array = new JSONArray(data);
         HashMap<String, String[]> dialCodes = new HashMap<>();
         for (int i = 0, n = array.length(); i < n; i++) {
@@ -171,7 +173,6 @@ public class PhoneEdit extends FrameLayout {
                 throw new JSONException("Invalid input in dcodes.json");
             }
         }
-        is.close();
 
         List<CountryCode> countryList = new ArrayList<>();
         for (Map.Entry<String, String[]> dcode : dialCodes.entrySet()) {
@@ -184,15 +185,17 @@ public class PhoneEdit extends FrameLayout {
             for (String prefix: dcode.getValue()) {
                 countryList.add(new CountryCode(code, countryName, prefix.trim()));
             }
-
-            Collections.sort(countryList);
         }
+        Collections.sort(countryList);
 
         return countryList;
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isNumberValid() {
+        if (mSelected == null) {
+            return false;
+        }
         Phonenumber.PhoneNumber number;
         try {
             number = mPhoneNumberUtil.parse(getPhoneNumberE164(), mSelected.isoCode);
@@ -211,13 +214,13 @@ public class PhoneEdit extends FrameLayout {
         if (TextUtils.isEmpty(text)) {
             return "";
         }
-        return mSelected.prefix + text;
+        return mSelected != null ? mSelected.prefix + text : text;
     }
 
     public @NonNull String getPhoneNumberE164() {
         String text = getRawInput();
-        if (TextUtils.isEmpty(text)) {
-            return text;
+        if (TextUtils.isEmpty(text) || mSelected == null) {
+            return mSelected == null ? "" : text;
         }
 
         try {
@@ -229,6 +232,10 @@ public class PhoneEdit extends FrameLayout {
     }
 
     public void setText(CharSequence text) {
+        if (mSelected == null) {
+            mTextEdit.setText(text);
+            return;
+        }
         try {
             Phonenumber.PhoneNumber number = mPhoneNumberUtil.parse(text, mSelected.isoCode);
             if (mPhoneNumberUtil.isValidNumber(number)) {
@@ -246,6 +253,9 @@ public class PhoneEdit extends FrameLayout {
     }
 
     public void setCountry(String code) {
+        if (mAdapter == null) {
+            return;
+        }
         int pos = mAdapter.getPosition(new CountryCode(code));
         if (pos >= 0) {
             CountryCode country = mAdapter.getItem(pos);
@@ -263,7 +273,10 @@ public class PhoneEdit extends FrameLayout {
     private String getExampleLocalNumber() {
         Phonenumber.PhoneNumber sample = mPhoneNumberUtil.getExampleNumberForType(mSelected.isoCode,
                 PhoneNumberUtil.PhoneNumberType.MOBILE);
-        return formatLocalPart(mPhoneNumberUtil.format(sample, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL));
+        if (sample == null) {
+            return "";
+        }
+        return formatLocalPart(mPhoneNumberUtil.format(sample,PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL));
     }
 
     private String formatLocalPart(String numberE164) {

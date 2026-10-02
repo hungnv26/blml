@@ -83,6 +83,25 @@ public class AccPersonalFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
         requireActivity().addMenuProvider(this,
                 getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+
+        final FragmentActivity activity = requireActivity();
+        final TextView alias = view.findViewById(R.id.alias);
+        if (alias != null) {
+            alias.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    alias.setError(UiUtils.validateAlias(activity, mAliasChecker, s.toString()));
+                }
+            });
+        }
     }
 
     @Override
@@ -107,24 +126,6 @@ public class AccPersonalFragment extends Fragment
                             .setCameraPreviewLauncher(mThumbPhotoLauncher, mRequestPermissionsLauncher)
                             .build()
                             .show(getChildFragmentManager()));
-        }
-
-        final TextView alias = fragmentView.findViewById(R.id.alias);
-        if (alias != null) {
-            alias.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    alias.setError(UiUtils.validateAlias(activity, mAliasChecker, s.toString()));
-                }
-            });
         }
 
         // Assign initial form values.

@@ -21,6 +21,7 @@ import java.util.List;
 import co.tinode.tindroid.media.Wallpapers;
 
 import coil.Coil;
+import coil.request.Disposable;
 import coil.request.ImageRequest;
 import coil.target.Target;
 
@@ -107,6 +108,7 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.VH> 
         final View selectedOverlay;
         final ColorMatrixColorFilter inverter;
         final String baseUrl;
+        Disposable disposable;
 
         VH(@NonNull View itemView, String baseUrl, ColorMatrixColorFilter cm) {
             super(itemView);
@@ -119,6 +121,11 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.VH> 
         }
 
         void bind(Wallpapers.WPaper wp, boolean isSelected, OnImageClickListener listener) {
+            if (disposable != null) {
+                disposable.dispose();
+                disposable = null;
+            }
+            imageView.setImageDrawable(null);
             progressBar.setVisibility(View.VISIBLE);
             selectedOverlay.setVisibility(isSelected ? View.VISIBLE : View.GONE);
 
@@ -157,7 +164,7 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.VH> 
                         }
                     }).build();
 
-            Coil.imageLoader(itemView.getContext()).enqueue(request);
+            disposable = Coil.imageLoader(itemView.getContext()).enqueue(request);
 
             itemView.setOnClickListener(v -> {
                 if (listener != null) {

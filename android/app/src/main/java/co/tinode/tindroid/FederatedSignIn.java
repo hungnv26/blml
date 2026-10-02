@@ -63,7 +63,6 @@ import co.tinode.tinodesdk.model.ServerMessage;
  */
 class FederatedSignIn {
     private static final String TAG = "FederatedSignIn";
-    static final Uri TERMS_URL = Uri.parse("https://hungngo.net/blml/terms");
 
     private final LoginActivity mActivity;
     private final Button mButton;
@@ -227,7 +226,8 @@ class FederatedSignIn {
         dialog.setOnShowListener(d -> {
             // Neutral opens the Terms without closing the form.
             dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v ->
-                    mActivity.startActivity(new Intent(Intent.ACTION_VIEW, TERMS_URL)));
+                    mActivity.startActivity(new Intent(Intent.ACTION_VIEW,
+                            Uri.parse(mActivity.getString(R.string.terms_of_use_uri)))));
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
                 String name = nameInput.getText().toString().trim();
                 if (name.isEmpty()) {

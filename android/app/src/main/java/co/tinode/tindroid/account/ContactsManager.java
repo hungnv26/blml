@@ -60,8 +60,14 @@ public class ContactsManager {
         for (Subscription<VxCard, ?> sub : subscriptions) {
             // The server returns a timestamp with each record. On the next sync we can just
             // ask for changes that have occurred since that most-recent change.
-            if (currentSyncMarker == null || (sub.updated != null && sub.updated.after(currentSyncMarker))) {
-                currentSyncMarker = sub.updated;
+            // Results are not sorted by 'updated': compare with the previous marker and keep
+            // the newest seen separately. Comparing with the running maximum skipped every
+            // match older than the one before it (a full sync dropped matches).
+            if (lastSyncMarker == null || (sub.updated != null && sub.updated.after(lastSyncMarker))) {
+                if (sub.updated != null &&
+                        (currentSyncMarker == null || sub.updated.after(currentSyncMarker))) {
+                    currentSyncMarker = sub.updated;
+                }
 
                 // Send updated contact to database.
                 processContact(context, resolver, account, tinode,
@@ -144,7 +150,7 @@ public class ContactsManager {
             }
         } else {
             // Add matches from .priv to (VCard).pub
-            dedupe(pub, priv);
+            pub = dedupe(pub, priv);
 
             if (rawContactId > 0) {
                 // Contact already exists
@@ -281,7 +287,7 @@ public class ContactsManager {
                         } else if (type == Phone.TYPE_WORK) {
                             existingWorkPhone = true;
                             contactOp.updatePhone(c.getString(DataQuery.COLUMN_PHONE_NUMBER),
-                                    pub.getPhoneByType(VxCard.TYPE_BUSINESS), uri);
+                                    pub.getPhoneByType(VxCard.TYPE_WORK), uri);
                         }
                         break;
                     case Email.CONTENT_ITEM_TYPE:
@@ -445,9 +451,9 @@ public class ContactsManager {
     }
 
     // Process Private field, add emails and phones to Public.
-    private static void dedupe(VxCard pub, Object priv) {
+    private static VxCard dedupe(VxCard pub, Object priv) {
         if (!(priv instanceof String[])) {
-            return;
+            return pub;
         }
 
         for (String match : (String[]) priv) {
@@ -473,6 +479,7 @@ public class ContactsManager {
                 pub.addPhone(value, TheCard.TYPE_OTHER);
             }
         }
+        return pub;
     }
 
     private static int vcardTypeToDbType(VxCard.ContactType tp) {

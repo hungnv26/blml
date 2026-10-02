@@ -22,15 +22,17 @@ public class CallConnectionService extends ConnectionService {
     @Override
     public Connection onCreateOutgoingConnection(@Nullable PhoneAccountHandle connectionManagerPhoneAccount,
                                                  @Nullable ConnectionRequest request) {
+        if (request == null) {
+            Log.w(TAG, "Dropped outgoing call with null ConnectionRequest");
+            return null;
+        }
+
         CallConnection conn = new CallConnection(getApplicationContext());
         conn.setInitializing();
-        boolean audioOnly = false;
-        if (request != null) {
-            conn.setAddress(request.getAddress(), TelecomManager.PRESENTATION_ALLOWED);
-            conn.setVideoState(request.getVideoState());
-            Bundle extras = request.getExtras();
-            audioOnly = extras.getBoolean(Const.INTENT_EXTRA_CALL_AUDIO_ONLY);
-        }
+        conn.setAddress(request.getAddress(), TelecomManager.PRESENTATION_ALLOWED);
+        conn.setVideoState(request.getVideoState());
+        Bundle extras = request.getExtras();
+        boolean audioOnly = extras != null && extras.getBoolean(Const.INTENT_EXTRA_CALL_AUDIO_ONLY);
         conn.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
         conn.setConnectionCapabilities(Connection.CAPABILITY_MUTE |
                 Connection.CAPABILITY_CAN_SEND_RESPONSE_VIA_CONNECTION);

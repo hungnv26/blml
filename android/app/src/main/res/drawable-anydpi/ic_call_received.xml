@@ -11,10 +11,10 @@
     </item>
     <item
         android:drawable="@drawable/ic_call"
-        android:insetLeft="2dp"
-        android:insetTop="2dp"
-        android:insetRight="2dp"
-        android:insetBottom="2dp" />
+        android:left="2dp"
+        android:top="2dp"
+        android:right="2dp"
+        android:bottom="2dp" />
     <item
         android:drawable="@drawable/ic_arrow_sw"
         android:left="6dp"

@@ -91,7 +91,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/ic_volume_up"
             android:layout_margin="@dimen/fab_margin"
-            android:contentDescription="@string/toggle_camera_button"
+            android:contentDescription="@string/toggle_speakerphone_button"
             android:enabled="false"
             android:tint="@color/white"
             app:backgroundTint="@color/colorNeutralAction"

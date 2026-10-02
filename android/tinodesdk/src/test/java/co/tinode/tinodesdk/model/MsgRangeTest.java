@@ -198,9 +198,10 @@ public class MsgRangeTest {
         clipped = MsgRange.clip(r1, r3);
         assertEquals(0, clipped.length);
 
+        // Partial clipping at the top: [3,7) minus [1,5) leaves [5,7).
         clipped = MsgRange.clip(r2, r1);
         assertEquals(1, clipped.length);
-        assertEquals(new MsgRange(3, 5), clipped[0]);
+        assertEquals(new MsgRange(5, 7), clipped[0]);
 
         clipped = MsgRange.clip(r3, r2);
         assertEquals(2, clipped.length);

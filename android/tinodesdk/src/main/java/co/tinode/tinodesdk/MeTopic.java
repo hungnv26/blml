@@ -497,7 +497,9 @@ public class MeTopic<DP> extends Topic<DP,PrivateType,DP,PrivateType> {
     protected void routeMetaCred(Credential cred) {
         processOneCred(cred);
 
-        mMeNotifier.notifyCredUpdated(mCreds.toArray(new Credential[]{}));
+        if (mCreds != null) {
+            mMeNotifier.notifyCredUpdated(mCreds.toArray(new Credential[]{}));
+        }
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -575,7 +577,9 @@ public class MeTopic<DP> extends Topic<DP,PrivateType,DP,PrivateType> {
                         break;
 
                     case DEL: // messages deleted
-                        // TODO(gene): add handling for del
+                        if (pres.clear != null) {
+                            topic.setDelAndFetch(pres.clear);
+                        }
                         break;
 
                     case GONE:

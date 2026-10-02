@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
 import android.util.Log;
 
@@ -508,8 +509,8 @@ public class TopicDb implements BaseColumns {
         String sql = "SELECT * FROM " + TABLE_NAME +
                 " WHERE " +
                 COLUMN_NAME_ACCOUNT_ID + "=" + BaseDb.getInstance().getAccountId() + " AND " +
-                COLUMN_NAME_TOPIC + "='" + name + "'";
-        Cursor c = db.rawQuery(sql, null);
+                COLUMN_NAME_TOPIC + "=?";
+        Cursor c = db.rawQuery(sql, new String[]{name});
         if (c.moveToFirst()) {
             topic = readOne(tinode, c);
         }
@@ -585,10 +586,12 @@ public class TopicDb implements BaseColumns {
      */
     public static long getId(SQLiteDatabase db, String topic) {
         try {
-            return db.compileStatement("SELECT " + _ID + " FROM " + TABLE_NAME +
+            SQLiteStatement stmt = db.compileStatement("SELECT " + _ID + " FROM " + TABLE_NAME +
                     " WHERE " +
                     COLUMN_NAME_ACCOUNT_ID + "=" + BaseDb.getInstance().getAccountId() + " AND " +
-                    COLUMN_NAME_TOPIC + "='" + topic + "'").simpleQueryForLong();
+                    COLUMN_NAME_TOPIC + "=?");
+            stmt.bindString(1, topic);
+            return stmt.simpleQueryForLong();
         } catch (SQLException ignored) {
             // topic not found
             return -1;

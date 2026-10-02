@@ -66,6 +66,7 @@ public class TopicGeneralFragment extends Fragment implements MenuProvider, Util
             });
 
     private UiUtils.ValidatorHandler mAliasChecker;
+    private TextWatcher mAliasWatcher;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -110,6 +111,7 @@ public class TopicGeneralFragment extends Fragment implements MenuProvider, Util
     @SuppressWarnings("unchecked")
     // onResume sets up the form with values and views which do not change + sets up listeners.
     public void onResume() {
+        super.onResume();
         final Activity activity = requireActivity();
         final Bundle args = getArguments();
 
@@ -129,7 +131,6 @@ public class TopicGeneralFragment extends Fragment implements MenuProvider, Util
         ((TextView) activity.findViewById(R.id.topicAddress)).setText(mTopic.getName());
 
         notifyDataSetChanged();
-        super.onResume();
     }
 
     @Override
@@ -186,7 +187,7 @@ public class TopicGeneralFragment extends Fragment implements MenuProvider, Util
 
         // Get tags and remove the 'alias:abc123' - it's edited elsewhere.
         String[] tagArray = Tinode.clearTagPrefix(mTopic.getTags(), Tinode.TAG_ALIAS);
-        String tags = tagArray != null ? TextUtils.join(", ", mTopic.getTags()) : "";
+        String tags = tagArray != null ? TextUtils.join(", ", tagArray) : "";
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         @SuppressLint("InflateParams") final View editor =
@@ -270,7 +271,10 @@ public class TopicGeneralFragment extends Fragment implements MenuProvider, Util
             alias.setText(aliasTag);
         }
 
-        alias.addTextChangedListener(new TextWatcher() {
+        if (mAliasWatcher != null) {
+            alias.removeTextChangedListener(mAliasWatcher);
+        }
+        mAliasWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -283,7 +287,8 @@ public class TopicGeneralFragment extends Fragment implements MenuProvider, Util
             public void afterTextChanged(Editable s) {
                 alias.setError(UiUtils.validateAlias(activity, mAliasChecker, s.toString()));
             }
-        });
+        };
+        alias.addTextChangedListener(mAliasWatcher);
 
         refreshTags(activity, mTopic.getTags());
     }

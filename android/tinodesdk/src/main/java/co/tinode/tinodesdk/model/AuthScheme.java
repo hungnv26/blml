@@ -83,7 +83,7 @@ public record AuthScheme(String scheme, String secret) implements Serializable {
 
         return new String[]{
                 basicToken.substring(0, splitAt),
-                splitAt == basicToken.length() - 1 ? "" : basicToken.substring(splitAt + 1, basicToken.length() - 1)
+                basicToken.substring(splitAt + 1)
         };
     }
 

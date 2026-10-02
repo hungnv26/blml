@@ -12,8 +12,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.telephony.PhoneNumberUtils;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
@@ -33,6 +31,7 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import co.tinode.tindroid.Cache;
 import co.tinode.tindroid.TindroidApp;
+import co.tinode.tindroid.UiUtils;
 import co.tinode.tindroid.account.ContactsManager;
 import co.tinode.tindroid.account.Utils;
 import co.tinode.tindroid.media.VxCard;
@@ -120,21 +119,9 @@ class ContactsSyncAdapter extends AbstractThreadedSyncAdapter {
             return map;
         }
 
-        // Attempt to determine default country for standardizing phone numbers.
-        String countryCode = null;
-        TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        if (tm != null) {
-            // First try to use country code of the SIM card.
-            countryCode = tm.getSimCountryIso();
-            if (TextUtils.isEmpty(countryCode)) {
-                // Fallback to current network.
-                countryCode = tm.getNetworkCountryIso();
-            }
-            if (TextUtils.isEmpty(countryCode)) {
-                // Use device locale country as a last resort.
-                countryCode = context.getResources().getConfiguration().getLocales().get(0).getCountry();
-            }
-        }
+        // Default country for standardizing phone numbers in local format: the country of the
+        // user's own number first (the SIM can be foreign or absent), then SIM, network, locale.
+        final String countryCode = UiUtils.phoneRegion(context);
         final int contactIdIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID);
         final int mimeTypeIdx = cursor.getColumnIndex(ContactsContract.Data.MIMETYPE);
         final int dataIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA);
@@ -167,12 +154,10 @@ class ContactsSyncAdapter extends AbstractThreadedSyncAdapter {
                     // This is a phone number. Syncing phones of all types. The 'mobile' marker is ignored
                     // because users ignore it these days.
                     if (!TextUtils.isEmpty(data) && Patterns.PHONE.matcher(data).matches()) {
-                        if (!TextUtils.isEmpty(countryCode)) {
-                            // Try to convert the number to E164 format.
-                            String e164 = PhoneNumberUtils.formatNumberToE164(data, countryCode);
-                            if (!TextUtils.isEmpty(e164)) {
-                                data = e164;
-                            }
+                        // Try to convert the number to E164 format.
+                        String e164 = UiUtils.toE164(data, countryCode);
+                        if (!TextUtils.isEmpty(e164)) {
+                            data = e164;
                         }
                         // Remove all characters other than 0-9 and +, save the result.
                         holder.putPhone(data.replaceAll("[^0-9+]", ""));
@@ -281,7 +266,6 @@ class ContactsSyncAdapter extends AbstractThreadedSyncAdapter {
                 // If the query has changed, clear the sync marker for a full sync.
                 // Otherwise, we are only going to get updated contacts.
                 lastSyncMarker = null;
-                setServerQueryHash(account, newHash);
             }
 
             try {
@@ -304,6 +288,7 @@ class ContactsSyncAdapter extends AbstractThreadedSyncAdapter {
                     // update is performed.
                     tinode.setMeta(Tinode.TOPIC_FND, new MsgSetMeta.Builder()
                             .with(new MetaSetDesc(null, contacts)).build()).getResult();
+                    setServerQueryHash(account, newHash);
                 }
 
                 final MsgGetMeta meta = new MsgGetMeta(new MetaGetSub(lastSyncMarker, null));
@@ -315,6 +300,10 @@ class ContactsSyncAdapter extends AbstractThreadedSyncAdapter {
                         // Fetch the list of updated contacts.
                         Collection<Subscription<VxCard, PrivateType>> updated = new ArrayList<>();
                         for (Subscription<VxCard, PrivateType> sub : pkt.meta.sub) {
+                            // fnd results name the match in 'topic' (usrXXX), not in 'user'.
+                            if (sub.user == null && Topic.isP2PType(sub.topic)) {
+                                sub.user = sub.topic;
+                            }
                             if (Topic.isP2PType(sub.user)) {
                                 updated.add(sub);
                             }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_version">Version</string>
+    <string name="app_version">版本</string>
 
     <string name="login_hint">登录</string>
     <string name="password_hint">密码</string>
@@ -9,7 +9,7 @@
     <string name="send_image_button_hint">发送图片</string>
     <string name="send_file_button_hint">发送文件</string>
 
-    <string name="sign_in">登入</string>
+    <string name="sign_in">登录</string>
     <string name="action_signup">注册</string>
     <string name="sign_up">注册</string>
     <string name="login_new">登录</string>
@@ -106,8 +106,8 @@
     <string name="remove_from_group">移除</string>
     <string name="block">锁定</string>
 
-    <string name="confirm_member_removal">删除 %1$s from \"%2$s\"?</string>
-    <string name="confirm_member_ban"> 删除并禁止 %1$s from \"%2$s\"?</string>
+    <string name="confirm_member_removal">从 \"%2$s\" 中删除 %1$s?</string>
+    <string name="confirm_member_ban">从 \"%2$s\" 中删除并禁止 %1$s?</string>
     <string name="confirm_leave_topic">真的要离开这个会话吗?</string>
     <string name="confirm_delete_topic">真的要为所有人删除该会话吗?</string>
     <string name="confirm_delete_multiple_topics">您真的要删除这些聊天吗?</string>
@@ -180,7 +180,7 @@
     <string name="no_results">无结果</string>
     <string name="file_name_label">文件名称:</string>
     <string name="content_type_label">内容类型:</string>
-    <string name="image_size_label">Size:</string>
+    <string name="image_size_label">大小:</string>
     <string name="topic_blocked">已禁用</string>
     <string name="topic_archived">已存档</string>
     <string name="action_unarchive">取消存档</string>
