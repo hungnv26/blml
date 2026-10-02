@@ -112,8 +112,7 @@ history follows you between devices.
 Every download is gathered on **[blml.app](https://blml.app)**, which reads in
 Vietnamese or English:
 
-- **iPhone**: join through [TestFlight](https://testflight.apple.com/join/yQDTJcax)
-  while the App Store release is in review.
+- **iPhone and iPad**: [BLML on the App Store](https://apps.apple.com/app/blml/id6799954229).
 - **Android**: download the app directly from
   [chat.blml.app/android](https://chat.blml.app/android) — it comes from your
   own server, like everything else here.
