@@ -102,7 +102,7 @@ class PasswordResetView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Pu
         if (msg) {
           this.props.onError(this.props.intl.formatMessage(msg), 'info');
         }
-      });
+      }).catch(_ => {});
     }
   }
   handleEmailChange(e) {

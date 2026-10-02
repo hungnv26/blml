@@ -19,7 +19,6 @@ export default class SearchContacts extends React.PureComponent {
 
   componentWillUnmount() {
     if (this.state.edited) {
-      this.setState({search: '', edited: false});
       this.props.onSearchContacts(Tinode.DEL_CHAR);
     }
   }

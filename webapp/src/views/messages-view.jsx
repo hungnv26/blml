@@ -29,6 +29,7 @@ import { CALL_STATE_OUTGOING_INITATED, CALL_STATE_IN_PROGRESS } from '../constan
 import { blobToBase64, fileToBase64, imageScaled, importVCard, makeImageUrl } from '../lib/blob-helpers.js';
 import HashNavigation from '../lib/navigation.js';
 import { bytesToHumanSize, relativeDateFormat, shortDateFormat } from '../lib/strformat.js';
+import { ctrlRefusalReason } from '../lib/utils.js';
 
 // Run timer with this frequency (ms) for checking notification queue.
 const NOTIFICATION_EXEC_INTERVAL = 300;
@@ -48,6 +49,11 @@ const messages = defineMessages({
     defaultMessage: 'Last seen: {timestamp}',
     description: 'Label for the timestamp of when the user or topic was last online'
   },
+  group_invite_only: {
+    id: 'group_invite_only',
+    defaultMessage: 'This group is invite-only. Ask a member to add you.',
+    description: 'Error shown when trying to join a group without an invitation'
+  },
   not_found: {
     id: 'title_not_found',
     defaultMessage: 'Not found',
@@ -62,6 +68,11 @@ const messages = defineMessages({
     id: 'file_attachment_too_large',
     defaultMessage: 'The file size {size} exceeds the {limit} limit.',
     description: 'Error message when attachment is too large'
+  },
+  cannot_initiate_upload: {
+    id: 'cannot_initiate_file_upload',
+    defaultMessage: 'Cannot initiate file upload.',
+    description: 'Generic error message when attachment fails'
   },
   invalid_content: {
     id: 'invalid_content',
@@ -121,6 +132,16 @@ function isUnconfirmed(acs) {
   return false;
 }
 
+// Checks if the current user has blocked the topic: 'want' lacks J (set by Block, '-JP').
+// A topic never subscribed to has no 'want' at all ('N'), which is not a block.
+function isSelfBlocked(acs) {
+  if (acs) {
+    const want = acs.getWant();
+    return !!want && want != 'N' && !acs.isJoiner('want');
+  }
+  return false;
+}
+
 function isPeerRestricted(acs) {
   if (acs) {
     const ms = acs.getMissing() || '';
@@ -133,7 +154,7 @@ function shouldPresentCallPanel(callState) {
   // Show call panel if either:
   // - call is outgoing (and the client is waiting for the other side to pick up) or,
   // - call is already in progress.
-  return callState == CALL_STATE_OUTGOING_INITATED || callState == CALL_STATE_IN_PROGRESS;
+  return callState === CALL_STATE_OUTGOING_INITATED || callState === CALL_STATE_IN_PROGRESS;
 }
 
 class MessagesView extends React.Component {
@@ -170,6 +191,7 @@ class MessagesView extends React.Component {
     this.handleShowMessageContextMenu = this.handleShowMessageContextMenu.bind(this);
     this.handleNewChatAcceptance = this.handleNewChatAcceptance.bind(this);
     this.handleEnablePeer = this.handleEnablePeer.bind(this);
+    this.handleUnblock = this.handleUnblock.bind(this);
     this.handleAttachFile = this.handleAttachFile.bind(this);
     this.handleAttachImageOrVideo = this.handleAttachImageOrVideo.bind(this);
     this.handleCancelUpload = this.handleCancelUpload.bind(this);
@@ -517,15 +539,21 @@ class MessagesView extends React.Component {
         nextState.isAdmin = false;
       }
       if (!prevState.readingBlocked) {
-        prevState.readingBlocked = true;
+        nextState.readingBlocked = true;
       }
       if (prevState.isSharer) {
         nextState.isSharer = false;
       }
     }
 
-    if (isUnconfirmed(nextProps.acs) == !prevState.unconformed) {
-      nextState.unconfirmed = !prevState.unconformed;
+    const unconfirmed = isUnconfirmed(nextProps.acs);
+    if (unconfirmed != !!prevState.unconfirmed) {
+      nextState.unconfirmed = unconfirmed;
+    }
+
+    const selfBlocked = isSelfBlocked(nextProps.acs);
+    if (selfBlocked != !!prevState.selfBlocked) {
+      nextState.selfBlocked = selfBlocked;
     }
 
     // Clear subscribers online when there is no connection.
@@ -538,6 +566,14 @@ class MessagesView extends React.Component {
 
   subscribe(topic) {
     if (topic.isSubscribed() || !this.props.ready) {
+      return;
+    }
+
+    if (isSelfBlocked(topic.getAccessMode()) && !topic.isP2PType()) {
+      // The user blocked (left) this group. A plain re-subscribe would ask the server to undo
+      // the block, so don't subscribe: show the blocked state with [Unblock] instead.
+      // A P2P topic is fine: the server attaches a blocked P2P chat read-only and keeps the block,
+      // so the history still loads; unblocking takes an explicit +JP (see handleUnblock).
       return;
     }
 
@@ -593,7 +629,9 @@ class MessagesView extends React.Component {
       })
       .catch(err => {
         console.error("Failed subscription to", this.state.topic, err);
-        this.props.onError(err.message, 'err');
+        // Groups can only be joined by invitation (server replies 403, params.what = 'invite-only').
+        const inviteOnly = err.code == 403 && ctrlRefusalReason(topic.name) == 'invite-only';
+        this.props.onError(inviteOnly ? this.props.intl.formatMessage(messages.group_invite_only) : err.message, 'err');
         const blankState = MessagesView.getDerivedStateFromProps({}, {});
         blankState.title = this.props.intl.formatMessage(messages.not_found);
         this.setState(blankState);
@@ -650,19 +688,21 @@ class MessagesView extends React.Component {
     if (event.target.scrollTop <= FETCH_PAGE_TRIGGER) {
       const topic = this.props.tinode.getTopic(this.state.topic);
       if (topic && topic.isSubscribed()) {
-        this.processingScrollEvent = true;
         const {min, max} = this.getVisibleMessageRange(event.target.getBoundingClientRect());
         const gaps = topic.msgHasMoreMessages(min, max, false);
         if (gaps.length > 0) {
+          this.processingScrollEvent = true;
           this.setState({fetchingMessages: true}, _ => {
             topic.getMessagesPage(MESSAGES_PAGE, gaps, min, max)
               .catch(err => this.props.onError(err.message, 'err'))
-              .finally(_ => this.setState({fetchingMessages: false}));
+              .finally(_ => {
+                this.processingScrollEvent = false;
+                this.setState({fetchingMessages: false});
+              });
             });
         }
       }
     }
-    this.processingScrollEvent = false;
   }
 
   /* Mount drag and drop events */
@@ -972,8 +1012,9 @@ class MessagesView extends React.Component {
     const topic = this.props.tinode.getTopic(params.topicName);
     if (topic) {
       // Self -> (1) always hard-delete with [Delete] title.
-      // P2P -> (1) hard-delete if allowed and not too old, (2) always soft-delete.
-      // Group -> (1) hard-delete if allowed and not too old or owner, (2) always soft-delete.
+      // P2P -> (1) hard-delete own message if not too old, (2) always soft-delete.
+      // Group -> (1) hard-delete own message if not too old, or any message with the D permission
+      //   (owner, admins given D), (2) always soft-delete.
       if (topic.isSelfType()) {
         // Hard-delete with plain [Delete] title.
         menuItems.push('message_delete_generic');
@@ -984,7 +1025,12 @@ class MessagesView extends React.Component {
         }
 
         const acs = topic.getAccessMode();
-        if (acs && acs.isDeleter()) {
+        // Only the author may delete a message for everyone. In groups users with the D permission
+        // may delete any message; in P2P D does not extend to the peer's messages. The server
+        // enforces the same rules and refuses the rest with 403.
+        const ownMessage = params.userFrom == this.props.myUserId;
+        const moderator = acs && topic.isGroupType() && acs.isDeleter();
+        if (acs && (ownMessage || moderator)) {
           // Owner can always hard-delete regardless of age.
           let canDelete = acs.isOwner();
           if (!canDelete) {
@@ -1012,6 +1058,21 @@ class MessagesView extends React.Component {
   handleEnablePeer(e) {
     e.preventDefault();
     this.props.onChangePermissions(this.state.topic, DEFAULT_P2P_ACCESS_MODE, this.state.topic);
+  }
+
+  // Undo the user's own block of this topic, then subscribe to it.
+  handleUnblock(e) {
+    e.preventDefault();
+    const topic = this.props.tinode.getTopic(this.state.topic);
+    if (!topic) {
+      return;
+    }
+    topic.updateMode(null, '+JP')
+      .then(_ => {
+        this.setState({selfBlocked: isSelfBlocked(topic.getAccessMode())});
+        this.subscribe(topic);
+      })
+      .catch(err => this.props.onError(err.message, 'err'));
   }
 
   sendKeyPress(audio) {
@@ -1063,7 +1124,8 @@ class MessagesView extends React.Component {
         // All good. Remove the original message draft from the cache.
         const topic = this.props.tinode.getTopic(this.state.topic);
         topic.delMessagesList([pub.seq], true);
-      });
+      })
+      .catch(err => this.props.onError(err.message, 'err'));
   }
 
   // sendFileAttachment sends the file as Drafty message:
@@ -1135,7 +1197,7 @@ class MessagesView extends React.Component {
         this.sendMessage(Drafty.appendTheCard(null, card));
       })
       .catch(err => {
-        this.props.onError(this.props.intl.formatMessage(messages.cannot_parse_vcard, {error: err.message}), 'err');
+        this.props.onError(this.props.intl.formatMessage(messages.cannot_parse_vcard), 'err');
       });
     return true;
   }
@@ -1214,7 +1276,7 @@ class MessagesView extends React.Component {
           // Pass data and the uploader to the TinodeWeb.
           this.sendMessage(msg, uploadCompletionPromise, uploader);
         })
-        .catch(err => this.props.onError(err, 'err'));
+        .catch(err => this.props.onError(err.message, 'err'));
       return;
     }
 
@@ -1235,7 +1297,8 @@ class MessagesView extends React.Component {
           msg = Drafty.append(msg, Drafty.parse(caption));
         }
         this.sendMessage(msg);
-      });
+      })
+      .catch(err => this.props.onError(err.message, 'err'));
   }
 
   // sendVideoAttachment sends the video bits as Drafty message.
@@ -1282,7 +1345,8 @@ class MessagesView extends React.Component {
             msg = Drafty.append(msg, Drafty.parse(caption));
           }
           this.sendMessage(msg);
-      });
+        })
+        .catch(err => this.props.onError(err.message, 'err'));
       return;
     }
 
@@ -1396,7 +1460,7 @@ class MessagesView extends React.Component {
           this.sendMessage(msg, uploadCompletionPromise, uploader);
         } else {
           // Small enough to send inband.
-          blobToBase64(blob)
+          return blobToBase64(blob)
             .then(b64 => {
               this.sendMessage(Drafty.appendAudio(null, {
                 mime: b64.mime,
@@ -1487,8 +1551,9 @@ class MessagesView extends React.Component {
     const ref = this.getOrCreateMessageRef(replyToSeq);
     if (ref && ref.current) {
       ref.current.scrollIntoView({block: "center", behavior: "smooth"});
-      ref.current.classList.add('flash');
-      setTimeout(_ => {ref.current.classList.remove('flash')} , 1000);
+      const el = ref.current;
+      el.classList.add('flash');
+      setTimeout(_ => {el.classList.remove('flash')} , 1000);
     } else {
       console.error("Unresolved message ref", replyToSeq);
     }
@@ -1818,7 +1883,15 @@ class MessagesView extends React.Component {
               </div>
               : null }
             </div>
-            {this.state.peerMessagingDisabled && !this.state.unconfirmed ?
+            {this.state.selfBlocked ?
+              <div id="self-blocked-note">
+                <i className="material-icons secondary">block</i> <FormattedMessage
+                  id="topic_blocked_by_you" defaultMessage="You blocked this chat."
+                  description="Shown in place of the message input when the user has blocked the chat" /> <a href="#"
+                    onClick={this.handleUnblock}><FormattedMessage id="menu_item_unblock"
+                    defaultMessage="Unblock" description="Unblock topic or user" /></a>
+              </div> : null}
+            {this.state.peerMessagingDisabled && !this.state.unconfirmed && !this.state.selfBlocked ?
               <div id="peer-messaging-disabled-note">
                 <i className="material-icons secondary">block</i> <FormattedMessage
                   id="peers_messaging_disabled" defaultMessage="Peer's messaging is disabled."
@@ -1826,7 +1899,8 @@ class MessagesView extends React.Component {
                     onClick={this.handleEnablePeer}><FormattedMessage id="enable_peers_messaging"
                     defaultMessage="Enable" description="Call to action to enable peer's messaging" /></a>.
               </div> : null}
-            {this.state.unconfirmed ?
+            {this.state.selfBlocked ? null :
+              this.state.unconfirmed ?
               <Invitation onAction={this.handleNewChatAcceptance} />
               :
               <SendMessage

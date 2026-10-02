@@ -1,4 +1,4 @@
-// The counter of unread messages in the topic.
+// Call status: direction icon and either a dropped-call label or the call duration.
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
 

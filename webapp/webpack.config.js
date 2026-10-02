@@ -28,6 +28,11 @@ module.exports = (env, argv) => {
     output: {
       path: path.resolve(__dirname, 'umd'),
       filename: `[name].${mode}.js`,
+      // Lazily loaded chunks get content-hashed names: a browser holding a cached (older) index.*.js
+      // keeps loading the chunks it was built with instead of new, incompatible chunks under the
+      // same numeric name ("Cannot read properties of undefined (reading 'call')"). Old chunks are not
+      // deleted by the build, so they stay available to such browsers until pruned.
+      chunkFilename: `[name].[contenthash:8].${mode}.js`,
       publicPath: '/umd/'
     },
     optimization: {

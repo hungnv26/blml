@@ -16,7 +16,12 @@ export default class HashNavigation {
         // Can't use split() because the value may contain '='.
         const eq = arg.indexOf('=');
         if (eq > 0) {
-          params[arg.slice(0, eq)] = decodeURIComponent(arg.slice(eq + 1));
+          const value = arg.slice(eq + 1);
+          try {
+            params[arg.slice(0, eq)] = decodeURIComponent(value);
+          } catch (err) {
+            params[arg.slice(0, eq)] = value;
+          }
         }
       });
     }

@@ -54,7 +54,7 @@ export default class InPlaceEdit extends React.Component {
   handleKeyDown(e) {
     if (e.keyCode === 27) {
       // Escape pressed
-      this.setState({value: this.props.value, active: false});
+      this.setState({value: this.props.value || '', active: false});
     } else if (e.keyCode === 13) {
       // Enter pressed
       this.handleEditingFinished(e);
@@ -75,7 +75,7 @@ export default class InPlaceEdit extends React.Component {
     const value = this.state.value.trim();
     if (this.props.required && (!event.target.checkValidity() || !value)) {
       // Empty input
-      this.setState({value: this.props.value, active: false});
+      this.setState({value: this.props.value || '', active: false});
       return;
     }
     this.setState({active: false});

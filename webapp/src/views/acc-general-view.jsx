@@ -118,7 +118,7 @@ export default class AccGeneralView extends React.PureComponent {
           <div className="panel-form-row">
             <ul className="quoted">
               <li key="plain">
-                <input type="radio" id="plain" name="send-select" value="plain"
+                <input type="radio" id="send_plain" name="send-select" value="plain"
                   checked={this.state.sendOnEnter == 'plain'}
                   onChange={this.handleSendOnEnterSelected} />&nbsp;
                 <label htmlFor="send_plain">
@@ -133,7 +133,7 @@ export default class AccGeneralView extends React.PureComponent {
                 </div>
               </li>
               <li key="command">
-                <input type="radio" id="command" name="send-select" value="command"
+                <input type="radio" id="send_command" name="send-select" value="command"
                   checked={this.state.sendOnEnter == 'command'}
                   onChange={this.handleSendOnEnterSelected} />&nbsp;
                 <label htmlFor="send_command">

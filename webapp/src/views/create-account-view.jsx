@@ -13,8 +13,8 @@ import { imageScaled, blobToBase64, makeImageUrl } from '../lib/blob-helpers.js'
 import { theCard } from '../lib/utils.js';
 import { truncateString } from '../lib/strformat.js';
 
-import { AVATAR_SIZE, MAX_AVATAR_BYTES, MAX_EXTERN_ATTACHMENT_SIZE,
-  MAX_TITLE_LENGTH } from '../config.js';
+import { AVATAR_SIZE, LINK_PRIVACY_POLICY, LINK_TERMS_OF_SERVICE, MAX_AVATAR_BYTES,
+  MAX_EXTERN_ATTACHMENT_SIZE, MAX_TITLE_LENGTH } from '../config.js';
 
 export default class CreateAccountView extends React.PureComponent {
   constructor(props) {
@@ -113,7 +113,6 @@ export default class CreateAccountView extends React.PureComponent {
 
   // AvatarCropView calls this method when the user has cropped the image.
   handleAvatarCropped(mime, blob, width, height) {
-    const url = blob ? URL.createObjectURL(blob) : null;
     this.setState({newAvatar: null, newAvatarMime: null});
     if (blob) {
       this.uploadAvatar(mime, blob, width, height);
@@ -141,6 +140,7 @@ export default class CreateAccountView extends React.PureComponent {
         // Convert blob to base64-encoded bits.
         blobToBase64(blob)
           .then(b64 => this.setState({uploadUrl: makeImageUrl({data: b64.bits, type: mime})}))
+          .catch(err => this.props.onError(err.message, 'err'))
           .finally(_ => this.setState({buttonDisabled: false}));
       }
     };
@@ -237,6 +237,17 @@ export default class CreateAccountView extends React.PureComponent {
             description="Label for a checkbox">{
             (stay_logged_in) => <label htmlFor="save-token">&nbsp;{stay_logged_in}</label>
           }</FormattedMessage>
+        </div>
+        <div className="panel-form-row legal-links small">
+          <span>
+            <FormattedMessage id="sign_up_terms_consent"
+              defaultMessage="By signing up you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
+              description="Consent note on the sign-up form, with links to the terms and the privacy policy"
+              values={{
+                terms: chunks => <a href={LINK_TERMS_OF_SERVICE} target="_blank" rel="noopener noreferrer">{chunks}</a>,
+                privacy: chunks => <a href={LINK_PRIVACY_POLICY} target="_blank" rel="noopener noreferrer">{chunks}</a>
+              }} />
+          </span>
         </div>
         <div className="dialog-buttons">
           <button className={submitClasses} type="submit" disabled={this.state.buttonDisabled}>

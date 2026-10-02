@@ -29,9 +29,9 @@ export default class ChipInput extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps.chips != this.props.chips ||
-      prevProps.staticMembers != this.props.staticMembers ||
-      prevProps.prompt != this.props.prompt) {
+    if (prevProps.chips !== this.props.chips ||
+      prevProps.staticMembers !== this.props.staticMembers ||
+      prevProps.prompt !== this.props.prompt) {
       this.setState(ChipInput.deriveStateFromProps(this.props));
     }
     if (!prevState || this.props.chips.length > prevState.sortedChips.length) {
@@ -93,9 +93,10 @@ export default class ChipInput extends React.Component {
 
   handleKeyDown(e) {
     if (e.key === 'Backspace') {
-      if (this.state.input.length == 0 && this.state.sortedChips.length > 0) {
+      if (this.state.input.length === 0 && this.state.sortedChips.length > 0) {
         const at = this.state.sortedChips.length - 1;
-        if (this.state.sortedChips[at].user !== this.props.staticMembers) {
+        const staticMembers = this.props.staticMembers || [];
+        if (!staticMembers.includes(this.state.sortedChips[at].user)) {
           this.removeChipAt(at);
         }
       }

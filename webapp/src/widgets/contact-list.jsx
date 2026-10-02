@@ -93,7 +93,7 @@ class ContactList extends React.PureComponent {
             (this.props.topicSelected === key);
           const badges = [];
           if (this.props.showMode) {
-            if (key == this.props.myUserId) {
+            if (key === this.props.myUserId) {
               badges.push({name: formatMessage(messages.badge_you), color: 'green'});
             }
             if (c.acs && c.acs.isOwner()) {
@@ -112,9 +112,9 @@ class ContactList extends React.PureComponent {
             if (msg) {
               forwarded = msg.head ? msg.head.forwarded : null;
               deliveryStatus = msg._status || c.msgStatus(msg, true);
-              previewIsResponse = msg.from != this.props.myUserId;
+              previewIsResponse = msg.from !== this.props.myUserId;
               if (msg.content) {
-                preview = typeof msg.content == 'string' ?
+                preview = typeof msg.content === 'string' ?
                   msg.content.substr(0, MESSAGE_PREVIEW_LENGTH) :
                   Drafty.preview(msg.content, MESSAGE_PREVIEW_LENGTH);
               }
@@ -160,7 +160,7 @@ class ContactList extends React.PureComponent {
 
     return (
       <div className={this.props.noScroll ? null : "scrollable-panel"}>
-        {contactsCount == 0 ?
+        {contactsCount === 0 ?
           <div className="center-medium-text" style={{whiteSpace: 'pre-line'}}>
             {this.props.emptyListMessage}
           </div>

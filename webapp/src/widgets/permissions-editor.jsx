@@ -68,7 +68,7 @@ class PermissionsEditor extends React.Component {
   handleChange(val) {
     let mode = this.state.mode;
     const idx = mode.indexOf(val);
-    if (idx == -1) {
+    if (idx === -1) {
       mode += val;
     } else {
       mode = mode.replace(val, '');

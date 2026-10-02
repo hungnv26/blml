@@ -2,9 +2,9 @@
 export function shortDateFormat(then, locale) {
   locale = locale || window.navigator.userLanguage || window.navigator.language;
   const now = new Date();
-  if (then.getFullYear() == now.getFullYear()) {
+  if (then.getFullYear() === now.getFullYear()) {
     // Same year.
-    if (then.getMonth() == now.getMonth() && then.getDate() == now.getDate()) {
+    if (then.getMonth() === now.getMonth() && then.getDate() === now.getDate()) {
       // Same month and day, show time only.
       return then.toLocaleTimeString(locale, {hour12: false, hour: '2-digit', minute: '2-digit'});
     }
@@ -34,7 +34,7 @@ export function relativeDateFormat(then, locale) {
 // Convert seconds to [hours:]minutes:seconds, i.e. 156 sec -> 2:36, 3756 sec -> 1:02:36.
 // If <code>fixedMins</code> is true, then minutes are represented by at least two digits.
 export function secondsToTime(seconds, fixedMin) {
-  if (typeof seconds != 'number') {
+  if (typeof seconds !== 'number') {
     return '';
   }
 
@@ -46,7 +46,7 @@ export function secondsToTime(seconds, fixedMin) {
   }
   let sec = (seconds | 0) % 60;
   sec = sec < 10 ? `0${sec}` : sec;
-  if (hours == 0) {
+  if (hours === 0) {
     return `${min}:${sec}`;
   }
   return `${hours}:${min}:${sec}`;
@@ -54,7 +54,7 @@ export function secondsToTime(seconds, fixedMin) {
 
 // Convert a number of bytes to human-readable format.
 export function bytesToHumanSize(bytes) {
-  if (!bytes || bytes == 0) {
+  if (!bytes || bytes === 0) {
     return '0 Bytes';
   }
 

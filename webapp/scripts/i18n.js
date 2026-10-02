@@ -26,7 +26,7 @@ function printf(str) {
 }
 
 // Called with one or two parameters?
-if (args[0] == 'missing' || args[0] == 'obsolete') {
+if (args[0] === 'missing' || args[0] === 'obsolete') {
   // Extract missing or obsolete translations as requested.
   // Read either all or just one translation.
   const pattern = args[1] ? printf(LANG_PATTERN_ONE, args[1]) : LANG_PATTERN;
@@ -38,8 +38,8 @@ if (args[0] == 'missing' || args[0] == 'obsolete') {
       const dest = {};
       // Copy messages while skipping missing and obsolete ones.
       for (let key in translated) {
-        if ((args[0] == 'missing' && translated[key].missing) ||
-          (args[0] == 'obsolete' && translated[key].obsolete)) {
+        if ((args[0] === 'missing' && translated[key].missing) ||
+          (args[0] === 'obsolete' && translated[key].obsolete)) {
           dest[key] = translated[key];
         }
       }
@@ -71,7 +71,7 @@ globSync(LANG_PATTERN)
     Object.entries(baseMessages).forEach((ent) => {
       const [key, value] = ent;
       let translation = translated[key] ? translated[key].translation : "";
-      if (!translation && locale == BASE_LANG) {
+      if (!translation && locale === BASE_LANG) {
         translation = value.defaultMessage;
       }
 
@@ -86,7 +86,7 @@ globSync(LANG_PATTERN)
 
     // Find no longer needed messages.
     Object.entries(translated).forEach((ent) => {
-      const [key, value] = ent;
+      const [key] = ent;
       if (!baseMessages[key] && translated[key]) {
         // Obsolete, no longer missing.
         translated[key].missing = !translated[key].translation;

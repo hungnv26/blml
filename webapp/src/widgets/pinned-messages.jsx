@@ -133,7 +133,7 @@ class PinnedMessages extends React.PureComponent {
       <i className="gray">{this.props.intl.formatMessage(messages.message_not_found)}</i>;
 
     const dots = [];
-    this.props.pins.forEach(seq => {
+    (this.props.pins || []).forEach(seq => {
       const cn = dots.length == selected ? 'adot' : 'dot';
       dots.push(<div key={seq} className={cn} />);
     });

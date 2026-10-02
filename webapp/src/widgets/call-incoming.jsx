@@ -31,24 +31,50 @@ export default class CallIncoming extends React.Component {
     this.ringTimer = null;
   }
 
+  startRinging() {
+    if (this.ringTimer != null) {
+      return;
+    }
+    // play() throws if the user did not click the app first: https://goo.gl/xX8pDD.
+    RING_SOUND.play().catch(_ => {});
+    this.ringTimer = setInterval(_ => {RING_SOUND.play().catch(_ => {})}, 2000);
+    this.props.onRinging(this.props.topic, this.props.seq);
+  }
+
+  stopRinging() {
+    if (this.ringTimer != null) {
+      clearInterval(this.ringTimer);
+      this.ringTimer = null;
+      RING_SOUND.pause();
+    }
+  }
+
   componentDidMount() {
+    if (this.props.callState == CALL_STATE_INCOMING_RECEIVED) {
+      this.startRinging();
+    }
+
     const topic = this.props.tinode.getTopic(this.props.topic);
     if (!topic) {
       return;
     }
 
+    this.previousMetaDesc = topic.onMetaDesc;
+    topic.onMetaDesc = this.onMetaDesc;
     this.resetDesc(topic);
-    if (this.props.callState == CALL_STATE_INCOMING_RECEIVED) {
-      // play() throws if the user did not click the app first: https://goo.gl/xX8pDD.
-      RING_SOUND.play().catch(_ => {});
-      this.ringTimer = setInterval(_ => {RING_SOUND.play().catch(_ => {})}, 2000);
-      this.props.onRinging(this.props.topic, this.props.seq);
-    }
   }
 
   // No need to separately handle component mount.
-  componentDidUpdate(props) {
-    const topic = this.props.tinode.getTopic(props.topic);
+  componentDidUpdate(prevProps) {
+    if (this.props.callState != prevProps.callState) {
+      if (this.props.callState == CALL_STATE_INCOMING_RECEIVED) {
+        this.startRinging();
+      } else {
+        this.stopRinging();
+      }
+    }
+
+    const topic = this.props.tinode.getTopic(this.props.topic);
     if (!topic) {
       return;
     }
@@ -58,22 +84,18 @@ export default class CallIncoming extends React.Component {
       topic.onMetaDesc = this.onMetaDesc;
     }
 
-    if (this.state.topic != props.topic) {
-      this.setState({topic: props.topic});
-      this.resetDesc(topic, props);
+    if (this.state.topic != this.props.topic) {
+      this.setState({topic: this.props.topic});
+      this.resetDesc(topic);
     }
   }
 
   componentWillUnmount() {
-    if (this.ringTimer != null) {
-      clearInterval(this.ringTimer);
-      RING_SOUND.pause();
-    }
+    this.stopRinging();
     const topic = this.props.tinode.getTopic(this.props.topic);
     if (!topic) {
       return;
     }
-    this.setState({topic: null});
     topic.onMetaDesc = this.previousMetaDesc;
   }
 

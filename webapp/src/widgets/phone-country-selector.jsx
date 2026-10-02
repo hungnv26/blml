@@ -38,9 +38,9 @@ class PhoneCountrySelector extends React.PureComponent {
     const countries = [];
     const selected = this.props.selected || 'US';
     this.countries.forEach((c, idx) => {
-      const style = (c.code == selected ? 'selected ' : '');
+      const style = (c.code === selected ? 'selected ' : '');
       countries.push(<li className={style} key={idx}
-        ref={ref => {if (c.code == selected) {this.selectedRef = ref}}}
+        ref={ref => {if (c.code === selected) {this.selectedRef = ref}}}
         onClick={_ => this.props.onSubmit(c.code, c.dial)}>
         <span className="country-flag">{c.flag}</span>
         <span className="country">&nbsp;{c.name}</span>

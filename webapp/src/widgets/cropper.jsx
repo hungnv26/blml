@@ -247,7 +247,7 @@ export default class Cropper extends React.Component {
     }
 
     let scale = (distance / this.prevDistance);
-    this.handleZoom(Math.max(this.minZoom, Math.min(this.maxZoom, scale)));
+    this.handleZoom(Math.max(this.state.minZoom, Math.min(this.state.maxZoom, scale)));
   }
 
   mouseUp(e) {

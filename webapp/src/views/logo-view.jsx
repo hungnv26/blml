@@ -13,7 +13,7 @@ export default class LogoView extends React.PureComponent {
       <div id="dummy-view">
         <div>
           <img id="logo" alt="logo" src="img/logo.svg" />
-          <h2>BLML</h2>
+          <h2>{APP_NAME}</h2>
           <p><FormattedMessage id="label_client" defaultMessage="Client:"
             description="Label for a client version" /> {version}</p>
           <p><FormattedMessage id="label_server" defaultMessage="Server:"

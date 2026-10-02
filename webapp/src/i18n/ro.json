@@ -1323,6 +1323,7 @@
   "forward_to": {
     "translation": "Redirecționați către",
     "defaultMessage": "Forward to",
+    "description": "Title of the contact selector dialog when forwarding a message",
     "missing": false,
     "obsolete": false
   },
@@ -1967,6 +1968,34 @@
     "translation": "",
     "defaultMessage": "Invite code",
     "description": "Input placeholder for the registration invite code",
+    "missing": true,
+    "obsolete": false
+  },
+  "delete_for_all_refused": {
+    "translation": "",
+    "defaultMessage": "This can't be deleted for everyone. You can still delete it for yourself.",
+    "description": "Error shown when the server refuses to delete message(s) for all members",
+    "missing": true,
+    "obsolete": false
+  },
+  "sign_up_terms_consent": {
+    "translation": "",
+    "defaultMessage": "By signing up you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>.",
+    "description": "Consent note on the sign-up form, with links to the terms and the privacy policy",
+    "missing": true,
+    "obsolete": false
+  },
+  "topic_blocked_by_you": {
+    "translation": "",
+    "defaultMessage": "You blocked this chat.",
+    "description": "Shown in place of the message input when the user has blocked the chat",
+    "missing": true,
+    "obsolete": false
+  },
+  "group_invite_only": {
+    "translation": "",
+    "defaultMessage": "This group is invite-only. Ask a member to add you.",
+    "description": "Error shown when trying to join a group without an invitation",
     "missing": true,
     "obsolete": false
   }

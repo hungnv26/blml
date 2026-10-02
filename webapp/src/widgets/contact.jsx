@@ -2,18 +2,15 @@
 import React from 'react';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 
-import { Tinode } from 'tinode-sdk';
+import { Drafty, Tinode } from 'tinode-sdk';
 
 import ContactBadges from './contact-badges.jsx';
 import LetterTile from './letter-tile.jsx';
 import UnreadBadge from './unread-badge.jsx';
-import { shortDateFormat } from '../lib/strformat.js';
-
-import { Drafty } from 'tinode-sdk';
 
 import { previewFormatter } from '../lib/formatters.js';
 import { deliveryMarker } from '../lib/utils.js';
-import { truncateString } from '../lib/strformat.js';
+import { shortDateFormat, truncateString } from '../lib/strformat.js';
 
 const messages = defineMessages({
   self_topic_name: {

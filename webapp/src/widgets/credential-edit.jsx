@@ -158,7 +158,7 @@ class CredentialEdit extends React.PureComponent {
       }
       {readyForCode ? codeInput : null}
       <div className="dialog-buttons">
-        <button className="secondary" onClick={this.props.onCancel}>
+        <button className="secondary" type="button" onClick={this.props.onCancel}>
           <FormattedMessage id="button_cancel" defaultMessage="Cancel" description="Button [Cancel]" />
         </button>
         <button className="primary" type="submit" >

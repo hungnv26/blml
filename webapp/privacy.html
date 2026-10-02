@@ -86,11 +86,11 @@ plainly than claim they do not exist.</p>
       <strong>Usage analytics are switched off.</strong> The analytics
       component ships as part of Firebase, but BLML disables it explicitly on
       both platforms, so no usage or advertising identifiers are collected.</li>
-  <li><strong>Content delivery networks (web version only)</strong> — the
-      browser version loads some shared code and fonts from
-      <code>cdn.jsdelivr.net</code>, <code>fonts.googleapis.com</code> and
-      <code>polyfill-fastly.io</code>. Those providers see your IP address when
-      the page loads. The mobile apps do not do this.</li>
+  <li><strong>Google sign-in (web version only)</strong> — if you choose to
+      sign in with Google, the browser version contacts Google’s sign-in
+      service, which sees your IP address and that you are signing in. The web
+      app serves its own code and fonts from your group's server, not from
+      third-party content delivery networks.</li>
 </ul>
 <p>The content of your messages is never sent to any of these services.</p>
 

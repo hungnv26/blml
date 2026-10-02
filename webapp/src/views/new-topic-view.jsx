@@ -61,8 +61,32 @@ class NewTopicView extends React.Component {
   }
 
   handleSearchContacts(query) {
+    // Phone helpers pull in libphonenumber-js metadata, so they are loaded on demand.
+    import('../lib/phone.js')
+      .catch(_ => null)
+      .then(phone => this.searchContacts(query, phone));
+  }
+
+  searchContacts(query, phone) {
     query = query.trim() || Tinode.DEL_CHAR;
-    if (!/[\s,:]/.test(query) && query != Tinode.DEL_CHAR) {
+    // Phone number in international or local format, possibly with spaces: '0491 570 104'.
+    // The server stores phones in E.164; interpret local numbers using the browser's region(s),
+    // then the country of the user's own phone number.
+    let e164 = null;
+    if (phone) {
+      const regions = phone.regionsFromLanguages(navigator.languages || [navigator.language]);
+      const me = this.props.tinode && this.props.tinode.getMeTopic();
+      ((me && me.getCredentials()) || []).forEach(cred => {
+        const region = cred.meth == 'tel' ? phone.phoneRegion(cred.val) : null;
+        if (region && !regions.includes(region)) {
+          regions.push(region);
+        }
+      });
+      e164 = phone.asE164Phone(query, regions);
+    }
+    if (e164) {
+      query = `${Tinode.TAG_PHONE}${e164}`;
+    } else if (!/[\s,:]/.test(query) && query != Tinode.DEL_CHAR) {
       // No colons, spaces or commas, not DEL char. Try as email, phone, or alias.
       const email = asEmail(query);
       if (email) {

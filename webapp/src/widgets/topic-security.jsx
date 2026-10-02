@@ -100,7 +100,7 @@ class TopicSecurity extends React.PureComponent {
     this.props.onShowAlert(
       formatMessage(this.props.deleter ? messages.delete_messages : messages.clear_messages), // title
       formatMessage(this.props.deleter ? messages.delete_messages_warning : messages.clear_messages_warning), // content
-      _ => this.props.onDeleteMessages(this.props.topic), // onConfirm
+      _ => this.props.onDeleteMessages(this.props.topic, this.props.deleter), // onConfirm
       null, // "OK"
       true, // Show Reject button
       null  // "Cancel"

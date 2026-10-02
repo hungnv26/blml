@@ -116,7 +116,7 @@ class TopicDescEdit extends React.Component {
 
   handleDescriptionUpdate(desc) {
     desc = desc.trim().substring(0, MAX_TOPIC_DESCRIPTION_LENGTH);
-    if (desc) {
+    if ((this.state.description || '') !== desc) {
       this.setState({description: desc});
       this.props.onUpdateTopicDesc(this.props.topic, theCard(null, null, null, desc));
     }
@@ -158,13 +158,13 @@ class TopicDescEdit extends React.Component {
         blobToBase64(blob)
           .then(b64 => {
             const du = makeImageUrl({data: b64.bits, type: mime});
-            this.setState({source: du});
             this.props.onUpdateTopicDesc(this.props.topic, theCard(null, du));
-          });
+          })
+          .catch(err => this.props.onError(err.message, 'err'));
       }
     };
 
-    if (width > AVATAR_SIZE || height > AVATAR_SIZE || width != height) {
+    if (width > AVATAR_SIZE || height > AVATAR_SIZE || width !== height) {
       // Avatar is not square or too large even after cropping. Shrink it and make square.
       imageScaled(blob, AVATAR_SIZE, AVATAR_SIZE, MAX_EXTERN_ATTACHMENT_SIZE, true)
         .then(scaled => readyToUpload(scaled))

@@ -24,12 +24,7 @@ export default class TheCardPreview extends React.PureComponent {
       content: props.content.object
     };
 
-    if (!props.content.object) {
-      importVCard(props.content.file)
-        .then(card => {
-          this.setState({ content: card });
-        });
-    }
+    this.unmounted = false;
 
     this.handleSendCard = this.handleSendCard.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -37,15 +32,30 @@ export default class TheCardPreview extends React.PureComponent {
 
   componentDidMount() {
     document.addEventListener('keydown', this.handleKeyDown);
+
+    if (!this.props.content.object) {
+      importVCard(this.props.content.file)
+        .then(card => {
+          if (!this.unmounted) {
+            this.setState({ content: card });
+          }
+        })
+        .catch(err => {
+          if (!this.unmounted) {
+            this.props.onError(err.message, 'err');
+          }
+        });
+    }
   }
 
   componentWillUnmount() {
+    this.unmounted = true;
     document.removeEventListener('keydown', this.handleKeyDown);
   }
 
   handleKeyDown(e) {
-    e.preventDefault();
     if (e.key === 'Escape') {
+      e.preventDefault();
       this.props.onClose();
     }
   }

@@ -393,10 +393,11 @@ function inlineImageAttr(attr, data) {
 
 // Converts Drafty object into a quoted reply; 'this' is set by the caller.
 function inlineVideoAttr(attr, data) {
-  const dim = fitImageSize(data.width, data.height, VIDEO_THUMBNAIL_WIDTH, IMAGE_THUMBNAIL_DIM);
+  const dim = (data && fitImageSize(data.width, data.height, VIDEO_THUMBNAIL_WIDTH, IMAGE_THUMBNAIL_DIM)) ||
+    {dstWidth: IMAGE_THUMBNAIL_DIM, dstHeight: IMAGE_THUMBNAIL_DIM};
   attr.style = {
-    width: dim.width + 'px',
-    height: dim.height + 'px',
+    width: dim.dstWidth + 'px',
+    height: dim.dstHeight + 'px',
     maxWidth: VIDEO_THUMBNAIL_WIDTH + 'px',
     maxHeight: IMAGE_THUMBNAIL_DIM + 'px',
   }

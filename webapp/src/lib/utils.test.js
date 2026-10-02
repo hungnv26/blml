@@ -2,9 +2,12 @@ import {
   arrayEqual,
   asEmail,
   asPhone,
+  ctrlRefusalReason,
   isUrlRelative,
+  redactLogLine,
   sanitizeUrl,
   sanitizeUrlForMime,
+  trackCtrlRefusal,
   urlAsAttachment
 } from './utils';
 
@@ -125,3 +128,25 @@ test('urlAsAttachment', () => {
   expect(urlAsAttachment('blob:http://example.com/550e8400-e29b-41d4-a716-446655440000')).toBe('blob:http://example.com/550e8400-e29b-41d4-a716-446655440000');
 });
 
+
+test('redactLogLine', () => {
+  expect(redactLogLine('out: {"login":{"id":"1","scheme":"basic","secret":"YWxpY2U6cHc="}}'))
+    .toBe('out: {"login":{"id":"1","scheme":"basic","secret":"<redacted>"}}');
+  expect(redactLogLine('out: {"acc":{"user":"new","secret":"eDp5","tags":["code:ABC123","alias:x"]}}'))
+    .toBe('out: {"acc":{"user":"new","secret":"<redacted>","tags":["code:<redacted>","alias:x"]}}');
+  expect(redactLogLine('in: {"ctrl":{"code":200,"params":{"token":"abc","user":"usr1"}}}'))
+    .toBe('in: {"ctrl":{"code":200,"params":{"token":"<redacted>","user":"usr1"}}}');
+  expect(redactLogLine('out: {"pub":{"topic":"usr2","content":{"txt":"hello"}}}'))
+    .toBe('out: {"pub":{"topic":"usr2","content":"<redacted>"}}');
+  expect(redactLogLine('in: not json')).toBe('in: <8 bytes>');
+  expect(redactLogLine('WARNING: something')).toBe('WARNING: something');
+});
+
+test('trackCtrlRefusal', () => {
+  trackCtrlRefusal({id: '1', topic: 'grpX', code: 403, text: 'permission denied', params: {what: 'invite-only'}});
+  expect(ctrlRefusalReason('grpX')).toBe('invite-only');
+  expect(ctrlRefusalReason('grpY')).toBeUndefined();
+  trackCtrlRefusal({id: '2', topic: 'grpX', code: 200, text: 'ok'});
+  expect(ctrlRefusalReason('grpX')).toBeUndefined();
+  trackCtrlRefusal({code: 400, text: 'malformed'});
+});

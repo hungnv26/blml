@@ -198,8 +198,8 @@ class InfoView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component) 
   componentDidMount() {
     this.propsUpdated(this.props);
   }
-  componentDidUpdate(props) {
-    this.propsUpdated(props);
+  componentDidUpdate() {
+    this.propsUpdated(this.props);
   }
   componentWillUnmount() {
     const topic = this.props.tinode.getTopic(this.props.topic);
@@ -248,7 +248,7 @@ class InfoView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component) 
       owner: acs && acs.isOwner(),
       admin: acs && acs.isAdmin(),
       sharer: acs && acs.isSharer(),
-      deleter: acs && acs.isDeleter(),
+      deleter: acs && acs.isDeleter() && topic.isGroupType(),
       muted: acs && acs.isMuted(),
       fullName: isSelf ? props.intl.formatMessage(messages.self_topic_name) : (0,_lib_strformat_js__WEBPACK_IMPORTED_MODULE_16__.truncateString)(topic.public && topic.public.fn, _config_js__WEBPACK_IMPORTED_MODULE_14__.MAX_TITLE_LENGTH),
       description: isSelf ? props.intl.formatMessage(messages.self_topic_comment) : (0,_lib_strformat_js__WEBPACK_IMPORTED_MODULE_16__.truncateString)(topic.public && topic.public.note, _config_js__WEBPACK_IMPORTED_MODULE_14__.MAX_TOPIC_DESCRIPTION_LENGTH),
@@ -928,7 +928,7 @@ class GroupManager extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
   static staticMembers(members, keepInitial, requiredMember) {
     let stat = [];
     members.forEach(m => {
-      if (keepInitial || m.user == requiredMember) {
+      if (keepInitial || m.user === requiredMember) {
         stat.push(m.user);
       }
     });
@@ -947,8 +947,11 @@ class GroupManager extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
       if (status.present) {
         return;
       }
-      status.delta += 1;
-      status.present = true;
+      status = {
+        ...status,
+        delta: status.delta + 1,
+        present: true
+      };
     } else {
       status = {
         delta: 1,
@@ -958,7 +961,9 @@ class GroupManager extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
     let m = this.state.members.slice();
     m.push(this.props.contacts[index]);
     const sel = GroupManager.selectedContacts(m);
-    const i = this.state.index;
+    const i = {
+      ...this.state.index
+    };
     i[userId] = status;
     this.setState({
       members: m,
@@ -967,16 +972,21 @@ class GroupManager extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
     });
   }
   handleMemberRemoved(userId, index) {
-    const status = this.state.index[userId];
-    if (!status || !status.present) {
+    const old = this.state.index[userId];
+    if (!old || !old.present) {
       return;
     }
-    status.present = false;
-    status.delta -= 1;
+    const status = {
+      ...old,
+      present: false,
+      delta: old.delta - 1
+    };
     let m = this.state.members.slice();
     m.splice(index, 1);
     const sel = GroupManager.selectedContacts(m);
-    const i = this.state.index;
+    const i = {
+      ...this.state.index
+    };
     i[userId] = status;
     this.setState({
       members: m,
@@ -1176,7 +1186,7 @@ class PermissionsEditor extends (react__WEBPACK_IMPORTED_MODULE_0___default().Co
   handleChange(val) {
     let mode = this.state.mode;
     const idx = mode.indexOf(val);
-    if (idx == -1) {
+    if (idx === -1) {
       mode += val;
     } else {
       mode = mode.replace(val, '');
@@ -1485,7 +1495,7 @@ class TopicSecurity extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureCo
     const {
       formatMessage
     } = this.props.intl;
-    this.props.onShowAlert(formatMessage(this.props.deleter ? messages.delete_messages : messages.clear_messages), formatMessage(this.props.deleter ? messages.delete_messages_warning : messages.clear_messages_warning), _ => this.props.onDeleteMessages(this.props.topic), null, true, null);
+    this.props.onShowAlert(formatMessage(this.props.deleter ? messages.delete_messages : messages.clear_messages), formatMessage(this.props.deleter ? messages.delete_messages_warning : messages.clear_messages_warning), _ => this.props.onDeleteMessages(this.props.topic, this.props.deleter), null, true, null);
   }
   handleLeave(e) {
     e.preventDefault();

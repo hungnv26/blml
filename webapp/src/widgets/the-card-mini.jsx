@@ -17,7 +17,6 @@ class TheCardMini extends React.PureComponent {
     super(props);
 
     this.handleDownload = this.handleDownload.bind(this);
-    this.handleMessage = this.handleMessage.bind(this);
   }
 
   handleDownload(e) {
@@ -40,10 +39,6 @@ class TheCardMini extends React.PureComponent {
         this.props.onError("Failed to download vcard", 'err');
       }
     }
-  }
-
-  handleMessage(e) {
-    // This is handled by the parent component via props.onAction which expects a click event.
   }
 
   render() {

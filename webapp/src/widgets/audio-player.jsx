@@ -79,7 +79,7 @@ class AudioPlayer extends React.PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.src != prevProps.src) {
+    if (this.props.src !== prevProps.src) {
       this.initAudio();
     }
 
@@ -93,6 +93,19 @@ class AudioPlayer extends React.PureComponent {
   }
 
   initAudio() {
+    if (this.audioPlayer) {
+      this.audioPlayer.onloadedmetadata = null;
+      this.audioPlayer.ontimeupdate = null;
+      this.audioPlayer.onended = null;
+      this.audioPlayer.pause();
+      this.audioPlayer = null;
+    }
+    this.setState({canPlay: false, playing: false, currentTime: secondsToTime(0, this.state.longMin)});
+
+    if (!this.props.src) {
+      return;
+    }
+
     this.audioPlayer = new Audio(this.props.src);
     this.audioPlayer.onloadedmetadata = _ => this.setState({canPlay: true});
     this.audioPlayer.ontimeupdate = _ => this.setState({
@@ -232,7 +245,7 @@ class AudioPlayer extends React.PureComponent {
 
   handleSeek(e) {
     e.preventDefault();
-    if (e.target && this.props.duration) {
+    if (e.target && this.props.duration && this.audioPlayer) {
       const rect = e.target.getBoundingClientRect();
       const offset = (e.clientX - rect.left) / this.effectiveWidth * CANVAS_UPSCALING;
       this.audioPlayer.currentTime = this.props.duration * offset / 1000;

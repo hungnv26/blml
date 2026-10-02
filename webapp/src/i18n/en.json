@@ -1323,6 +1323,7 @@
   "forward_to": {
     "translation": "Forward to",
     "defaultMessage": "Forward to",
+    "description": "Title of the contact selector dialog when forwarding a message",
     "missing": false,
     "obsolete": false
   },
@@ -1967,6 +1968,34 @@
     "translation": "Invite code",
     "defaultMessage": "Invite code",
     "description": "Input placeholder for the registration invite code",
+    "missing": false,
+    "obsolete": false
+  },
+  "delete_for_all_refused": {
+    "translation": "This can't be deleted for everyone. You can still delete it for yourself.",
+    "defaultMessage": "This can't be deleted for everyone. You can still delete it for yourself.",
+    "description": "Error shown when the server refuses to delete message(s) for all members",
+    "missing": false,
+    "obsolete": false
+  },
+  "sign_up_terms_consent": {
+    "translation": "By signing up you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>.",
+    "defaultMessage": "By signing up you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>.",
+    "description": "Consent note on the sign-up form, with links to the terms and the privacy policy",
+    "missing": false,
+    "obsolete": false
+  },
+  "topic_blocked_by_you": {
+    "translation": "You blocked this chat.",
+    "defaultMessage": "You blocked this chat.",
+    "description": "Shown in place of the message input when the user has blocked the chat",
+    "missing": false,
+    "obsolete": false
+  },
+  "group_invite_only": {
+    "translation": "This group is invite-only. Ask a member to add you.",
+    "defaultMessage": "This group is invite-only. Ask a member to add you.",
+    "description": "Error shown when trying to join a group without an invitation",
     "missing": false,
     "obsolete": false
   }

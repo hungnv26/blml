@@ -37,13 +37,13 @@ export default class VisiblePassword extends React.PureComponent {
   }
 
   handleKeyDown(e) {
-    if (e.keyCode == 27) {
+    if (e.key === 'Escape') {
       // Escape pressed
       this.setState({value: this.props.value || '', visible: false});
       if (this.props.onFinished) {
         this.props.onFinished();
       }
-    } else if (e.keyCode == 13) {
+    } else if (e.key === 'Enter') {
       // Enter pressed
       this.handleEditingFinished();
     }
@@ -55,7 +55,7 @@ export default class VisiblePassword extends React.PureComponent {
       setTimeout(_ => {
         if (!currentTarget.contains(document.activeElement)) {
           if (this.props.onFinished) {
-            this.props.onFinished(this.state.value);
+            this.props.onFinished(this.state.value.trim());
           }
         }
       }, 0);

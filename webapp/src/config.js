@@ -14,8 +14,17 @@ export const KNOWN_HOSTS = {hosted: 'chat.blml.app', local: 'localhost:6060'};
 // Default host name and port to connect to.
 export const DEFAULT_HOST = KNOWN_HOSTS.hosted;
 
-// Enable console logging.
-export const LOGGING_ENABLED = true;
+// Enable console logging of protocol frames. Off in production builds; development builds
+// (webpack --mode development, index-dev.html) log by default. To debug a production build,
+// run localStorage.setItem('blml-debug-log', '1') in the browser console and reload.
+// Secrets and message text are redacted from the log either way (see redactLogLine in lib/utils.js).
+export const LOGGING_ENABLED = process.env.NODE_ENV !== 'production' || (_ => {
+  try {
+    return window.localStorage.getItem('blml-debug-log') == '1';
+  } catch (err) {
+    return false;
+  }
+})();
 
 // Minimum time between two keypress notifications, milliseconds.
 export const KEYPRESS_DELAY = 3_000;
@@ -119,10 +128,10 @@ export const MAX_DURATION = 600_000;
 export const LINK_CONTACT_US = 'mailto:support@blml.app';
 
 // Link to Privacy Policy.
-export const LINK_PRIVACY_POLICY = 'https://blml.app/privacy.html';
+export const LINK_PRIVACY_POLICY = 'https://chat.blml.app/privacy';
 
 // Link to Terms of Service.
-export const LINK_TERMS_OF_SERVICE = 'https://blml.app/terms.html';
+export const LINK_TERMS_OF_SERVICE = 'https://hungngo.net/blml/terms';
 
 // When user starts a P2P topic, automatic subscription does not
 // happen until the first message. Setting this option to true enables

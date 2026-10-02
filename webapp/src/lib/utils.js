@@ -75,8 +75,8 @@ export function arrayEqual(a, b) {
     return false;
   }
   // Order of elements is ignored.
-  a.sort();
-  b.sort();
+  a = [...a].sort();
+  b = [...b].sort();
   for (let i = 0, l = a.length; i < l; i++) {
     if (a[i] !== b[i]) {
       return false;
@@ -93,6 +93,57 @@ export function asPhone(val) {
     return val.replaceAll(/[- ().]*/g, '');
   }
   return null;
+}
+
+// The SDK rejects failed requests with CommError(text, code) and drops ctrl.params, which carry
+// the reason (e.g. {what: 'invite-only'}). Remember the latest params.what of a failed reply per topic.
+const ctrlRefusals = {};
+
+// Install as tinode.onCtrlMessage.
+export function trackCtrlRefusal(ctrl) {
+  if (ctrl && ctrl.topic) {
+    if (ctrl.code >= 400 && ctrl.params && ctrl.params.what) {
+      ctrlRefusals[ctrl.topic] = ctrl.params.what;
+    } else {
+      delete ctrlRefusals[ctrl.topic];
+    }
+  }
+}
+
+// Reason (params.what) of the latest failed reply for the topic, if any.
+export function ctrlRefusalReason(topicName) {
+  return ctrlRefusals[topicName];
+}
+
+// Keys in protocol frames which must never be written to the console: passwords and auth tokens,
+// confirmation codes and message bodies.
+const REDACTED_LOG_KEYS = ['secret', 'tmpsecret', 'token', 'resp', 'content'];
+
+// Redacts secrets from a line written by the SDK logger, like 'out: {"login":{"secret":"..."}}'.
+// Lines which are not protocol frames are returned unchanged.
+export function redactLogLine(str) {
+  if (typeof str != 'string') {
+    return str;
+  }
+  const m = /^(?:out|in|oob): /.exec(str);
+  if (!m) {
+    return str;
+  }
+  const body = str.substring(m[0].length);
+  try {
+    return m[0] + JSON.stringify(JSON.parse(body), (key, val) => {
+      if (REDACTED_LOG_KEYS.includes(key)) {
+        return '<redacted>';
+      }
+      if (key == 'tags' && Array.isArray(val)) {
+        // Invite code is sent as a 'code:...' tag.
+        return val.map(tag => (typeof tag == 'string' && tag.startsWith('code:')) ? 'code:<redacted>' : tag);
+      }
+      return val;
+    });
+  } catch (err) {
+    return `${m[0]}<${body.length} bytes>`;
+  }
 }
 
 // Checks (loosely) if the given string is an email. If so returns the email.
@@ -165,7 +216,7 @@ export function sanitizeUrlForMime(url, mimeMajor) {
   }
 
   // Is this a data: URL of the appropriate mime type?
-  const re = new RegExp(`data:${mimeMajor}\/[-+.a-z0-9]+;base64,`, 'i');
+  const re = new RegExp(`^data:${String(mimeMajor).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\/[-+.a-z0-9]+;base64,`, 'i');
   if (re.test(url.trim())) {
     return url;
   }

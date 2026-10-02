@@ -51,7 +51,7 @@ class VideoPreview extends React.PureComponent {
       name: this.props.content.filename
     }
 
-    if (params.width == 0 || params.height == 0) {
+    if (!params.width || !params.height) {
       this.props.onError(this.props.intl.formatMessage(messages.unrecognized_video_format), 'err');
       return;
     }

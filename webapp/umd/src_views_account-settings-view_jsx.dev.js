@@ -516,6 +516,7 @@ class CredentialEdit extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureC
         className: "dialog-buttons",
         children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("button", {
           className: "secondary",
+          type: "button",
           onClick: this.props.onCancel,
           children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
             id: "button_cancel",

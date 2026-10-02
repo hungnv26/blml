@@ -10,8 +10,6 @@ export default class TopicCommonView extends React.Component {
   constructor(props) {
     super(props);
 
-    const topic = this.props.tinode.getTopic(this.props.topic);
-    const acs = topic.getAccessMode();
     this.state = {
       tags: []
     };
@@ -45,7 +43,9 @@ export default class TopicCommonView extends React.Component {
 
   componentWillUnmount() {
     const topic = this.props.tinode.getTopic(this.props.topic);
-    topic.onTagsUpdated = this.previousTagsUpdated;
+    if (topic) {
+      topic.onTagsUpdated = this.previousTagsUpdated;
+    }
   }
 
   // Server informs that the tags have been updated.

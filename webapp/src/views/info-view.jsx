@@ -181,8 +181,8 @@ class InfoView extends React.Component {
     this.propsUpdated(this.props);
   }
 
-  componentDidUpdate(props) {
-    this.propsUpdated(props);
+  componentDidUpdate() {
+    this.propsUpdated(this.props);
   }
 
   componentWillUnmount() {
@@ -236,7 +236,9 @@ class InfoView extends React.Component {
       owner: acs && acs.isOwner(),
       admin: acs && acs.isAdmin(),
       sharer: acs && acs.isSharer(),
-      deleter: acs && acs.isDeleter(),
+      // Clearing all messages for everyone needs D in a group (owner, admins given D): the server
+      // refuses to hard-delete other people's messages for anyone else. Others clear for themselves only.
+      deleter: acs && acs.isDeleter() && topic.isGroupType(),
       muted: acs && acs.isMuted(),
 
       fullName: isSelf ?

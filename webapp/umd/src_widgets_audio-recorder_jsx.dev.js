@@ -111,6 +111,12 @@ class AudioRecorder extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureCo
   }
   componentWillUnmount() {
     this.startedOn = null;
+    if (this.mediaRecorder) {
+      this.mediaRecorder.onstop = null;
+      if (this.mediaRecorder.state != 'inactive') {
+        this.mediaRecorder.stop();
+      }
+    }
     if (this.stream) {
       this.cleanUp();
     }
@@ -137,9 +143,9 @@ class AudioRecorder extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureCo
         duration: (0,_lib_strformat__WEBPACK_IMPORTED_MODULE_5__.secondsToTime)(duration / 1000)
       });
       if (duration > _config_js__WEBPACK_IMPORTED_MODULE_6__.MAX_DURATION) {
-        this.startedOn = null;
         this.mediaRecorder.pause();
         this.durationMillis += Date.now() - this.startedOn;
+        this.startedOn = null;
         this.setState({
           enabled: false,
           recording: false,
@@ -248,6 +254,7 @@ class AudioRecorder extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureCo
     if (!this.mediaRecorder) {
       console.warn('MediaRecorder failed to initialize: no supported audio formats');
       this.props.onError(this.props.intl.formatMessage(messages.failed_to_init_audio));
+      this.cleanUp();
       return;
     }
     this.audioContext = new AudioContext();
@@ -255,18 +262,20 @@ class AudioRecorder extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureCo
     if (!this.audioInput) {
       console.warn('createMediaStreamSource returned null: audio input unavailable');
       this.props.onError(this.props.intl.formatMessage(messages.failed_to_init_audio));
+      this.cleanUp();
       return;
     }
     this.analyser = this.audioContext.createAnalyser();
     this.analyser.fftSize = BUFFER_SIZE;
     this.audioInput.connect(this.analyser);
     this.mediaRecorder.onstop = _ => {
+      let pending = Promise.resolve();
       if (this.durationMillis > _config_js__WEBPACK_IMPORTED_MODULE_6__.MIN_DURATION) {
-        this.getRecording(this.mediaRecorder.mimeType).then(result => this.props.onFinished(result.url, result.preview, this.durationMillis));
+        pending = this.getRecording(this.mediaRecorder.mimeType).then(result => this.props.onFinished(result.url, result.preview, this.durationMillis)).catch(err => this.props.onError(err));
       } else {
         this.props.onDeleted();
       }
-      this.cleanUp();
+      this.cleanUp(pending);
     };
     this.mediaRecorder.ondataavailable = e => {
       if (e.data.size > 0) {
@@ -278,7 +287,7 @@ class AudioRecorder extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureCo
             blobUrl: result.url,
             preview: result.preview
           });
-        });
+        }).catch(err => this.props.onError(err));
       }
     };
     this.durationMillis = 0;
@@ -325,11 +334,19 @@ class AudioRecorder extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureCo
     }
     return buffer;
   }
-  cleanUp() {
+  cleanUp(pending) {
     if (this.audioInput) {
       this.audioInput.disconnect();
     }
     this.stream.getTracks().forEach(track => track.stop());
+    const context = this.audioContext;
+    if (context) {
+      Promise.resolve(pending).then(() => {
+        if (context.state != 'closed') {
+          context.close();
+        }
+      });
+    }
   }
   render() {
     const {

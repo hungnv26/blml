@@ -96,6 +96,9 @@ class PasswordResetView extends React.PureComponent {
           if (msg) {
             this.props.onError(this.props.intl.formatMessage(msg), 'info');
           }
+        })
+        .catch(_ => {
+          // Error is already reported by the parent.
         });
     }
   }

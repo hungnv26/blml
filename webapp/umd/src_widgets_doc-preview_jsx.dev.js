@@ -45,8 +45,8 @@ class DocPreview extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureCompo
     document.removeEventListener('keydown', this.handleKeyDown);
   }
   handleKeyDown(e) {
-    e.preventDefault();
     if (e.key === 'Escape') {
+      e.preventDefault();
       this.props.onClose();
     }
   }

@@ -53,12 +53,17 @@ const language = (params && params.hl) ||
   'en';
 
 // Make sure names like 'en_GB' and 'en-GB' consistently use '-'.
-const normalized = language.replace('_', '-');
+const normalized = language.replace(/_/g, '-');
 // Get the base language 'en' from a more specific 'en-US' as a partial fallback.
 const baseLanguage = normalized.split('-')[0].toLowerCase();
 
 // Try the full locale first, then the locale without the region code, fallback to 'en'.
-const htmlLang = messageLoader[normalized] ? language : messageLoader[baseLanguage] ? baseLanguage : 'en';
+let htmlLang = 'en';
+if (messageLoader[normalized]) {
+  htmlLang = normalized;
+} else if (messageLoader[baseLanguage]) {
+  htmlLang = baseLanguage;
+}
 
 const html = document.getElementsByTagName('html')[0];
 // Set lang attribute of the HTML element: <html lang="XX">
@@ -69,7 +74,7 @@ if (rtl.includes(baseLanguage)) {
 }
 // Render the app.
 const root = createRoot(document.getElementById('mountPoint'));
-messageLoader[htmlLang]().then(messages =>
+messageLoader[htmlLang]().catch(_ => ({})).then(messages =>
   root.render(
     React.createElement(IntlProvider,
       { locale: language, messages: messages, textComponent: React.Fragment },

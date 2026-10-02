@@ -283,7 +283,7 @@ class SendMessage extends React.PureComponent {
                   (<Suspense fallback={<div><FormattedMessage id="loading_note" defaultMessage="Loading..."
                   description="Message shown when component is loading"/></div>}>
                     <AudioRecorder
-                      onRecordingProgress={_ => this.props.onKeyPress(true)}
+                      onRecordingProgress={_ => this.props.onKeyPress && this.props.onKeyPress(true)}
                       onDeleted={_ => this.setState({audioRec: false})}
                       onFinished={this.handleAttachAudio}/>
                   </Suspense>) :

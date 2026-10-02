@@ -55,7 +55,7 @@ class GroupManager extends React.Component {
   static staticMembers(members, keepInitial, requiredMember) {
     let stat = [];
     members.forEach(m => {
-      if (keepInitial || m.user == requiredMember) {
+      if (keepInitial || m.user === requiredMember) {
         stat.push(m.user);
       }
     });
@@ -77,8 +77,7 @@ class GroupManager extends React.Component {
         // Prevent duplicate members
         return;
       }
-      status.delta += 1;
-      status.present = true;
+      status = {...status, delta: status.delta + 1, present: true};
     } else {
       status = {delta: 1, present: true};
     }
@@ -88,26 +87,25 @@ class GroupManager extends React.Component {
 
     const sel = GroupManager.selectedContacts(m);
 
-    const i = this.state.index;
+    const i = {...this.state.index};
     i[userId] = status;
 
     this.setState({members: m, index: i, selectedContacts: sel});
   }
 
   handleMemberRemoved(userId, index) {
-    const status = this.state.index[userId];
-    if (!status || !status.present) {
+    const old = this.state.index[userId];
+    if (!old || !old.present) {
       return;
     }
-    status.present = false;
-    status.delta -= 1;
+    const status = {...old, present: false, delta: old.delta - 1};
 
     let m = this.state.members.slice();
     m.splice(index, 1);
 
     const sel = GroupManager.selectedContacts(m);
 
-    const i = this.state.index;
+    const i = {...this.state.index};
     i[userId] = status;
 
     this.setState({members: m, index: i, selectedContacts: sel});

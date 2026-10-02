@@ -115,7 +115,7 @@ export function imageScaled(fileOrBlob, maxWidth, maxHeight, maxSize, forceSquar
       }
       // Ensure the image is not too large. Shrink the image keeping the aspect ratio.
       // Do nothing if maxsize is <= 0.
-      while (maxSize > 0 && blob.length > maxSize) {
+      while (maxSize > 0 && blob.size > maxSize) {
         dim.dstWidth = (dim.dstWidth * 0.70710678118) | 0;
         dim.dstHeight = (dim.dstHeight * 0.70710678118) | 0;
         canvas.width = dim.dstWidth;

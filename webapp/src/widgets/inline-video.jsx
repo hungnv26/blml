@@ -8,17 +8,6 @@ import { secondsToTime } from '../lib/strformat.js'
 export default class InlineVideo extends React.PureComponent {
   constructor(props) {
     super(props);
-
-    this.videoRef = React.createRef();
-
-    this.handleClick = this.handleClick.bind(this);
-  }
-
-  handleClick(e) {
-    if (this.props.onClick) {
-      // the click target has to be the image element.
-      this.props.onClick(e);
-    }
   }
 
   render() {

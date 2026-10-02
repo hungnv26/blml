@@ -131,7 +131,6 @@ class CreateAccountView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Pu
     }, this.state.inviteCode.trim() ? ['code:' + this.state.inviteCode.trim()] : undefined);
   }
   handleAvatarCropped(mime, blob, width, height) {
-    const url = blob ? URL.createObjectURL(blob) : null;
     this.setState({
       newAvatar: null,
       newAvatarMime: null
@@ -169,7 +168,7 @@ class CreateAccountView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Pu
             data: b64.bits,
             type: mime
           })
-        })).finally(_ => this.setState({
+        })).catch(err => this.props.onError(err.message, 'err')).finally(_ => this.setState({
           buttonDisabled: false
         }));
       }
@@ -318,6 +317,29 @@ class CreateAccountView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Pu
           }, void 0, true)
         }, void 0, false)]
       }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxDEV)("div", {
+        className: "panel-form-row legal-links small",
+        children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxDEV)("span", {
+          children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
+            id: "sign_up_terms_consent",
+            defaultMessage: "By signing up you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>.",
+            description: "Consent note on the sign-up form, with links to the terms and the privacy policy",
+            values: {
+              terms: chunks => (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxDEV)("a", {
+                href: _config_js__WEBPACK_IMPORTED_MODULE_11__.LINK_TERMS_OF_SERVICE,
+                target: "_blank",
+                rel: "noopener noreferrer",
+                children: chunks
+              }, void 0, false),
+              privacy: chunks => (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxDEV)("a", {
+                href: _config_js__WEBPACK_IMPORTED_MODULE_11__.LINK_PRIVACY_POLICY,
+                target: "_blank",
+                rel: "noopener noreferrer",
+                children: chunks
+              }, void 0, false)
+            }
+          }, void 0, false)
+        }, void 0, false)
+      }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxDEV)("div", {
         className: "dialog-buttons",
         children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxDEV)("button", {
           className: submitClasses,

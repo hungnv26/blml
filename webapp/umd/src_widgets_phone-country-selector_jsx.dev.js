@@ -54,11 +54,11 @@ class PhoneCountrySelector extends (react__WEBPACK_IMPORTED_MODULE_0___default()
     const countries = [];
     const selected = this.props.selected || 'US';
     this.countries.forEach((c, idx) => {
-      const style = c.code == selected ? 'selected ' : '';
+      const style = c.code === selected ? 'selected ' : '';
       countries.push((0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("li", {
         className: style,
         ref: ref => {
-          if (c.code == selected) {
+          if (c.code === selected) {
             this.selectedRef = ref;
           }
         },

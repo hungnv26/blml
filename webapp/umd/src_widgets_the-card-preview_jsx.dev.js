@@ -43,25 +43,33 @@ class TheCardPreview extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureC
     this.state = {
       content: props.content.object
     };
-    if (!props.content.object) {
-      (0,_lib_blob_helpers_js__WEBPACK_IMPORTED_MODULE_6__.importVCard)(props.content.file).then(card => {
-        this.setState({
-          content: card
-        });
-      });
-    }
+    this.unmounted = false;
     this.handleSendCard = this.handleSendCard.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
   }
   componentDidMount() {
     document.addEventListener('keydown', this.handleKeyDown);
+    if (!this.props.content.object) {
+      (0,_lib_blob_helpers_js__WEBPACK_IMPORTED_MODULE_6__.importVCard)(this.props.content.file).then(card => {
+        if (!this.unmounted) {
+          this.setState({
+            content: card
+          });
+        }
+      }).catch(err => {
+        if (!this.unmounted) {
+          this.props.onError(err.message, 'err');
+        }
+      });
+    }
   }
   componentWillUnmount() {
+    this.unmounted = true;
     document.removeEventListener('keydown', this.handleKeyDown);
   }
   handleKeyDown(e) {
-    e.preventDefault();
     if (e.key === 'Escape') {
+      e.preventDefault();
       this.props.onClose();
     }
   }
@@ -220,6 +228,53 @@ class TheCardPreview extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureC
     }, void 0, true);
   }
 }
+
+/***/ }),
+
+/***/ "./node_modules/libphonenumber-js/es6/parsePhoneNumberWithError.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/libphonenumber-js/es6/parsePhoneNumberWithError.js ***!
+  \*************************************************************************/
+/***/ (function(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": function() { return /* binding */ parsePhoneNumberWithError; }
+/* harmony export */ });
+/* harmony import */ var _parsePhoneNumberWithError_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./parsePhoneNumberWithError_.js */ "./node_modules/libphonenumber-js/es6/parsePhoneNumberWithError_.js");
+/* harmony import */ var _normalizeArguments_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./normalizeArguments.js */ "./node_modules/libphonenumber-js/es6/normalizeArguments.js");
+
+
+function parsePhoneNumberWithError() {
+  var _normalizeArguments = (0,_normalizeArguments_js__WEBPACK_IMPORTED_MODULE_1__["default"])(arguments),
+    text = _normalizeArguments.text,
+    options = _normalizeArguments.options,
+    metadata = _normalizeArguments.metadata;
+  return (0,_parsePhoneNumberWithError_js__WEBPACK_IMPORTED_MODULE_0__["default"])(text, options, metadata);
+}
+//# sourceMappingURL=parsePhoneNumberWithError.js.map
+
+/***/ }),
+
+/***/ "./node_modules/libphonenumber-js/mobile/exports/parsePhoneNumberWithError.js":
+/*!************************************************************************************!*\
+  !*** ./node_modules/libphonenumber-js/mobile/exports/parsePhoneNumberWithError.js ***!
+  \************************************************************************************/
+/***/ (function(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   parsePhoneNumberWithError: function() { return /* binding */ parsePhoneNumberWithError; }
+/* harmony export */ });
+/* harmony import */ var _withMetadataArgument_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./withMetadataArgument.js */ "./node_modules/libphonenumber-js/mobile/exports/withMetadataArgument.js");
+/* harmony import */ var _core_index_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../core/index.js */ "./node_modules/libphonenumber-js/es6/parsePhoneNumberWithError.js");
+
+
+
+function parsePhoneNumberWithError() {
+	return (0,_withMetadataArgument_js__WEBPACK_IMPORTED_MODULE_0__["default"])(_core_index_js__WEBPACK_IMPORTED_MODULE_1__["default"], arguments)
+}
+
 
 /***/ })
 

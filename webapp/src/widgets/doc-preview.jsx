@@ -29,8 +29,8 @@ export default class DocPreview extends React.PureComponent {
   }
 
   handleKeyDown(e) {
-    e.preventDefault();
     if (e.key === 'Escape') {
+      e.preventDefault();
       this.props.onClose();
     }
   }

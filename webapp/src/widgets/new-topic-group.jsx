@@ -15,8 +15,6 @@ export default class NewTopicGroup extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    this.fullName = React.createRef();
-
     this.state = {
       fullName: '', // full/formatted name
       private: '',
@@ -36,10 +34,6 @@ export default class NewTopicGroup extends React.PureComponent {
     this.handleTagsChanged = this.handleTagsChanged.bind(this);
     this.handleChannelToggle = this.handleChannelToggle.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-  }
-
-  componentDidMount() {
-    // this.fullName.current.focus();
   }
 
   handleFieldEdit(name, e) {
@@ -76,11 +70,12 @@ export default class NewTopicGroup extends React.PureComponent {
       } else {
         // Convert blob to base64-encoded bits.
         blobToBase64(blob)
-          .then(b64 => this.setState({imageUrl: makeImageUrl({data: b64.bits, type: mime})}));
+          .then(b64 => this.setState({imageUrl: makeImageUrl({data: b64.bits, type: mime})}))
+          .catch(err => this.props.onError(err.message, 'err'));
       }
     };
 
-    if (width > AVATAR_SIZE || height > AVATAR_SIZE || width != height) {
+    if (width > AVATAR_SIZE || height > AVATAR_SIZE || width !== height) {
       // Avatar is not square or too large even after cropping. Shrink it and make square.
       imageScaled(blob, AVATAR_SIZE, AVATAR_SIZE, MAX_EXTERN_ATTACHMENT_SIZE, true)
         .then(scaled => readyToUpload(scaled))
@@ -143,7 +138,7 @@ export default class NewTopicGroup extends React.PureComponent {
             <FormattedMessage id="topic_name_editing_placeholder" defaultMessage="Freeform name of the group"
               description="Prompt for entering topic name">{
               (placeholder) => <input type="text" id="new-topic-fn" placeholder={placeholder}
-                ref={this.fullName} value={this.state.fullName} onChange={this.handleFieldEdit.bind(this, 'fullName')}
+                value={this.state.fullName} onChange={this.handleFieldEdit.bind(this, 'fullName')}
                 autoFocus required tabIndex={0} />
             }</FormattedMessage>
           </div>

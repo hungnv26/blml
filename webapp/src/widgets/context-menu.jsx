@@ -75,6 +75,11 @@ const messages = defineMessages({
     defaultMessage: 'Are you sure you want to delete all messages for everyone? It cannot be undone.',
     description: 'Alert dialog warning when hard-deleting all messages.'
   },
+  delete_for_all_refused: {
+    id: 'delete_for_all_refused',
+    defaultMessage: 'This can\'t be deleted for everyone. You can still delete it for yourself.',
+    description: 'Error shown when the server refuses to delete message(s) for all members'
+  },
   unblock: {
     id: 'menu_item_unblock',
     defaultMessage: 'Unblock',
@@ -269,8 +274,10 @@ class ContextMenu extends React.Component {
           return props.onShowAlert(
             params.topicTitle || formatMessage(messages.block), // title
             formatMessage(messages.topic_block_warning), // content
-            (_ => this.topicPermissionSetter('-JP', params, errorHandler).then(ctrl => {
-              this.props.onTopicRemoved(params.topicName);
+            (_ => Promise.resolve(this.topicPermissionSetter('-JP', params, errorHandler)).then(ctrl => {
+              if (ctrl) {
+                this.props.onTopicRemoved(params.topicName);
+              }
               return ctrl;
             })),
             null, // "OK"
@@ -482,7 +489,9 @@ class ContextMenu extends React.Component {
 
     return promise.catch(err => {
       if (errorHandler) {
-        errorHandler(err.message, 'err');
+        // Server refused to delete for everyone (not the author, too old, or no permission).
+        const refused = hard && (err.code == 403 || err.code == 405);
+        errorHandler(refused ? this.props.intl.formatMessage(messages.delete_for_all_refused) : err.message, 'err');
       }
     });
   }

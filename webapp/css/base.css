@@ -773,6 +773,13 @@ div.trusted-badge {
   font-size: 90%;
 }
 
+/* Terms of Service / Privacy Policy links on the sign-in and sign-up forms. */
+.legal-links {
+  justify-content: center;
+  text-align: center;
+  color: var(--clr-text-secondary);
+}
+
 .float-right {
   position: absolute;
   right: 0.5rem;
@@ -1392,7 +1399,7 @@ i.search {
 }
 
 .contact-time.unread {
-  color: #25d366;
+  color: var(--clr-secondary-accent);
   font-weight: 600;
 }
 
@@ -1830,16 +1837,6 @@ img.channel {
   z-index: 0;
 }
 
-/* Dark mode wallpaper adjustments: image wallpaper *
-#messages-container.dark.wpimg::before {
-  filter: brightness(50%);
-}
-/* Dark mode wallpaper adjustments: pattern wallpaper *
-#messages-container.dark.wppatt::before {
-  filter: invert(1);
-}
-*/
-
 /* Scrollable panel where the messages are shown */
 #messages-panel {
   position: relative;
@@ -1887,6 +1884,19 @@ img.channel {
   padding: 0.75rem 1.25rem 0.75rem 1.25rem;
   border-radius: 0.5rem;
   box-shadow: 0 1px 0.5px var(--clr-shadow-button-inset-active); /* rgba(0, 0, 0, 0.12) */
+}
+
+/* Shown in place of the message input when the user has blocked the chat */
+#self-blocked-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  line-height: 2rem;
+  background-color: var(--clr-background-blue-gray-50);
+  color: var(--clr-text-primary);
 }
 
 /* Footer-panel with the input for the new message */
@@ -2829,7 +2839,7 @@ ul.tabbar li.active > a {
 /* Miscellaneous */
 
 /* Badge with the number of unread messages */
-.unread {
+.unread:not(.contact-time) {
   display: inline-block;
   font-size: 0.75rem;
   font-weight: bolder;
@@ -3278,7 +3288,7 @@ ul.tabbar li.active > a {
   z-index: 1;
   border-radius: 0.25rem;
   border: solid 2px var(--clr-cropper-bounding-box-border);
-  box-shadow: 1px 1px 3px var(--clr-shadow-cropper-gray);
+  box-shadow: 1px 1px 3px var(--clr-shadow-button);
   background-color: var(--clr-cropper-bounding-box-bg);
 }
 

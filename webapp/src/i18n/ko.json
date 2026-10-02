@@ -42,7 +42,7 @@
     "obsolete": false
   },
   "archived_contacts": {
-    "translation": "보관된연락처({수})",
+    "translation": "보관된 연락처({count})",
     "defaultMessage": "Archived contacts ({count})",
     "description": "Label for archived chats",
     "missing": false,
@@ -91,7 +91,7 @@
     "obsolete": false
   },
   "blocked_contacts_link": {
-    "translation": "차단된연락처({수})",
+    "translation": "차단된 연락처({count})",
     "defaultMessage": "Blocked contacts ({count})",
     "description": "Blocked contacts link",
     "missing": false,
@@ -266,7 +266,7 @@
     "obsolete": false
   },
   "contacts_not_found_short": {
-    "translation": "'{문의}'와일치하는연락처가없습니다.",
+    "translation": "''{query}''와 일치하는 연락처가 없습니다.",
     "defaultMessage": "No contacts match ''{query}''",
     "description": "Shown in ContactsView when search returned no results",
     "missing": false,
@@ -350,7 +350,7 @@
     "obsolete": false
   },
   "enter_confirmation_code_prompt": {
-    "translation": "{방법}으로보낸확인코드를입력하십시오:",
+    "translation": "{method}으로보낸확인코드를입력하십시오:",
     "defaultMessage": "Confirmation code",
     "description": "Request to enter confirmation code",
     "missing": false,
@@ -364,7 +364,7 @@
     "obsolete": false
   },
   "file_attachment_too_large": {
-    "translation": "파일크기{크기}이(가){제한}제한을초과합니다.",
+    "translation": "파일 크기 {size}이(가) {limit} 제한을 초과합니다.",
     "defaultMessage": "The file size {size} exceeds the {limit} limit.",
     "description": "Error message when attachment is too large",
     "missing": false,
@@ -614,7 +614,7 @@
     "obsolete": false
   },
   "last_seen_timestamp": {
-    "translation": "마지막으로본",
+    "translation": "마지막 접속: {timestamp}",
     "defaultMessage": "Last seen: {timestamp}",
     "description": "Label for the timestamp of when the user or topic was last online",
     "missing": false,
@@ -789,7 +789,7 @@
     "obsolete": false
   },
   "more_online_members": {
-    "translation": "+{넘침}더보기",
+    "translation": "+{overflow}명 더보기",
     "defaultMessage": "+{overflow} more",
     "description": "Shown in MessagesView title bar when the number of online subscribers exceeds MAX_ONLINE_IN_TOPIC",
     "missing": false,
@@ -936,7 +936,7 @@
     "obsolete": false
   },
   "reconnect_countdown": {
-    "translation": "연결이끊어졌습니다.다시연결하는중{초}…",
+    "translation": "연결이 끊어졌습니다. {seconds}초 후 다시 연결합니다…",
     "defaultMessage": "Disconnected. Reconnecting in {seconds}…",
     "description": "Message shown when an app update is available.",
     "missing": false,
@@ -1323,6 +1323,7 @@
   "forward_to": {
     "translation": "메시지를 리디렉션",
     "defaultMessage": "Forward to",
+    "description": "Title of the contact selector dialog when forwarding a message",
     "missing": false,
     "obsolete": false
   },
@@ -1967,6 +1968,34 @@
     "translation": "",
     "defaultMessage": "Invite code",
     "description": "Input placeholder for the registration invite code",
+    "missing": true,
+    "obsolete": false
+  },
+  "delete_for_all_refused": {
+    "translation": "",
+    "defaultMessage": "This can't be deleted for everyone. You can still delete it for yourself.",
+    "description": "Error shown when the server refuses to delete message(s) for all members",
+    "missing": true,
+    "obsolete": false
+  },
+  "sign_up_terms_consent": {
+    "translation": "",
+    "defaultMessage": "By signing up you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>.",
+    "description": "Consent note on the sign-up form, with links to the terms and the privacy policy",
+    "missing": true,
+    "obsolete": false
+  },
+  "topic_blocked_by_you": {
+    "translation": "",
+    "defaultMessage": "You blocked this chat.",
+    "description": "Shown in place of the message input when the user has blocked the chat",
+    "missing": true,
+    "obsolete": false
+  },
+  "group_invite_only": {
+    "translation": "",
+    "defaultMessage": "This group is invite-only. Ask a member to add you.",
+    "description": "Error shown when trying to join a group without an invitation",
     "missing": true,
     "obsolete": false
   }

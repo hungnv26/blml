@@ -614,7 +614,7 @@
     "obsolete": false
   },
   "last_seen_timestamp": {
-    "translation": "最後上線",
+    "translation": "最後上線：{timestamp}",
     "defaultMessage": "Last seen: {timestamp}",
     "description": "Label for the timestamp of when the user or topic was last online",
     "missing": false,
@@ -712,7 +712,7 @@
     "obsolete": false
   },
   "menu_item_info": {
-    "translation": "Info",
+    "translation": "資訊",
     "defaultMessage": "Info",
     "description": "Show extended topic information",
     "missing": false,
@@ -915,7 +915,7 @@
     "obsolete": false
   },
   "phone_dative": {
-    "translation": "phone",
+    "translation": "電話",
     "defaultMessage": "phone",
     "description": "Dative case of 'phone', i.e. 'phone' in 'by phone'",
     "missing": false,
@@ -1323,6 +1323,7 @@
   "forward_to": {
     "translation": "重定向消息",
     "defaultMessage": "Forward to",
+    "description": "Title of the contact selector dialog when forwarding a message",
     "missing": false,
     "obsolete": false
   },
@@ -1964,9 +1965,37 @@
     "obsolete": false
   },
   "invite_code_prompt": {
-    "translation": "",
+    "translation": "邀請碼",
     "defaultMessage": "Invite code",
     "description": "Input placeholder for the registration invite code",
+    "missing": false,
+    "obsolete": false
+  },
+  "delete_for_all_refused": {
+    "translation": "",
+    "defaultMessage": "This can't be deleted for everyone. You can still delete it for yourself.",
+    "description": "Error shown when the server refuses to delete message(s) for all members",
+    "missing": true,
+    "obsolete": false
+  },
+  "sign_up_terms_consent": {
+    "translation": "",
+    "defaultMessage": "By signing up you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>.",
+    "description": "Consent note on the sign-up form, with links to the terms and the privacy policy",
+    "missing": true,
+    "obsolete": false
+  },
+  "topic_blocked_by_you": {
+    "translation": "",
+    "defaultMessage": "You blocked this chat.",
+    "description": "Shown in place of the message input when the user has blocked the chat",
+    "missing": true,
+    "obsolete": false
+  },
+  "group_invite_only": {
+    "translation": "",
+    "defaultMessage": "This group is invite-only. Ask a member to add you.",
+    "description": "Error shown when trying to join a group without an invitation",
     "missing": true,
     "obsolete": false
   }

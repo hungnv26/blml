@@ -35,7 +35,7 @@ class LogoView extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureCompone
           alt: "logo",
           src: "img/logo.svg"
         }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("h2", {
-          children: "BLML"
+          children: _config_js__WEBPACK_IMPORTED_MODULE_3__.APP_NAME
         }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("p", {
           children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
             id: "label_client",
@@ -104,7 +104,7 @@ const ImagePreview = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => __we
 
 
 
-const TheCardPreview = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_libphonenumber-js_mobile_exports_parsePhoneNumberWithError_js"), __webpack_require__.e("src_widgets_the-card-preview_jsx")]).then(__webpack_require__.bind(__webpack_require__, /*! ../widgets/the-card-preview.jsx */ "./src/widgets/the-card-preview.jsx")));
+const TheCardPreview = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4"), __webpack_require__.e("src_widgets_the-card-preview_jsx")]).then(__webpack_require__.bind(__webpack_require__, /*! ../widgets/the-card-preview.jsx */ "./src/widgets/the-card-preview.jsx")));
 const VideoPreview = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => __webpack_require__.e(/*! import() */ "src_widgets_video-preview_jsx").then(__webpack_require__.bind(__webpack_require__, /*! ../widgets/video-preview.jsx */ "./src/widgets/video-preview.jsx")));
 
 
@@ -140,6 +140,11 @@ const messages = (0,react_intl__WEBPACK_IMPORTED_MODULE_1__.defineMessages)({
     id: 'file_attachment_too_large',
     defaultMessage: 'The file size {size} exceeds the {limit} limit.',
     description: 'Error message when attachment is too large'
+  },
+  cannot_initiate_upload: {
+    id: 'cannot_initiate_file_upload',
+    defaultMessage: 'Cannot initiate file upload.',
+    description: 'Generic error message when attachment fails'
   },
   invalid_content: {
     id: 'invalid_content',
@@ -184,6 +189,13 @@ function isUnconfirmed(acs) {
   }
   return false;
 }
+function isSelfBlocked(acs) {
+  if (acs) {
+    const want = acs.getWant();
+    return !!want && want != 'N' && !acs.isJoiner('want');
+  }
+  return false;
+}
 function isPeerRestricted(acs) {
   if (acs) {
     const ms = acs.getMissing() || '';
@@ -192,7 +204,7 @@ function isPeerRestricted(acs) {
   return false;
 }
 function shouldPresentCallPanel(callState) {
-  return callState == _constants_js__WEBPACK_IMPORTED_MODULE_15__.CALL_STATE_OUTGOING_INITATED || callState == _constants_js__WEBPACK_IMPORTED_MODULE_15__.CALL_STATE_IN_PROGRESS;
+  return callState === _constants_js__WEBPACK_IMPORTED_MODULE_15__.CALL_STATE_OUTGOING_INITATED || callState === _constants_js__WEBPACK_IMPORTED_MODULE_15__.CALL_STATE_IN_PROGRESS;
 }
 class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component) {
   constructor(props) {
@@ -226,6 +238,7 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
     this.handleShowMessageContextMenu = this.handleShowMessageContextMenu.bind(this);
     this.handleNewChatAcceptance = this.handleNewChatAcceptance.bind(this);
     this.handleEnablePeer = this.handleEnablePeer.bind(this);
+    this.handleUnblock = this.handleUnblock.bind(this);
     this.handleAttachFile = this.handleAttachFile.bind(this);
     this.handleAttachImageOrVideo = this.handleAttachImageOrVideo.bind(this);
     this.handleCancelUpload = this.handleCancelUpload.bind(this);
@@ -528,14 +541,19 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
         nextState.isAdmin = false;
       }
       if (!prevState.readingBlocked) {
-        prevState.readingBlocked = true;
+        nextState.readingBlocked = true;
       }
       if (prevState.isSharer) {
         nextState.isSharer = false;
       }
     }
-    if (isUnconfirmed(nextProps.acs) == !prevState.unconformed) {
-      nextState.unconfirmed = !prevState.unconformed;
+    const unconfirmed = isUnconfirmed(nextProps.acs);
+    if (unconfirmed != !!prevState.unconfirmed) {
+      nextState.unconfirmed = unconfirmed;
+    }
+    const selfBlocked = isSelfBlocked(nextProps.acs);
+    if (selfBlocked != !!prevState.selfBlocked) {
+      nextState.selfBlocked = selfBlocked;
     }
     if (!nextProps.connected && prevState.onlineSubs && prevState.onlineSubs.length > 0) {
       nextState.onlineSubs = [];
@@ -544,6 +562,9 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
   }
   subscribe(topic) {
     if (topic.isSubscribed() || !this.props.ready) {
+      return;
+    }
+    if (isSelfBlocked(topic.getAccessMode()) && !topic.isP2PType()) {
       return;
     }
     const newTopic = this.props.newTopicParams && this.props.newTopicParams._topicName == this.props.topic;
@@ -637,24 +658,26 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
     if (event.target.scrollTop <= FETCH_PAGE_TRIGGER) {
       const topic = this.props.tinode.getTopic(this.state.topic);
       if (topic && topic.isSubscribed()) {
-        this.processingScrollEvent = true;
         const {
           min,
           max
         } = this.getVisibleMessageRange(event.target.getBoundingClientRect());
         const gaps = topic.msgHasMoreMessages(min, max, false);
         if (gaps.length > 0) {
+          this.processingScrollEvent = true;
           this.setState({
             fetchingMessages: true
           }, _ => {
-            topic.getMessagesPage(_config_js__WEBPACK_IMPORTED_MODULE_14__.MESSAGES_PAGE, gaps, min, max).catch(err => this.props.onError(err.message, 'err')).finally(_ => this.setState({
-              fetchingMessages: false
-            }));
+            topic.getMessagesPage(_config_js__WEBPACK_IMPORTED_MODULE_14__.MESSAGES_PAGE, gaps, min, max).catch(err => this.props.onError(err.message, 'err')).finally(_ => {
+              this.processingScrollEvent = false;
+              this.setState({
+                fetchingMessages: false
+              });
+            });
           });
         }
       }
     }
-    this.processingScrollEvent = false;
   }
   mountDnDEvents(dnd) {
     if (dnd) {
@@ -956,7 +979,9 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
           menuItems.push('message_delete');
         }
         const acs = topic.getAccessMode();
-        if (acs && acs.isDeleter()) {
+        const ownMessage = params.userFrom == this.props.myUserId;
+        const moderator = acs && topic.isGroupType() && acs.isDeleter();
+        if (acs && (ownMessage || moderator)) {
           let canDelete = acs.isOwner();
           if (!canDelete) {
             const maxDelAge = this.props.tinode.getServerParam(tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Tinode.MSG_DELETE_AGE, 0) | 0;
@@ -976,6 +1001,19 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
   handleEnablePeer(e) {
     e.preventDefault();
     this.props.onChangePermissions(this.state.topic, _config_js__WEBPACK_IMPORTED_MODULE_14__.DEFAULT_P2P_ACCESS_MODE, this.state.topic);
+  }
+  handleUnblock(e) {
+    e.preventDefault();
+    const topic = this.props.tinode.getTopic(this.state.topic);
+    if (!topic) {
+      return;
+    }
+    topic.updateMode(null, '+JP').then(_ => {
+      this.setState({
+        selfBlocked: isSelfBlocked(topic.getAccessMode())
+      });
+      this.subscribe(topic);
+    }).catch(err => this.props.onError(err.message, 'err'));
   }
   sendKeyPress(audio) {
     const topic = this.props.tinode.getTopic(this.state.topic);
@@ -1019,7 +1057,7 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
     this.props.sendMessage(pub.content, undefined, undefined, pub.head).then(_ => {
       const topic = this.props.tinode.getTopic(this.state.topic);
       topic.delMessagesList([pub.seq], true);
-    });
+    }).catch(err => this.props.onError(err.message, 'err'));
   }
   sendFileAttachment(file) {
     const maxInbandAttachmentSize = this.props.tinode.getServerParam('maxMessageSize', _config_js__WEBPACK_IMPORTED_MODULE_14__.MAX_INBAND_ATTACHMENT_SIZE) * 0.75 - 1024 | 0;
@@ -1063,9 +1101,7 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
     (0,_lib_blob_helpers_js__WEBPACK_IMPORTED_MODULE_16__.importVCard)(file).then(card => {
       this.sendMessage(tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Drafty.appendTheCard(null, card));
     }).catch(err => {
-      this.props.onError(this.props.intl.formatMessage(messages.cannot_parse_vcard, {
-        error: err.message
-      }), 'err');
+      this.props.onError(this.props.intl.formatMessage(messages.cannot_parse_vcard), 'err');
     });
     return true;
   }
@@ -1128,7 +1164,7 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
           msg = tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Drafty.append(msg, tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Drafty.parse(caption));
         }
         this.sendMessage(msg, uploadCompletionPromise, uploader);
-      }).catch(err => this.props.onError(err, 'err'));
+      }).catch(err => this.props.onError(err.message, 'err'));
       return;
     }
     (0,_lib_blob_helpers_js__WEBPACK_IMPORTED_MODULE_16__.blobToBase64)(blob).then(b64 => {
@@ -1145,7 +1181,7 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
         msg = tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Drafty.append(msg, tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Drafty.parse(caption));
       }
       this.sendMessage(msg);
-    });
+    }).catch(err => this.props.onError(err.message, 'err'));
   }
   sendVideoAttachment(caption, videoBlob, previewBlob, params) {
     const width = params.width;
@@ -1181,7 +1217,7 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
           msg = tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Drafty.append(msg, tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Drafty.parse(caption));
         }
         this.sendMessage(msg);
-      });
+      }).catch(err => this.props.onError(err.message, 'err'));
       return;
     }
     const uploadCompletionPromise = Promise.all(uploads);
@@ -1271,7 +1307,7 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
         });
         this.sendMessage(msg, uploadCompletionPromise, uploader);
       } else {
-        (0,_lib_blob_helpers_js__WEBPACK_IMPORTED_MODULE_16__.blobToBase64)(blob).then(b64 => {
+        return (0,_lib_blob_helpers_js__WEBPACK_IMPORTED_MODULE_16__.blobToBase64)(blob).then(b64 => {
           this.sendMessage(tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Drafty.appendAudio(null, {
             mime: b64.mime,
             bits: b64.bits,
@@ -1353,9 +1389,10 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
         block: "center",
         behavior: "smooth"
       });
-      ref.current.classList.add('flash');
+      const el = ref.current;
+      el.classList.add('flash');
       setTimeout(_ => {
-        ref.current.classList.remove('flash');
+        el.classList.remove('flash');
       }, 1000);
     } else {
       console.error("Unresolved message ref", replyToSeq);
@@ -1722,7 +1759,25 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
                 }, void 0, false)
               }, void 0, false) : null
             }, void 0, false) : null]
-          }, void 0, true), this.state.peerMessagingDisabled && !this.state.unconfirmed ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxDEV)("div", {
+          }, void 0, true), this.state.selfBlocked ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxDEV)("div", {
+            id: "self-blocked-note",
+            children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxDEV)("i", {
+              className: "material-icons secondary",
+              children: "block"
+            }, void 0, false), " ", (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
+              id: "topic_blocked_by_you",
+              defaultMessage: "You blocked this chat.",
+              description: "Shown in place of the message input when the user has blocked the chat"
+            }, void 0, false), " ", (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxDEV)("a", {
+              href: "#",
+              onClick: this.handleUnblock,
+              children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
+                id: "menu_item_unblock",
+                defaultMessage: "Unblock",
+                description: "Unblock topic or user"
+              }, void 0, false)
+            }, void 0, false)]
+          }, void 0, true) : null, this.state.peerMessagingDisabled && !this.state.unconfirmed && !this.state.selfBlocked ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxDEV)("div", {
             id: "peer-messaging-disabled-note",
             children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxDEV)("i", {
               className: "material-icons secondary",
@@ -1740,7 +1795,7 @@ class MessagesView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
                 description: "Call to action to enable peer's messaging"
               }, void 0, false)
             }, void 0, false), "."]
-          }, void 0, true) : null, this.state.unconfirmed ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxDEV)(_widgets_invitation_jsx__WEBPACK_IMPORTED_MODULE_7__["default"], {
+          }, void 0, true) : null, this.state.selfBlocked ? null : this.state.unconfirmed ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxDEV)(_widgets_invitation_jsx__WEBPACK_IMPORTED_MODULE_7__["default"], {
             onAction: this.handleNewChatAcceptance
           }, void 0, false) : (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxDEV)(_widgets_send_message_jsx__WEBPACK_IMPORTED_MODULE_13__["default"], {
             tinode: this.props.tinode,
@@ -2122,7 +2177,14 @@ class BaseChatMessage extends (react__WEBPACK_IMPORTED_MODULE_0___default().Pure
     };
     data.resp = {};
     if (e.target.dataset.name) {
-      data.resp[e.target.dataset.name] = e.target.dataset.val ? e.target.dataset.val : e.target.dataset.val === undefined ? 1 : '' + e.target.dataset.val;
+      const val = e.target.dataset.val;
+      if (val) {
+        data.resp[e.target.dataset.name] = val;
+      } else if (val === undefined) {
+        data.resp[e.target.dataset.name] = 1;
+      } else {
+        data.resp[e.target.dataset.name] = '' + val;
+      }
     }
     if (e.target.dataset.act == 'url') {
       data.ref = (0,_lib_utils_js__WEBPACK_IMPORTED_MODULE_7__.sanitizeUrl)(e.target.dataset.ref) || 'about:blank';
@@ -2321,9 +2383,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class GroupSubs extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component) {
-  constructor(props) {
-    super(props);
-  }
   render() {
     const usersOnline = [];
     const totalCount = (this.props.subscribers || []).length;
@@ -2338,9 +2397,9 @@ class GroupSubs extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component)
           title: sub.public ? sub.public.fn : null
         }, void 0, false)
       }, sub.user, false));
-      return usersOnline.length == countToShow;
+      return usersOnline.length === countToShow;
     });
-    if (usersOnline.length == 0) {
+    if (usersOnline.length === 0) {
       return null;
     }
     return (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxDEV)("div", {
@@ -2622,7 +2681,7 @@ class PinnedMessages extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureC
       children: this.props.intl.formatMessage(messages.message_not_found)
     }, void 0, false);
     const dots = [];
-    this.props.pins.forEach(seq => {
+    (this.props.pins || []).forEach(seq => {
       const cn = dots.length == selected ? 'adot' : 'dot';
       dots.push((0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxDEV)("div", {
         className: cn
@@ -3050,7 +3109,7 @@ class SendMessage extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComp
               }, void 0, false)
             }, void 0, false),
             children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxDEV)(AudioRecorder, {
-              onRecordingProgress: _ => this.props.onKeyPress(true),
+              onRecordingProgress: _ => this.props.onKeyPress && this.props.onKeyPress(true),
               onDeleted: _ => this.setState({
                 audioRec: false
               }),

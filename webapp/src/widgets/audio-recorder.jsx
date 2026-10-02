@@ -118,6 +118,12 @@ class AudioRecorder extends React.PureComponent {
 
   componentWillUnmount() {
     this.startedOn = null;
+    if (this.mediaRecorder) {
+      this.mediaRecorder.onstop = null;
+      if (this.mediaRecorder.state != 'inactive') {
+        this.mediaRecorder.stop();
+      }
+    }
     if (this.stream) {
       this.cleanUp();
     }
@@ -153,9 +159,9 @@ class AudioRecorder extends React.PureComponent {
 
       // Check if record is too long.
       if (duration > MAX_DURATION) {
-        this.startedOn = null;
         this.mediaRecorder.pause();
         this.durationMillis += Date.now() - this.startedOn;
+        this.startedOn = null;
         this.setState({enabled: false, recording: false, duration: secondsToTime(this.durationMillis / 1000)});
       }
 
@@ -280,6 +286,7 @@ class AudioRecorder extends React.PureComponent {
     if (!this.mediaRecorder) {
       console.warn('MediaRecorder failed to initialize: no supported audio formats');
       this.props.onError(this.props.intl.formatMessage(messages.failed_to_init_audio));
+      this.cleanUp();
       return;
     }
 
@@ -289,6 +296,7 @@ class AudioRecorder extends React.PureComponent {
     if (!this.audioInput) {
       console.warn('createMediaStreamSource returned null: audio input unavailable');
       this.props.onError(this.props.intl.formatMessage(messages.failed_to_init_audio));
+      this.cleanUp();
       return;
     }
 
@@ -297,13 +305,15 @@ class AudioRecorder extends React.PureComponent {
     this.audioInput.connect(this.analyser);
 
     this.mediaRecorder.onstop = _ => {
+      let pending = Promise.resolve();
       if (this.durationMillis > MIN_DURATION) {
-        this.getRecording(this.mediaRecorder.mimeType)
-          .then(result => this.props.onFinished(result.url, result.preview, this.durationMillis));
+        pending = this.getRecording(this.mediaRecorder.mimeType)
+          .then(result => this.props.onFinished(result.url, result.preview, this.durationMillis))
+          .catch(err => this.props.onError(err));
       } else {
         this.props.onDeleted();
       }
-      this.cleanUp();
+      this.cleanUp(pending);
     }
 
     this.mediaRecorder.ondataavailable = (e) => {
@@ -317,7 +327,7 @@ class AudioRecorder extends React.PureComponent {
             blobUrl: result.url,
             preview: result.preview
           });
-        });
+        }).catch(err => this.props.onError(err));
       }
     }
 
@@ -375,11 +385,22 @@ class AudioRecorder extends React.PureComponent {
     return buffer;
   }
 
-  cleanUp() {
+  // Release the audio resources. The context is closed after 'pending' settles
+  // because decoding the recording still needs it.
+  cleanUp(pending) {
     if (this.audioInput) {
       this.audioInput.disconnect();
     }
     this.stream.getTracks().forEach(track => track.stop());
+
+    const context = this.audioContext;
+    if (context) {
+      Promise.resolve(pending).then(() => {
+        if (context.state != 'closed') {
+          context.close();
+        }
+      });
+    }
   }
 
   render() {

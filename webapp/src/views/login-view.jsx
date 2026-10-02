@@ -5,6 +5,8 @@ import { FormattedMessage } from 'react-intl';
 import CheckBox from '../widgets/checkbox.jsx';
 import VisiblePassword from '../widgets/visible-password.jsx';
 
+import { LINK_PRIVACY_POLICY, LINK_TERMS_OF_SERVICE } from '../config.js';
+
 export default class LoginView extends React.Component {
   constructor(props) {
     super(props);
@@ -12,7 +14,6 @@ export default class LoginView extends React.Component {
     this.state = {
       login: props.login,
       password: '',
-      hostName: props.serverAddress,
       saveToken: props.persist
     };
     this.handleLoginChange = this.handleLoginChange.bind(this);
@@ -88,6 +89,17 @@ export default class LoginView extends React.Component {
             <FormattedMessage id="button_sign_in" defaultMessage="Sign in"
               description="Button [Sign In]" />
           </button>
+        </div>
+        <div className="panel-form-row legal-links small">
+          <span>
+            <a href={LINK_TERMS_OF_SERVICE} className="gray" target="_blank" rel="noopener noreferrer">
+              <FormattedMessage id="link_terms_of_service" defaultMessage="Terms of Service"
+                description="Ancor text for terms of service link" />
+            </a> &middot; <a href={LINK_PRIVACY_POLICY} className="gray" target="_blank" rel="noopener noreferrer">
+              <FormattedMessage id="link_privacy_policy" defaultMessage="Privacy Policy"
+                description="Ancor text for privacy policy link" />
+            </a>
+          </span>
         </div>
       </form>
     );

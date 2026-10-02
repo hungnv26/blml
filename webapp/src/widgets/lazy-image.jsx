@@ -15,11 +15,24 @@ export default class LazyImage extends React.PureComponent {
   }
 
   componentDidMount() {
+    this.watch(this.props.whenDone);
+  }
+
+  watch(whenDone) {
     // whenDone is a wrapper around an actual promise to be able to cancel it.
-    this.props.whenDone
+    // Results of a promise which is no longer current are ignored.
+    whenDone
       .promise
-      .then(data => this.setState({src: data.src, style: {...this.state.style, padding: 0}}))
-      .catch(_ => this.setState({src: this.props.isvideo ? 'img/broken_video.png' : 'img/broken_image.png'}));
+      .then(data => {
+        if (whenDone === this.props.whenDone) {
+          this.setState({src: data.src, style: {...this.state.style, padding: 0}});
+        }
+      })
+      .catch(_ => {
+        if (whenDone === this.props.whenDone) {
+          this.setState({src: this.props.isvideo ? 'img/broken_video.png' : 'img/broken_image.png'});
+        }
+      });
   }
 
   componentWillUnmount() {
@@ -27,12 +40,10 @@ export default class LazyImage extends React.PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.whenDone != this.props.whenDone) {
+    if (prevProps.whenDone !== this.props.whenDone) {
+      prevProps.whenDone.cancel();
       this.setState({src: this.props.isvideo ? 'img/blankvid.png' : 'img/blankimg.png', style: {...this.state.style, padding: '4px'}});
-      this.props.whenDone
-        .promise
-        .then(data => this.setState({src: data.src, style: {...this.state.style, padding: 0}}))
-        .catch(_ => this.setState({src: this.props.isvideo ? 'img/broken_video.png' : 'img/broken_image.png'}));
+      this.watch(this.props.whenDone);
     }
   }
 

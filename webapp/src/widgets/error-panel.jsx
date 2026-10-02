@@ -6,23 +6,10 @@ export default class ErrorPanel extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    this.state = {
-      show: false,
-    };
-
     this.hide = this.hide.bind(this);
   }
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.level !== this.props.level) {
-      this.setState({
-        show: !(!this.props.level)
-      });
-    }
-  }
-
   hide() {
-    this.setState({show: false});
     if (this.props.onClearError) {
       this.props.onClearError();
     }

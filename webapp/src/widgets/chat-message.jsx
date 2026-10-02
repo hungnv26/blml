@@ -114,8 +114,14 @@ class BaseChatMessage extends React.PureComponent {
     };
     data.resp = {};
     if (e.target.dataset.name) {
-      data.resp[e.target.dataset.name] = e.target.dataset.val ? e.target.dataset.val :
-        e.target.dataset.val === undefined ? 1 : '' + e.target.dataset.val;
+      const val = e.target.dataset.val;
+      if (val) {
+        data.resp[e.target.dataset.name] = val;
+      } else if (val === undefined) {
+        data.resp[e.target.dataset.name] = 1;
+      } else {
+        data.resp[e.target.dataset.name] = '' + val;
+      }
     }
     if (e.target.dataset.act == 'url') {
       data.ref = sanitizeUrl(e.target.dataset.ref) || 'about:blank';

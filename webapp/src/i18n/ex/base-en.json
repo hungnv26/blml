@@ -271,6 +271,10 @@
     "defaultMessage": "Are you sure you want to delete your account? It cannot be undone.",
     "description": "Warning message when deleting an account"
   },
+  "delete_for_all_refused": {
+    "defaultMessage": "This can't be deleted for everyone. You can still delete it for yourself.",
+    "description": "Error shown when the server refuses to delete message(s) for all members"
+  },
   "delete_messages_warning": {
     "defaultMessage": "Are you sure you want to delete all messages for everyone? It cannot be undone.",
     "description": "Alert dialog warning when hard-deleting all messages."
@@ -348,7 +352,8 @@
     "description": "Link to Reset password form"
   },
   "forward_to": {
-    "defaultMessage": "Forward to"
+    "defaultMessage": "Forward to",
+    "description": "Title of the contact selector dialog when forwarding a message"
   },
   "forward_to_search_placeholder": {
     "defaultMessage": "Search contacts",
@@ -365,6 +370,10 @@
   "group_has_no_members": {
     "defaultMessage": "No members",
     "description": "Shown in place of group members"
+  },
+  "group_invite_only": {
+    "defaultMessage": "This group is invite-only. Ask a member to add you.",
+    "description": "Error shown when trying to join a group without an invitation"
   },
   "group_user_id_prompt": {
     "defaultMessage": "Group or User ID",
@@ -1008,6 +1017,10 @@
     "defaultMessage": "Settings",
     "description": "Sidepanel title for SettingsView."
   },
+  "sign_up_terms_consent": {
+    "defaultMessage": "By signing up you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>.",
+    "description": "Consent note on the sign-up form, with links to the terms and the privacy policy"
+  },
   "stay_logged_in": {
     "defaultMessage": "Stay logged in",
     "description": "Label for a checkbox"
@@ -1075,6 +1088,10 @@
   "topic_block_warning": {
     "defaultMessage": "Are you sure you want to block this conversation?",
     "description": "Alert warning when blocking a topic."
+  },
+  "topic_blocked_by_you": {
+    "defaultMessage": "You blocked this chat.",
+    "description": "Shown in place of the message input when the user has blocked the chat"
   },
   "topic_delete": {
     "defaultMessage": "Delete Conversation",

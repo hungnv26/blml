@@ -9,10 +9,6 @@ import LetterTile from './letter-tile.jsx';
 import { makeImageUrl } from '../lib/blob-helpers.js';
 
 export default class GroupSubs extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     const usersOnline = [];
     const totalCount = (this.props.subscribers || []).length;
@@ -28,9 +24,9 @@ export default class GroupSubs extends React.Component {
             title={sub.public ? sub.public.fn : null} />
         </div>
       );
-      return usersOnline.length == countToShow;
+      return usersOnline.length === countToShow;
     });
-    if (usersOnline.length == 0) {
+    if (usersOnline.length === 0) {
       return null;
     }
     return (

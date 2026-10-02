@@ -52,7 +52,7 @@ export default class ForwardDialog extends React.Component {
     let contacts = this.state.query != null ? this.props.searchResults : this.props.contacts;
     // Filter out contacts without a 'W' or 'J' permissions as well as the current topic.
     contacts = contacts.filter((c) => {
-      return (c.name != this.props.topicSelected) && c.acs.isJoiner() && c.acs.isWriter();
+      return (c.name !== this.props.topicSelected) && c.acs.isJoiner() && c.acs.isWriter();
     });
 
     return (
@@ -60,7 +60,7 @@ export default class ForwardDialog extends React.Component {
         <div className="forward-dialog">
           <div className="title with-control">
             <div><FormattedMessage id="forward_to" defaultMessage="Forward to"
-              desription="Title of the contact selector dialog when forwarding a message" /></div>
+              description="Title of the contact selector dialog when forwarding a message" /></div>
             <div><a href="#" onClick={this.handleClose}><i className="material-icons">close</i></a></div>
           </div>
           <FormattedMessage id="forward_to_search_placeholder" defaultMessage="Search contacts"

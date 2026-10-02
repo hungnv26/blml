@@ -29,7 +29,7 @@ import { detectServerAddress, isLocalHost, isSecureConnection } from '../lib/hos
 import LocalStorageUtil from '../lib/local-storage.js';
 import HashNavigation from '../lib/navigation.js';
 import { secondsToTime } from '../lib/strformat.js'
-import { defaultWallpaper, updateFavicon } from '../lib/utils.js';
+import { defaultWallpaper, redactLogLine, trackCtrlRefusal, updateFavicon } from '../lib/utils.js';
 
 // Sound to play on message received.
 const POP_SOUND = new Audio('audio/msg.m4a');
@@ -423,6 +423,13 @@ class TinodeWeb extends React.Component {
       secure: secureConnection, persist: persistentCache}, onSetupCompleted);
     tinode.setHumanLanguage(locale);
     tinode.enableLogging(LOGGING_ENABLED, true);
+    // Keep the reason of refused requests (e.g. 'invite-only') which the SDK drops from errors.
+    tinode.onCtrlMessage = trackCtrlRefusal;
+    if (LOGGING_ENABLED) {
+      // Never print passwords, tokens, invite codes or message text, even in debug logs.
+      const sdkLogger = tinode.logger.bind(tinode);
+      tinode.logger = (str, ...args) => sdkLogger(redactLogLine(str), ...args);
+    }
     return tinode;
   }
 
@@ -676,7 +683,7 @@ class TinodeWeb extends React.Component {
     if (this.state.desktopAlertsEnabled && !this.state.firebaseToken) {
       // Firefox and Safari: "The Notification permission may only be requested from inside a
       // short running user-generated event handler".
-      this.initFCMessaging();
+      this.initFCMessaging().catch(_ => {});
     }
   }
 
@@ -1431,7 +1438,7 @@ class TinodeWeb extends React.Component {
     if (enabled) {
       this.setState({desktopAlerts: null});
       if (!this.state.firebaseToken) {
-        this.initFCMessaging();
+        this.initFCMessaging().catch(_ => {});
       } else {
         this.setState({desktopAlerts: true});
         if (LocalStorageUtil.getObject('keep-logged-in')) {
@@ -1690,14 +1697,14 @@ class TinodeWeb extends React.Component {
     });
   }
 
-  handleDeleteMessagesRequest(topicName) {
+  handleDeleteMessagesRequest(topicName, hard) {
     const topic = this.tinode.getTopic(topicName);
     if (!topic) {
       return;
     }
 
-    // Request hard-delete all messages.
-    topic.delMessagesAll(true)
+    // Request hard- (for everyone) or soft-delete (for me) of all messages.
+    topic.delMessagesAll(!!hard)
       .catch(err => this.handleError(err.message, 'err'));
   }
 
@@ -1791,7 +1798,7 @@ class TinodeWeb extends React.Component {
   defaultTopicContextMenu(topicName) {
     const topic = this.tinode.getTopic(topicName);
 
-    if (topic._deleted) {
+    if (topic && topic._deleted) {
       return [
         'topic_delete'
       ];
@@ -1810,7 +1817,8 @@ class TinodeWeb extends React.Component {
         muted = acs.isMuted();
         blocked = !acs.isJoiner();
         self_blocked = !acs.isJoiner('want');
-        deleter = acs.isDeleter();
+        // Only users with D in a group may clear messages for everyone (P2P D covers own messages only).
+        deleter = acs.isDeleter() && !!topic.isGroupType();
         writer = acs.isWriter();
       }
     }
@@ -1934,6 +1942,7 @@ class TinodeWeb extends React.Component {
       .catch(err => {
         // Socket error
         this.handleError(err.message, 'err');
+        throw err;
       });
   }
 
@@ -1990,7 +1999,7 @@ class TinodeWeb extends React.Component {
         const head = { webrtc: CALL_HEAD_STARTED, aonly: !!audioOnly };
         return this.handleSendMessage(Drafty.videoCall(audioOnly), undefined, undefined, head)
           .then(ctrl => {
-            if (ctrl.code < 200 || ctrl.code >= 300 || !ctrl.params || !ctrl.params.seq) {
+            if (!ctrl || ctrl.code < 200 || ctrl.code >= 300 || !ctrl.params || !ctrl.params.seq) {
               this.handleCallClose();
               return ctrl;
             }

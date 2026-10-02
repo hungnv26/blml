@@ -326,7 +326,7 @@ class PermissionsEditor extends (react__WEBPACK_IMPORTED_MODULE_0___default().Co
   handleChange(val) {
     let mode = this.state.mode;
     const idx = mode.indexOf(val);
-    if (idx == -1) {
+    if (idx === -1) {
       mode += val;
     } else {
       mode = mode.replace(val, '');

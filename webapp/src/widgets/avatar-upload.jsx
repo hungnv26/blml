@@ -15,6 +15,10 @@ export default class AvatarUpload extends React.Component {
       source: props.avatar
     };
 
+    // Randomize id value in case more than one AvatarUpload is shown
+    // at the same time.
+    this.randId = 'file-input-avatar-' + Math.random().toString(36).substring(2, 12);
+
     this.handleFileReceived = this.handleFileReceived.bind(this);
   }
 
@@ -26,15 +30,16 @@ export default class AvatarUpload extends React.Component {
 
   handleFileReceived(e) {
     const image = e.target.files[0];
+    if (!image) {
+      return;
+    }
     this.props.onImageUpdated(image.type, URL.createObjectURL(image), image.name);
     // Clear the value so the same file can be uploaded again.
     e.target.value = '';
   }
 
   render() {
-    // Randomize id value in case more than one AvatarUpload is shown
-    // at the same time.
-    const randId = 'file-input-avatar-' + ('' + Math.random()).substring(0, 4);
+    const randId = this.randId;
     const className = 'avatar-upload' + (this.props.readOnly ? ' read-only' : '');
     return (
       <div className={className}>

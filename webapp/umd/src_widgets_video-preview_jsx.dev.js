@@ -58,7 +58,7 @@ class VideoPreview extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureCom
       mime: this.props.content.mime,
       name: this.props.content.filename
     };
-    if (params.width == 0 || params.height == 0) {
+    if (!params.width || !params.height) {
       this.props.onError(this.props.intl.formatMessage(messages.unrecognized_video_format), 'err');
       return;
     }

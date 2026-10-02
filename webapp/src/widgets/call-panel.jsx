@@ -110,7 +110,7 @@ class CallPanel extends React.PureComponent {
         // Prevent dragging when clicking on buttons or other non-draggable elements.
         return;
       }
-      if (window.matchMedia('(width<=640px)')) {
+      if (window.matchMedia('(max-width: 640px)').matches) {
         // No dragging on small screens.
         return;
       }
@@ -270,6 +270,8 @@ class CallPanel extends React.PureComponent {
   }
 
   stop() {
+    clearTimeout(this.hangupTimer);
+    this.hangupTimer = null;
     CALL_ENDED_SOUND.pause();
     CALL_ENDED_SOUND.currentTime = 0;
     RING_SOUND.pause();
@@ -562,7 +564,8 @@ class CallPanel extends React.PureComponent {
       RING_SOUND.currentTime = 0;
       CALL_ENDED_SOUND.loop = true;
       CALL_ENDED_SOUND.play().catch(_ => {});
-      setTimeout(_ => {
+      this.hangupTimer = setTimeout(_ => {
+        this.hangupTimer = null;
         this.handleCloseClick();
       }, 2000);
     }
