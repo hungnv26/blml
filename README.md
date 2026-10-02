@@ -7,9 +7,26 @@ No ads. No algorithms deciding what you see. No company reading your messages to
 sell you things. BLML runs on a server you control, and your conversations,
 photos and voice notes stay there.
 
-**[blml.app](https://blml.app)** — the homepage, with the app for every
-platform. **[chat.blml.app](https://chat.blml.app)** opens the chat itself in
-any browser, no install needed.
+<p>
+  <a href="https://apps.apple.com/app/blml/id6799954229"><img src="brand/badges/app-store-en.svg" height="40" alt="Download BLML on the App Store"></a>
+  <a href="https://chat.blml.app/android"><img src="brand/badges/android-en.svg" height="40" alt="Download BLML for Android"></a>
+  <a href="https://chat.blml.app"><img src="brand/badges/web-en.svg" height="40" alt="Use BLML in your browser"></a>
+</p>
+
+## Where it runs
+
+**iPhone and iPad**, **Android**, and **any web browser**. All three talk to the
+same server, so a conversation looks the same wherever you pick it up, and
+history follows you between devices.
+
+- **iPhone and iPad**: [BLML on the App Store](https://apps.apple.com/app/blml/id6799954229).
+- **Android**: download the app directly from
+  [chat.blml.app/android](https://chat.blml.app/android) — it comes from your
+  own server, like everything else here.
+- **Browser**: just open [chat.blml.app](https://chat.blml.app), no install needed.
+
+Every download is also gathered on **[blml.app](https://blml.app)**, which reads
+in Vietnamese or English.
 
 Creating an account needs an invite code from whoever runs the server — BLML is
 invite-only on purpose, so an address anyone can reach is not a room anyone can
@@ -102,27 +119,6 @@ family group has the same eyesight.
 
 Every account gets a private space to send things to yourself — links, notes,
 photos you want to find again later.
-
-## Where it runs
-
-**iPhone and iPad**, **Android**, and **any web browser**. All three talk to the
-same server, so a conversation looks the same wherever you pick it up, and
-history follows you between devices.
-
-<p>
-  <a href="https://apps.apple.com/app/blml/id6799954229"><img src="brand/badges/app-store-en.svg" height="40" alt="Download BLML on the App Store"></a>
-  <a href="https://chat.blml.app/android"><img src="brand/badges/android-en.svg" height="40" alt="Download BLML for Android"></a>
-  <a href="https://chat.blml.app"><img src="brand/badges/web-en.svg" height="40" alt="Use BLML in your browser"></a>
-</p>
-
-Every download is gathered on **[blml.app](https://blml.app)**, which reads in
-Vietnamese or English:
-
-- **iPhone and iPad**: [BLML on the App Store](https://apps.apple.com/app/blml/id6799954229).
-- **Android**: download the app directly from
-  [chat.blml.app/android](https://chat.blml.app/android) — it comes from your
-  own server, like everything else here.
-- **Browser**: just open [chat.blml.app](https://chat.blml.app).
 
 ## Why it works this way
 
