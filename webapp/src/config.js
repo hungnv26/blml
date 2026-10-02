@@ -14,6 +14,11 @@ export const KNOWN_HOSTS = {hosted: 'chat.blml.app', local: 'localhost:6060'};
 // Default host name and port to connect to.
 export const DEFAULT_HOST = KNOWN_HOSTS.hosted;
 
+// Signed-out "Settings" (server address and wire transport). BLML only talks to the server that
+// serves the page (chat.blml.app), so production builds hide it and ignore any saved override.
+// Development builds (webpack --mode development, index-dev.html) keep it for local testing.
+export const SERVER_SETTINGS_ENABLED = process.env.NODE_ENV !== 'production';
+
 // Enable console logging of protocol frames. Off in production builds; development builds
 // (webpack --mode development, index-dev.html) log by default. To debug a production build,
 // run localStorage.setItem('blml-debug-log', '1') in the browser console and reload.

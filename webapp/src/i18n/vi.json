@@ -1577,7 +1577,7 @@
     "defaultMessage": "Mobile phone number required",
     "description": "Error message",
     "missing": false,
-    "obsolete": false
+    "obsolete": true
   },
   "current_email": {
     "translation": "Email hiện tại",
@@ -1996,6 +1996,90 @@
     "translation": "Nhóm này chỉ tham gia khi được mời. Hãy nhờ một thành viên thêm bạn vào.",
     "defaultMessage": "This group is invite-only. Ask a member to add you.",
     "description": "Error shown when trying to join a group without an invitation",
+    "missing": false,
+    "obsolete": false
+  },
+  "close_viewer_action": {
+    "translation": "Đóng",
+    "defaultMessage": "Close",
+    "description": "Call to action [close] the full-size image or video viewer",
+    "missing": false,
+    "obsolete": false
+  },
+  "phone_number_not_recognized": {
+    "translation": "Đây không phải là số điện thoại",
+    "defaultMessage": "This doesn't look like a phone number",
+    "description": "Error message when the text entered in a phone number field is not a phone number",
+    "missing": false,
+    "obsolete": false
+  },
+  "share_action": {
+    "translation": "Chia sẻ",
+    "defaultMessage": "Share",
+    "description": "Call to action [share] an image or a video from the full-size viewer",
+    "missing": false,
+    "obsolete": false
+  },
+  "video_full_size_action": {
+    "translation": "Xem toàn màn hình",
+    "defaultMessage": "Full size",
+    "description": "Call to action [open video in the full-size viewer]",
+    "missing": false,
+    "obsolete": false
+  },
+  "chat_request_decline": {
+    "translation": "Từ chối",
+    "defaultMessage": "Decline",
+    "description": "Action [Decline] for a 1:1 chat request.",
+    "missing": false,
+    "obsolete": false
+  },
+  "chat_request_incoming": {
+    "translation": "{name} muốn trò chuyện với bạn. Bạn có thể trò chuyện sau khi chấp nhận.",
+    "defaultMessage": "{name} wants to chat with you. You can chat once you accept.",
+    "description": "1:1 chat request from another user: [Accept] [Decline] [Block].",
+    "missing": false,
+    "obsolete": false
+  },
+  "chat_request_incoming_short": {
+    "translation": "Muốn trò chuyện với bạn",
+    "defaultMessage": "Wants to chat with you",
+    "description": "Chat list: a 1:1 chat request from this person is waiting for acceptance",
+    "missing": false,
+    "obsolete": false
+  },
+  "chat_request_incoming_unnamed": {
+    "translation": "Có người muốn trò chuyện với bạn. Bạn có thể trò chuyện sau khi chấp nhận.",
+    "defaultMessage": "Someone wants to chat with you. You can chat once you accept.",
+    "description": "1:1 chat request from a user without a name: [Accept] [Decline] [Block].",
+    "missing": false,
+    "obsolete": false
+  },
+  "chat_request_not_accepted": {
+    "translation": "Chưa gửi được: lời mời trò chuyện của bạn chưa được chấp nhận.",
+    "defaultMessage": "Not sent: your chat request hasn't been accepted yet.",
+    "description": "Error when sending a message in a 1:1 chat before the other person accepted the chat request",
+    "missing": false,
+    "obsolete": false
+  },
+  "chat_request_sent": {
+    "translation": "Đã gửi lời mời — bạn có thể trò chuyện khi {name} chấp nhận.",
+    "defaultMessage": "Request sent — you can chat once {name} accepts.",
+    "description": "Shown instead of the message input after starting a new 1:1 chat that the other person has not accepted yet",
+    "missing": false,
+    "obsolete": false
+  },
+  "chat_request_sent_short": {
+    "translation": "Đã gửi lời mời",
+    "defaultMessage": "Request sent",
+    "description": "Chat list: the current user asked this person to chat; not accepted yet",
+    "missing": false,
+    "obsolete": false
+  },
+  "chat_request_someone": {
+    "translation": "người đó",
+    "defaultMessage": "they",
+    "description": "Stand-in for the name of the other person in chat request messages when the name is unknown",
     "missing": false,
     "obsolete": false
   }

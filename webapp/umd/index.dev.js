@@ -2348,6 +2348,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   READ_DELAY: function() { return /* binding */ READ_DELAY; },
 /* harmony export */   REM_SIZE: function() { return /* binding */ REM_SIZE; },
 /* harmony export */   SELF_AVATAR_URI: function() { return /* binding */ SELF_AVATAR_URI; },
+/* harmony export */   SERVER_SETTINGS_ENABLED: function() { return /* binding */ SERVER_SETTINGS_ENABLED; },
 /* harmony export */   TOAST_DURATION: function() { return /* binding */ TOAST_DURATION; },
 /* harmony export */   VIDEO_PREVIEW_DIM: function() { return /* binding */ VIDEO_PREVIEW_DIM; },
 /* harmony export */   VIDEO_THUMBNAIL_WIDTH: function() { return /* binding */ VIDEO_THUMBNAIL_WIDTH; },
@@ -2365,6 +2366,7 @@ const KNOWN_HOSTS = {
   local: 'localhost:6060'
 };
 const DEFAULT_HOST = KNOWN_HOSTS.hosted;
+const SERVER_SETTINGS_ENABLED = "development" !== 'production';
 const LOGGING_ENABLED =  true || 0;
 const KEYPRESS_DELAY = 3_000;
 const READ_DELAY = 1_500;
@@ -2757,6 +2759,30 @@ function importVCard(fileOrBlob) {
 
 /***/ }),
 
+/***/ "./src/lib/chat-request.js":
+/*!*********************************!*\
+  !*** ./src/lib/chat-request.js ***!
+  \*********************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   isPeerAccepted: function() { return /* binding */ isPeerAccepted; },
+/* harmony export */   isRequestReceived: function() { return /* binding */ isRequestReceived; },
+/* harmony export */   isRequestSent: function() { return /* binding */ isRequestSent; }
+/* harmony export */ });
+function isRequestSent(acs) {
+  return !!acs && acs.isWriter('want') && acs.isJoiner('given') && !acs.isWriter('given');
+}
+function isRequestReceived(acs) {
+  return !!acs && acs.isJoiner('want') && !acs.isReader('want') && !acs.isWriter('want') && acs.isJoiner('given');
+}
+function isPeerAccepted(peer) {
+  return !!(peer && peer.acs && peer.acs.isWriter('want'));
+}
+
+/***/ }),
+
 /***/ "./src/lib/formatters.js":
 /*!*******************************!*\
   !*** ./src/lib/formatters.js ***!
@@ -3001,7 +3027,13 @@ function handleVideoData(el, data, attr) {
     attr.src = this.authorizeURL((0,_utils_js__WEBPACK_IMPORTED_MODULE_13__.sanitizeUrlForMime)(attr.src, 'image'));
     attr.alt = data.name;
     if (data.ref || data.val) {
-      attr.onClick = e => this.onHandleClick(e, 'video');
+      const videoSrc = (0,_utils_js__WEBPACK_IMPORTED_MODULE_13__.sanitizeUrlForMime)(attr['data-src'], 'video');
+      if (videoSrc) {
+        attr.videoSrc = this.authorizeURL(videoSrc);
+      }
+      if (this.onHandleClick) {
+        attr.onExpand = e => this.onHandleClick(e, 'video');
+      }
       attr.loading = 'lazy';
     }
     el = _widgets_inline_video_jsx__WEBPACK_IMPORTED_MODULE_6__["default"];
@@ -4711,14 +4743,9 @@ class NewTopicView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
     query = query.trim() || tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Tinode.DEL_CHAR;
     let e164 = null;
     if (phone) {
-      const regions = phone.regionsFromLanguages(navigator.languages || [navigator.language]);
       const me = this.props.tinode && this.props.tinode.getMeTopic();
-      (me && me.getCredentials() || []).forEach(cred => {
-        const region = cred.meth == 'tel' ? phone.phoneRegion(cred.val) : null;
-        if (region && !regions.includes(region)) {
-          regions.push(region);
-        }
-      });
+      const ownPhones = (me && me.getCredentials() || []).filter(cred => cred.meth == 'tel').map(cred => cred.val);
+      const regions = phone.localRegions(navigator.languages || [navigator.language], ownPhones);
       e164 = phone.asE164Phone(query, regions);
     }
     if (e164) {
@@ -4843,156 +4870,6 @@ class NewTopicView extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compone
 
 /***/ }),
 
-/***/ "./src/views/settings-view.jsx":
-/*!*************************************!*\
-  !*** ./src/views/settings-view.jsx ***!
-  \*************************************/
-/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": function() { return /* binding */ SettingsView; }
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_intl__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-intl */ "react-intl");
-/* harmony import */ var react_intl__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_intl__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _widgets_checkbox_jsx__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../widgets/checkbox.jsx */ "./src/widgets/checkbox.jsx");
-/* harmony import */ var _widgets_host_selector_jsx__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../widgets/host-selector.jsx */ "./src/widgets/host-selector.jsx");
-/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
-
-
-
-
-
-class SettingsView extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComponent) {
-  constructor(props) {
-    super(props);
-    this.state = {
-      transport: props.transport || 'def',
-      serverAddress: props.serverAddress,
-      secureConnection: props.secureConnection
-    };
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleTransportSelected = this.handleTransportSelected.bind(this);
-    this.handleServerAddressChange = this.handleServerAddressChange.bind(this);
-    this.handleToggleSecure = this.handleToggleSecure.bind(this);
-  }
-  handleSubmit(e) {
-    e.preventDefault();
-    this.props.onUpdate({
-      transport: this.state.transport,
-      serverAddress: this.state.serverAddress,
-      secureConnection: this.state.secureConnection
-    });
-  }
-  handleTransportSelected(e) {
-    this.setState({
-      transport: e.currentTarget.value
-    });
-  }
-  handleServerAddressChange(name) {
-    this.setState({
-      serverAddress: name
-    });
-  }
-  handleToggleSecure(e) {
-    this.setState({
-      secureConnection: !this.state.secureConnection
-    });
-  }
-  render() {
-    const names = {
-      def: "default",
-      ws: "websocket",
-      lp: "long polling"
-    };
-    const transportOptions = [];
-    ['def', 'ws', 'lp'].forEach(item => {
-      const id = 'transport-' + item;
-      const name = names[item];
-      transportOptions.push((0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("li", {
-        children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("input", {
-          type: "radio",
-          id: id,
-          name: "transport-select",
-          value: item,
-          checked: this.state.transport === item,
-          onChange: this.handleTransportSelected
-        }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("label", {
-          htmlFor: id,
-          children: name
-        }, void 0, false)]
-      }, item, true));
-    });
-    return (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("form", {
-      id: "settings-form",
-      className: "panel-form",
-      onSubmit: this.handleSubmit,
-      children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
-        className: "panel-form-row",
-        children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("label", {
-          className: "small",
-          children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
-            id: "label_server_to_use",
-            defaultMessage: "Server to use:",
-            description: "Label for server selector in SettingsView"
-          }, void 0, false)
-        }, void 0, false)
-      }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(_widgets_host_selector_jsx__WEBPACK_IMPORTED_MODULE_3__["default"], {
-        serverAddress: this.state.serverAddress,
-        onServerAddressChange: this.handleServerAddressChange
-      }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
-        className: "panel-form-row",
-        children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(_widgets_checkbox_jsx__WEBPACK_IMPORTED_MODULE_2__["default"], {
-          id: "secure-connection",
-          name: "secure-connection",
-          checked: this.state.secureConnection,
-          className: "quoted",
-          onChange: this.handleToggleSecure
-        }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("label", {
-          htmlFor: "secure-connection",
-          children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
-            id: "label_use_secure_connection",
-            defaultMessage: "Use secure connection",
-            description: "Label for WS/WSS connection type in SettingsView"
-          }, void 0, false)
-        }, void 0, false)]
-      }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
-        className: "panel-form-row",
-        children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("label", {
-          className: "small",
-          children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
-            id: "label_wire_transport",
-            defaultMessage: "Wire transport:",
-            description: "Label for wire transport selection in SettingsView"
-          }, void 0, false)
-        }, void 0, false)
-      }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
-        className: "panel-form-row",
-        children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("ul", {
-          className: "quoted",
-          children: transportOptions
-        }, void 0, false)
-      }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
-        className: "dialog-buttons",
-        children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("button", {
-          type: "submit",
-          className: "primary",
-          children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
-            id: "button_update",
-            defaultMessage: "Update",
-            description: "Button [Update]"
-          }, void 0, false)
-        }, void 0, false)
-      }, void 0, false)]
-    }, void 0, true);
-  }
-}
-;
-
-/***/ }),
-
 /***/ "./src/views/sidepanel-view.jsx":
 /*!**************************************!*\
   !*** ./src/views/sidepanel-view.jsx ***!
@@ -5014,7 +4891,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _acc_support_view_jsx__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./acc-support-view.jsx */ "./src/views/acc-support-view.jsx");
 /* harmony import */ var _login_view_jsx__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./login-view.jsx */ "./src/views/login-view.jsx");
 /* harmony import */ var _new_topic_view_jsx__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./new-topic-view.jsx */ "./src/views/new-topic-view.jsx");
-/* harmony import */ var _settings_view_jsx__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./settings-view.jsx */ "./src/views/settings-view.jsx");
+/* harmony import */ var _config_js__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../config.js */ "./src/config.js");
 /* harmony import */ var _validation_view_jsx__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./validation-view.jsx */ "./src/views/validation-view.jsx");
 /* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
 
@@ -5023,17 +4900,18 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const AccountSettingsView = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4"), __webpack_require__.e("vendors-node_modules_libphonenumber-js_examples_mobile_json_js-node_modules_libphonenumber-js-7e28c7"), __webpack_require__.e("src_widgets_phone-edit_jsx"), __webpack_require__.e("src_views_account-settings-view_jsx")]).then(__webpack_require__.bind(__webpack_require__, /*! ./account-settings-view.jsx */ "./src/views/account-settings-view.jsx")));
+const AccountSettingsView = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4"), __webpack_require__.e("vendors-node_modules_libphonenumber-js_examples_mobile_json_js-node_modules_libphonenumber-js-406a14"), __webpack_require__.e("src_widgets_phone-edit_jsx"), __webpack_require__.e("src_views_account-settings-view_jsx")]).then(__webpack_require__.bind(__webpack_require__, /*! ./account-settings-view.jsx */ "./src/views/account-settings-view.jsx")));
 
-const CreateAccountView = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4"), __webpack_require__.e("vendors-node_modules_libphonenumber-js_examples_mobile_json_js-node_modules_libphonenumber-js-7e28c7"), __webpack_require__.e("src_widgets_phone-edit_jsx"), __webpack_require__.e("src_views_create-account-view_jsx")]).then(__webpack_require__.bind(__webpack_require__, /*! ./create-account-view.jsx */ "./src/views/create-account-view.jsx")));
+const CreateAccountView = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4"), __webpack_require__.e("vendors-node_modules_libphonenumber-js_examples_mobile_json_js-node_modules_libphonenumber-js-406a14"), __webpack_require__.e("src_widgets_phone-edit_jsx"), __webpack_require__.e("src_views_create-account-view_jsx")]).then(__webpack_require__.bind(__webpack_require__, /*! ./create-account-view.jsx */ "./src/views/create-account-view.jsx")));
 
 
 const AccSecurityView = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => __webpack_require__.e(/*! import() */ "src_views_acc-security-view_jsx").then(__webpack_require__.bind(__webpack_require__, /*! ./acc-security-view.jsx */ "./src/views/acc-security-view.jsx")));
 
 
 
-const PasswordResetView = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4"), __webpack_require__.e("vendors-node_modules_libphonenumber-js_examples_mobile_json_js-node_modules_libphonenumber-js-7e28c7"), __webpack_require__.e("src_widgets_phone-edit_jsx"), __webpack_require__.e("src_views_password-reset-view_jsx")]).then(__webpack_require__.bind(__webpack_require__, /*! ./password-reset-view.jsx */ "./src/views/password-reset-view.jsx")));
+const PasswordResetView = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => Promise.all(/*! import() */[__webpack_require__.e("vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4"), __webpack_require__.e("vendors-node_modules_libphonenumber-js_examples_mobile_json_js-node_modules_libphonenumber-js-406a14"), __webpack_require__.e("src_widgets_phone-edit_jsx"), __webpack_require__.e("src_views_password-reset-view_jsx")]).then(__webpack_require__.bind(__webpack_require__, /*! ./password-reset-view.jsx */ "./src/views/password-reset-view.jsx")));
 
+const SettingsView = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => __webpack_require__.e(/*! import() */ "src_views_settings-view_jsx").then(__webpack_require__.bind(__webpack_require__, /*! ./settings-view.jsx */ "./src/views/settings-view.jsx")));
 
 
 const WallpapersView = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => __webpack_require__.e(/*! import() */ "src_views_wallpapers_jsx").then(__webpack_require__.bind(__webpack_require__, /*! ./wallpapers.jsx */ "./src/views/wallpapers.jsx")));
@@ -5190,12 +5068,22 @@ class SidepanelView extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureCo
           onCancel: this.props.onCancel,
           onError: this.props.onError
         }, void 0, false)
-      }, void 0, false) : view === 'settings' ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxDEV)(_settings_view_jsx__WEBPACK_IMPORTED_MODULE_12__["default"], {
-        transport: this.props.transport,
-        serverAddress: this.props.serverAddress,
-        secureConnection: this.props.secureConnection,
-        onCancel: this.props.onCancel,
-        onUpdate: this.props.onGlobalSettings
+      }, void 0, false) : view === 'settings' && _config_js__WEBPACK_IMPORTED_MODULE_12__.SERVER_SETTINGS_ENABLED ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxDEV)(react__WEBPACK_IMPORTED_MODULE_0__.Suspense, {
+        fallback: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxDEV)("div", {
+          className: "panel-form-row",
+          children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
+            id: "loading_note",
+            defaultMessage: "Loading...",
+            description: "Message shown when component is loading"
+          }, void 0, false)
+        }, void 0, false),
+        children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxDEV)(SettingsView, {
+          transport: this.props.transport,
+          serverAddress: this.props.serverAddress,
+          secureConnection: this.props.secureConnection,
+          onCancel: this.props.onCancel,
+          onUpdate: this.props.onGlobalSettings
+        }, void 0, false)
       }, void 0, false) : view === 'edit' ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxDEV)(react__WEBPACK_IMPORTED_MODULE_0__.Suspense, {
         fallback: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxDEV)("div", {
           className: "panel-form-row",
@@ -5384,6 +5272,11 @@ const MessagesView = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(_ => __we
 
 const POP_SOUND = new Audio('audio/msg.m4a');
 const messages = (0,react_intl__WEBPACK_IMPORTED_MODULE_1__.defineMessages)({
+  chat_request_not_accepted: {
+    id: 'chat_request_not_accepted',
+    defaultMessage: 'Not sent: your chat request hasn\'t been accepted yet.',
+    description: 'Error when sending a message in a 1:1 chat before the other person accepted the chat request'
+  },
   reconnect_countdown: {
     id: 'reconnect_countdown',
     defaultMessage: 'Disconnected. Reconnecting in {seconds}…',
@@ -5553,9 +5446,9 @@ class TinodeWeb extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component)
       connected: false,
       ready: false,
       autoLogin: false,
-      transport: settings.transport || null,
-      serverAddress: settings.serverAddress || (0,_lib_host_name_js__WEBPACK_IMPORTED_MODULE_14__.detectServerAddress)(),
-      secureConnection: settings.secureConnection === undefined ? (0,_lib_host_name_js__WEBPACK_IMPORTED_MODULE_14__.isSecureConnection)() : settings.secureConnection,
+      transport: _config_js__WEBPACK_IMPORTED_MODULE_10__.SERVER_SETTINGS_ENABLED && settings.transport || null,
+      serverAddress: _config_js__WEBPACK_IMPORTED_MODULE_10__.SERVER_SETTINGS_ENABLED && settings.serverAddress || (0,_lib_host_name_js__WEBPACK_IMPORTED_MODULE_14__.detectServerAddress)(),
+      secureConnection: !_config_js__WEBPACK_IMPORTED_MODULE_10__.SERVER_SETTINGS_ENABLED || settings.secureConnection === undefined ? (0,_lib_host_name_js__WEBPACK_IMPORTED_MODULE_14__.isSecureConnection)() : settings.secureConnection,
       serverVersion: "no connection",
       messageSounds: !settings.messageSoundsOff,
       incognitoMode: false,
@@ -5864,6 +5757,9 @@ class TinodeWeb extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component)
     if (hash.path && hash.path.length > 0) {
       if (['acc_general', 'archive', 'blocked', 'contacts', 'cred', 'crop', 'edit', 'general', 'newtpk', 'notif', 'register', 'reset', 'security', 'settings', 'support', 'wallpapers', ''].includes(hash.path[0])) {
         newState.sidePanelSelected = hash.path[0];
+        if (hash.path[0] == 'settings' && !_config_js__WEBPACK_IMPORTED_MODULE_10__.SERVER_SETTINGS_ENABLED) {
+          newState.sidePanelSelected = '';
+        }
       } else {
         console.warn("Unknown sidepanel view", hash.path[0]);
       }
@@ -6368,7 +6264,10 @@ class TinodeWeb extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component)
         topic.archive(false);
       }
       return ctrl;
-    }).catch(err => this.handleError(err.message, 'err'));
+    }).catch(err => {
+      const notAccepted = err.code == 403 && (0,_lib_utils_js__WEBPACK_IMPORTED_MODULE_18__.ctrlRefusalReason)(topic.name) == 'not-accepted';
+      this.handleError(notAccepted ? this.props.intl.formatMessage(messages.chat_request_not_accepted) : err.message, 'err');
+    });
   }
   handleNewChatInvitation(topicName, action) {
     const topic = this.tinode.getTopic(topicName);
@@ -6389,9 +6288,20 @@ class TinodeWeb extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component)
             }
           }));
         }
+        response = response.then(_ => {
+          if (this.state.topicSelected == topicName) {
+            this.setState({
+              topicSelectedAcs: topic.getAccessMode()
+            });
+          }
+        });
         break;
       case 'delete':
-        response = topic.delTopic(true);
+        response = topic.delTopic(true).then(_ => {
+          if (this.state.topicSelected == topicName) {
+            this.handleTopicSelected(null);
+          }
+        });
         break;
       case 'block':
         const am = topic.getAccessMode().updateWant('-JP').getWant();
@@ -6537,9 +6447,15 @@ class TinodeWeb extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component)
   }
   handleSettings() {
     this.handleError();
+    if (!this.state.myUserId && !_config_js__WEBPACK_IMPORTED_MODULE_10__.SERVER_SETTINGS_ENABLED) {
+      return;
+    }
     _lib_navigation_js__WEBPACK_IMPORTED_MODULE_16__["default"].navigateTo(_lib_navigation_js__WEBPACK_IMPORTED_MODULE_16__["default"].setUrlSidePanel(window.location.hash, this.state.myUserId ? 'edit' : 'settings'));
   }
   handleGlobalSettings(settings) {
+    if (!_config_js__WEBPACK_IMPORTED_MODULE_10__.SERVER_SETTINGS_ENABLED) {
+      return;
+    }
     const serverAddress = settings.serverAddress || this.state.serverAddress;
     const transport = settings.transport || this.state.transport;
     const secureConnection = settings.secureConnection === undefined ? this.state.secureConnection : settings.secureConnection;
@@ -6621,13 +6537,17 @@ class TinodeWeb extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component)
       messageSoundsOff: !enabled
     });
   }
-  handleCredAdd(method, value) {
+  handleCredAdd(method, value, params) {
     const me = this.tinode.getMeTopic();
+    const cred = {
+      meth: method,
+      val: value
+    };
+    if (params) {
+      cred.params = params;
+    }
     me.setMeta({
-      cred: {
-        meth: method,
-        val: value
-      }
+      cred: cred
     }).catch(err => this.handleError(err.message, 'err'));
   }
   handleCredDelete(method, value) {
@@ -9083,8 +9003,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _contact_jsx__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./contact.jsx */ "./src/widgets/contact.jsx");
 /* harmony import */ var _contact_action_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./contact-action.jsx */ "./src/widgets/contact-action.jsx");
 /* harmony import */ var _lib_blob_helpers_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../lib/blob-helpers.js */ "./src/lib/blob-helpers.js");
-/* harmony import */ var _config_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../config.js */ "./src/config.js");
-/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
+/* harmony import */ var _lib_chat_request_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../lib/chat-request.js */ "./src/lib/chat-request.js");
+/* harmony import */ var _config_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../config.js */ "./src/config.js");
+/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
+
 
 
 
@@ -9094,6 +9016,16 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const messages = (0,react_intl__WEBPACK_IMPORTED_MODULE_1__.defineMessages)({
+  chat_request_incoming_short: {
+    id: 'chat_request_incoming_short',
+    defaultMessage: 'Wants to chat with you',
+    description: 'Chat list: a 1:1 chat request from this person is waiting for acceptance'
+  },
+  chat_request_sent_short: {
+    id: 'chat_request_sent_short',
+    defaultMessage: 'Request sent',
+    description: 'Chat list: the current user asked this person to chat; not accepted yet'
+  },
   badge_you: {
     id: 'badge_you',
     defaultMessage: 'you',
@@ -9115,7 +9047,7 @@ class ContactList extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComp
     let contactsCount = 0;
     if (this.props.showSelfTopic) {
       const selected = showCheckmark ? this.props.topicSelected.indexOf('slf') > -1 : this.props.topicSelected === 'slf';
-      contactNodes.push((0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxDEV)(_contact_jsx__WEBPACK_IMPORTED_MODULE_3__["default"], {
+      contactNodes.push((0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxDEV)(_contact_jsx__WEBPACK_IMPORTED_MODULE_3__["default"], {
         tinode: this.props.tinode,
         avatar: true,
         showMode: this.props.showMode,
@@ -9132,7 +9064,7 @@ class ContactList extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComp
       const usedKeys = {};
       this.props.contacts.forEach(c => {
         if (c.action) {
-          contactNodes.push((0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxDEV)(_contact_action_jsx__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          contactNodes.push((0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxDEV)(_contact_action_jsx__WEBPACK_IMPORTED_MODULE_4__["default"], {
             title: c.title,
             action: c.action,
             values: c.values,
@@ -9174,7 +9106,7 @@ class ContactList extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComp
               });
             }
           }
-          const comment = Array.isArray(c.private) ? c.private.join(',') : c.private ? c.private.comment : null;
+          let comment = Array.isArray(c.private) ? c.private.join(',') : c.private ? c.private.comment : null;
           let preview;
           let forwarded;
           let previewIsResponse;
@@ -9186,11 +9118,18 @@ class ContactList extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComp
               deliveryStatus = msg._status || c.msgStatus(msg, true);
               previewIsResponse = msg.from !== this.props.myUserId;
               if (msg.content) {
-                preview = typeof msg.content === 'string' ? msg.content.substr(0, _config_js__WEBPACK_IMPORTED_MODULE_6__.MESSAGE_PREVIEW_LENGTH) : tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Drafty.preview(msg.content, _config_js__WEBPACK_IMPORTED_MODULE_6__.MESSAGE_PREVIEW_LENGTH);
+                preview = typeof msg.content === 'string' ? msg.content.substr(0, _config_js__WEBPACK_IMPORTED_MODULE_7__.MESSAGE_PREVIEW_LENGTH) : tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Drafty.preview(msg.content, _config_js__WEBPACK_IMPORTED_MODULE_7__.MESSAGE_PREVIEW_LENGTH);
               }
             }
           }
-          contactNodes.push((0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxDEV)(_contact_jsx__WEBPACK_IMPORTED_MODULE_3__["default"], {
+          if (this.props.showUnread && !preview && c.acs && tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Tinode.isP2PTopicName(key)) {
+            if ((0,_lib_chat_request_js__WEBPACK_IMPORTED_MODULE_6__.isRequestReceived)(c.acs)) {
+              comment = formatMessage(messages.chat_request_incoming_short);
+            } else if ((0,_lib_chat_request_js__WEBPACK_IMPORTED_MODULE_6__.isRequestSent)(c.acs)) {
+              comment = formatMessage(messages.chat_request_sent_short);
+            }
+          }
+          contactNodes.push((0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxDEV)(_contact_jsx__WEBPACK_IMPORTED_MODULE_3__["default"], {
             tinode: this.props.tinode,
             title: c.public ? c.public.fn : null,
             avatar: (0,_lib_blob_helpers_js__WEBPACK_IMPORTED_MODULE_5__.makeImageUrl)(c.public ? c.public.photo : null),
@@ -9224,15 +9163,15 @@ class ContactList extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComp
         }
       }, this);
     }
-    return (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxDEV)("div", {
+    return (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxDEV)("div", {
       className: this.props.noScroll ? null : "scrollable-panel",
-      children: [contactsCount === 0 ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxDEV)("div", {
+      children: [contactsCount === 0 ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxDEV)("div", {
         className: "center-medium-text",
         style: {
           whiteSpace: 'pre-line'
         },
         children: this.props.emptyListMessage
-      }, void 0, false) : null, contactNodes.length > 0 ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxDEV)("ul", {
+      }, void 0, false) : null, contactNodes.length > 0 ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxDEV)("ul", {
         className: "contact-box",
         children: contactNodes
       }, void 0, false) : null]
@@ -10475,84 +10414,6 @@ class ForwardDialog extends (react__WEBPACK_IMPORTED_MODULE_0___default().Compon
 
 /***/ }),
 
-/***/ "./src/widgets/host-selector.jsx":
-/*!***************************************!*\
-  !*** ./src/widgets/host-selector.jsx ***!
-  \***************************************/
-/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": function() { return /* binding */ HostSelector; }
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _config_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../config.js */ "./src/config.js");
-/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
-
-
-
-class HostSelector extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComponent) {
-  constructor(props) {
-    super(props);
-    this.state = {
-      hostName: props.serverAddress,
-      changed: false
-    };
-    this.handleHostNameChange = this.handleHostNameChange.bind(this);
-    this.handleEditingFinished = this.handleEditingFinished.bind(this);
-    this.handleKeyDown = this.handleKeyDown.bind(this);
-  }
-  handleHostNameChange(e) {
-    this.setState({
-      hostName: e.target.value,
-      changed: true
-    });
-  }
-  handleEditingFinished() {
-    if (this.state.changed) {
-      this.setState({
-        changed: false
-      });
-      this.props.onServerAddressChange(this.state.hostName.trim());
-    }
-  }
-  handleKeyDown(e) {
-    if (e.key == 'Enter') {
-      this.handleEditingFinished();
-    }
-  }
-  render() {
-    const hostOptions = [];
-    for (let key in _config_js__WEBPACK_IMPORTED_MODULE_1__.KNOWN_HOSTS) {
-      let item = _config_js__WEBPACK_IMPORTED_MODULE_1__.KNOWN_HOSTS[key];
-      hostOptions.push((0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
-        value: item
-      }, item, false));
-    }
-    return (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
-      className: "panel-form-row",
-      children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
-        type: "search",
-        id: "host-name",
-        placeholder: this.props.hostName,
-        list: "known-hosts",
-        className: "quoted",
-        value: this.state.hostName,
-        onChange: this.handleHostNameChange,
-        onBlur: this.handleEditingFinished,
-        onKeyDown: this.handleKeyDown,
-        required: true
-      }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("datalist", {
-        id: "known-hosts",
-        children: hostOptions
-      }, void 0, false)]
-    }, void 0, true);
-  }
-}
-
-/***/ }),
-
 /***/ "./src/widgets/in-place-edit.jsx":
 /*!***************************************!*\
   !*** ./src/widgets/in-place-edit.jsx ***!
@@ -10740,31 +10601,102 @@ class InPlaceEdit extends (react__WEBPACK_IMPORTED_MODULE_0___default().Componen
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": function() { return /* binding */ InlineVideo; }
-/* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _lib_strformat_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../lib/strformat.js */ "./src/lib/strformat.js");
-/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
+/* harmony import */ var react_intl__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-intl */ "react-intl");
+/* harmony import */ var react_intl__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_intl__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lib_strformat_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../lib/strformat.js */ "./src/lib/strformat.js");
+/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
 
 
 
+
+const messages = (0,react_intl__WEBPACK_IMPORTED_MODULE_1__.defineMessages)({
+  expand: {
+    id: 'video_full_size_action',
+    defaultMessage: 'Full size',
+    description: 'Call to action [open video in the full-size viewer]'
+  }
+});
 class InlineVideo extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComponent) {
   constructor(props) {
     super(props);
+    this.state = {
+      playing: false
+    };
+    this.videoRef = react__WEBPACK_IMPORTED_MODULE_0___default().createRef();
+    this.handlePlay = this.handlePlay.bind(this);
+    this.handleExpand = this.handleExpand.bind(this);
+  }
+  handlePlay(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState({
+      playing: true
+    });
+  }
+  handleExpand(e) {
+    if (this.videoRef.current) {
+      this.videoRef.current.pause();
+    }
+    this.props.onExpand(e);
   }
   render() {
-    const duration = (0,_lib_strformat_js__WEBPACK_IMPORTED_MODULE_1__.secondsToTime)(this.props['data-duration'] / 1000);
-    const className = 'inline-video' + (this.props.onClick ? ' image-clickable' : '');
-    return (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    const {
+      videoSrc,
+      onExpand,
+      intl,
+      ...imgProps
+    } = this.props;
+    const dataAttrs = {};
+    Object.keys(imgProps).forEach(key => {
+      if (key.startsWith('data-')) {
+        dataAttrs[key] = imgProps[key];
+      }
+    });
+    if (this.state.playing && videoSrc) {
+      const expand = intl.formatMessage(messages.expand);
+      return (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+        className: "inline-video playing",
+        children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("video", {
+          ref: this.videoRef,
+          className: imgProps.className,
+          style: imgProps.style,
+          src: videoSrc,
+          poster: imgProps.src || undefined,
+          preload: imgProps['data-preload'] || 'metadata',
+          controls: true,
+          autoPlay: true,
+          playsInline: true,
+          disablePictureInPicture: true
+        }, void 0, false), onExpand ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("a", {
+          href: "#",
+          className: "expand-control",
+          title: expand,
+          "aria-label": expand,
+          onClick: this.handleExpand,
+          ...dataAttrs,
+          children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("i", {
+            className: "material-icons white",
+            children: "open_in_full"
+          }, void 0, false)
+        }, void 0, false) : null]
+      }, void 0, true);
+    }
+    const playable = !!(videoSrc || imgProps.onClick);
+    if (videoSrc) {
+      imgProps.onClick = this.handlePlay;
+    }
+    const duration = (0,_lib_strformat_js__WEBPACK_IMPORTED_MODULE_2__.secondsToTime)(this.props['data-duration'] / 1000);
+    const className = 'inline-video' + (playable ? ' image-clickable' : '');
+    return (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
       className: className,
-      children: [react__WEBPACK_IMPORTED_MODULE_0___default().createElement('img', this.props), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      children: [react__WEBPACK_IMPORTED_MODULE_0___default().createElement('img', imgProps), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
         className: "play-control",
-        children: this.props.onClick ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("i", {
+        children: playable ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("i", {
           className: "material-icons white x-big",
           children: "play_arrow"
-        }, void 0, false) : (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("img", {
+        }, void 0, false) : (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("img", {
           src: "img/broken_video.png",
           style: {
             filter: 'invert(100%)'
@@ -10772,7 +10704,7 @@ class InlineVideo extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComp
           width: "36",
           height: "36"
         }, void 0, false)
-      }, void 0, false), duration ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      }, void 0, false), duration ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
         className: "duration",
         children: duration
       }, void 0, false) : null]
@@ -10780,6 +10712,7 @@ class InlineVideo extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComp
   }
 }
 ;
+/* harmony default export */ __webpack_exports__["default"] = ((0,react_intl__WEBPACK_IMPORTED_MODULE_1__.injectIntl)(InlineVideo));
 
 /***/ }),
 
@@ -11053,33 +10986,37 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
+/* harmony import */ var _config_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../config.js */ "./src/config.js");
+/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
+
 
 
 class MenuStart extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComponent) {
   render() {
-    return (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxDEV)("div", {
-      children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxDEV)("a", {
+    return (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("a", {
         href: "#",
         onClick: e => {
           e.preventDefault();
           this.props.onSignUp();
         },
-        children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxDEV)("i", {
+        children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("i", {
           className: "material-icons",
           children: "person_add"
         }, void 0, false)
-      }, void 0, false), "\xA0", (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxDEV)("a", {
-        href: "#",
-        onClick: e => {
-          e.preventDefault();
-          this.props.onSettings();
-        },
-        children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxDEV)("i", {
-          className: "material-icons",
-          children: "settings"
-        }, void 0, false)
-      }, void 0, false)]
+      }, void 0, false), _config_js__WEBPACK_IMPORTED_MODULE_1__.SERVER_SETTINGS_ENABLED ? (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)(react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.Fragment, {
+        children: ["\xA0", (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("a", {
+          href: "#",
+          onClick: e => {
+            e.preventDefault();
+            this.props.onSettings();
+          },
+          children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("i", {
+            className: "material-icons",
+            children: "settings"
+          }, void 0, false)
+        }, void 0, false)]
+      }, void 0, true) : null]
     }, void 0, true);
   }
 }
@@ -19730,7 +19667,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"patt":[{"name":"d10.png","size":384}
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = function(chunkId) {
 /******/ 			// return url for filenames based on template
-/******/ 			return "" + chunkId + "." + {"src_i18n_min_ar_json":"d0fd7e93","src_i18n_min_de_json":"4da49d15","src_i18n_min_en_json":"414f4b32","src_i18n_min_es_json":"f65011ca","src_i18n_min_fr_json":"7eae0eff","src_i18n_min_it_json":"4c422016","src_i18n_min_ko_json":"449b3313","src_i18n_min_ro_json":"2a204406","src_i18n_min_ru_json":"2f9e7ad5","src_i18n_min_th_json":"b183f1df","src_i18n_min_uk_json":"aefd16ea","src_i18n_min_vi_json":"0bc17b0b","src_i18n_min_zh_json":"025c2725","src_i18n_min_zh-TW_json":"6cb74962","src_widgets_phone-country-selector_jsx":"1833f1ac","src_views_info-view_jsx":"4fcd8211","src_views_messages-view_jsx":"6ebbb25f","vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4":"57704eff","vendors-node_modules_libphonenumber-js_examples_mobile_json_js-node_modules_libphonenumber-js-7e28c7":"d83e975a","src_widgets_phone-edit_jsx":"a1400bda","src_views_account-settings-view_jsx":"b6bfaa1d","src_views_create-account-view_jsx":"195ce5d4","src_views_acc-security-view_jsx":"4830a19f","src_views_password-reset-view_jsx":"894c27dd","src_views_wallpapers_jsx":"ef941fdb","src_lib_phone_js":"48be5d64","src_widgets_call-panel_jsx":"4b60d592","src_widgets_doc-preview_jsx":"31fe6f23","src_widgets_image-preview_jsx":"a478b99a","src_widgets_the-card-preview_jsx":"cca01e6e","src_widgets_video-preview_jsx":"9033c1fc","vendors-node_modules_webm-duration-fix_lib_index_js":"c748539e","src_widgets_audio-recorder_jsx":"7cff74fc"}[chunkId] + ".dev.js";
+/******/ 			return "" + chunkId + "." + {"src_i18n_min_ar_json":"cef13fcc","src_i18n_min_de_json":"221ca0af","src_i18n_min_en_json":"e6d22b8c","src_i18n_min_es_json":"7f85f0fb","src_i18n_min_fr_json":"289596c4","src_i18n_min_it_json":"fd01c3df","src_i18n_min_ko_json":"a53c2ed1","src_i18n_min_ro_json":"97035eed","src_i18n_min_ru_json":"2231055b","src_i18n_min_th_json":"8c4483d7","src_i18n_min_uk_json":"ed34d44b","src_i18n_min_vi_json":"b0f272cf","src_i18n_min_zh_json":"825b8a29","src_i18n_min_zh-TW_json":"51932ebe","src_widgets_phone-country-selector_jsx":"1833f1ac","src_views_info-view_jsx":"c54b56bd","src_views_messages-view_jsx":"dcf23871","vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4":"57704eff","vendors-node_modules_libphonenumber-js_examples_mobile_json_js-node_modules_libphonenumber-js-406a14":"e01761ec","src_widgets_phone-edit_jsx":"ec748484","src_views_account-settings-view_jsx":"793ed96a","src_views_create-account-view_jsx":"fa5ba7ab","src_views_acc-security-view_jsx":"4830a19f","src_views_password-reset-view_jsx":"894c27dd","src_views_settings-view_jsx":"bfa56edf","src_views_wallpapers_jsx":"4c8d39c0","src_lib_phone_js":"2915d77e","src_widgets_call-panel_jsx":"16f3935d","src_widgets_doc-preview_jsx":"31fe6f23","src_widgets_image-preview_jsx":"f1775c54","src_widgets_the-card-preview_jsx":"cca01e6e","src_widgets_video-preview_jsx":"cee30469","vendors-node_modules_webm-duration-fix_lib_index_js":"c748539e","src_widgets_audio-recorder_jsx":"ab277bbe"}[chunkId] + ".dev.js";
 /******/ 		};
 /******/ 	}();
 /******/ 	

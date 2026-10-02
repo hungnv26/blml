@@ -219,9 +219,45 @@
     "defaultMessage": "Chat",
     "description": "Label for message button in contact card"
   },
+  "chat_request_decline": {
+    "defaultMessage": "Decline",
+    "description": "Action [Decline] for a 1:1 chat request."
+  },
+  "chat_request_incoming": {
+    "defaultMessage": "{name} wants to chat with you. You can chat once you accept.",
+    "description": "1:1 chat request from another user: [Accept] [Decline] [Block]."
+  },
+  "chat_request_incoming_short": {
+    "defaultMessage": "Wants to chat with you",
+    "description": "Chat list: a 1:1 chat request from this person is waiting for acceptance"
+  },
+  "chat_request_incoming_unnamed": {
+    "defaultMessage": "Someone wants to chat with you. You can chat once you accept.",
+    "description": "1:1 chat request from a user without a name: [Accept] [Decline] [Block]."
+  },
+  "chat_request_not_accepted": {
+    "defaultMessage": "Not sent: your chat request hasn't been accepted yet.",
+    "description": "Error when sending a message in a 1:1 chat before the other person accepted the chat request"
+  },
+  "chat_request_sent": {
+    "defaultMessage": "Request sent — you can chat once {name} accepts.",
+    "description": "Shown instead of the message input after starting a new 1:1 chat that the other person has not accepted yet"
+  },
+  "chat_request_sent_short": {
+    "defaultMessage": "Request sent",
+    "description": "Chat list: the current user asked this person to chat; not accepted yet"
+  },
+  "chat_request_someone": {
+    "defaultMessage": "they",
+    "description": "Stand-in for the name of the other person in chat request messages when the name is unknown"
+  },
   "clear_messages_warning": {
     "defaultMessage": "Are you sure you want to clear all messages? It cannot be undone.",
     "description": "Alert dialog warning when deleting all messages."
+  },
+  "close_viewer_action": {
+    "defaultMessage": "Close",
+    "description": "Call to action [close] the full-size image or video viewer"
   },
   "code_doesnot_match": {
     "defaultMessage": "Code does not match",
@@ -741,10 +777,6 @@
     "defaultMessage": "Messaging disabled",
     "description": "Prompt in SendMessage in read-only topic"
   },
-  "mobile_number_required": {
-    "defaultMessage": "Mobile phone number required",
-    "description": "Error message"
-  },
   "mobile_phone_number": {
     "defaultMessage": "Mobile phone number",
     "description": "Prompt for entering a mobile phone number"
@@ -881,6 +913,10 @@
     "defaultMessage": "phone",
     "description": "Dative case of 'phone', i.e. 'phone' in 'by phone'"
   },
+  "phone_number_not_recognized": {
+    "defaultMessage": "This doesn't look like a phone number",
+    "description": "Error message when the text entered in a phone number field is not a phone number"
+  },
   "pin_chat": {
     "defaultMessage": "Pin",
     "description": "Menu item [Pin] for pinning chat to the top."
@@ -968,6 +1004,10 @@
   "send_plain_explained": {
     "defaultMessage": "Press Shift + Enter for new line",
     "description": "Explanation how to enter newline when [Send on Enter] is enabled"
+  },
+  "share_action": {
+    "defaultMessage": "Share",
+    "description": "Call to action [share] an image or a video from the full-size viewer"
   },
   "sidepanel_title_acc_general": {
     "defaultMessage": "General",
@@ -1136,6 +1176,10 @@
   "user_not_found": {
     "defaultMessage": "Not found",
     "description": "In place of a user's full name when the user is not found."
+  },
+  "video_full_size_action": {
+    "defaultMessage": "Full size",
+    "description": "Call to action [open video in the full-size viewer]"
   },
   "wallpapers": {
     "defaultMessage": "Wallpapers",

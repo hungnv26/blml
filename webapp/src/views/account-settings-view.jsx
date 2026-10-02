@@ -1,7 +1,7 @@
 // Edit account parameters.
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import { parsePhoneNumber } from 'libphonenumber-js/mobile';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile';
 
 import AvatarUpload from '../widgets/avatar-upload.jsx';
 import BadgeList from '../widgets/badge-list.jsx';
@@ -72,7 +72,8 @@ export default class AccountSettingsView extends React.Component {
 
       let val = cred.val
       if (cred.meth == 'tel') {
-        const number = parsePhoneNumber(cred.val);
+        // Doesn't throw on a number it can't parse.
+        const number = parsePhoneNumberFromString(cred.val || '');
         val = number ? number.formatInternational() : cred.val;
       }
 

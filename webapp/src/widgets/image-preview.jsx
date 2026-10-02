@@ -1,11 +1,10 @@
 import React from 'react';
-import { FormattedMessage } from 'react-intl';
+import MediaViewerActions from './media-viewer-actions.jsx';
 import SendMessage from './send-message.jsx';
 
 import { REM_SIZE } from '../config.js';
 import { fitImageSize } from '../lib/blob-helpers.js';
-import { bytesToHumanSize, shortenFileName } from '../lib/strformat.js';
-import { urlAsAttachment } from '../lib/utils.js';
+import { shortenFileName } from '../lib/strformat.js';
 
 export default class ImagePreview extends React.PureComponent {
   constructor(props) {
@@ -70,24 +69,23 @@ export default class ImagePreview extends React.PureComponent {
     const maxlength = Math.max(((this.state.width / REM_SIZE / 1.5) | 0) - 2, 12);
     const fname = shortenFileName(this.props.content.filename, maxlength) || '-';
 
-    const width = this.props.content.width || '-';
-    const height = this.props.content.height || '-';
-
-    const download_url = urlAsAttachment(this.props.content.url);
-
     return (
-      <div id="image-preview">
-        <div id="preview-caption-panel">
-          {this.props.onSendMessage ?
+      <div id="image-preview" className={this.props.onSendMessage ? null : 'media-viewer'}>
+        {this.props.onSendMessage ?
+          // Preview before sending: show the name of the file being sent.
+          <div id="preview-caption-panel">
             <span>{fname}</span>
-            :
-            <a href={download_url} download={this.props.content.filename}>
-              <i className="material-icons">file_download</i> <FormattedMessage
-                id="download_action" defaultMessage="download" description="Call to action [download]" />
-            </a>
-          }
-          <a href="#" onClick={(e) => {e.preventDefault(); this.props.onClose();}}><i className="material-icons gray">close</i></a>
-        </div>
+            <a href="#" onClick={(e) => {e.preventDefault(); this.props.onClose();}}><i className="material-icons gray">close</i></a>
+          </div>
+          :
+          // Full-size view of a received/sent image: only the image, download/share and close.
+          <MediaViewerActions
+            url={this.props.content.url}
+            filename={this.props.content.filename}
+            mime={this.props.content.type}
+            onError={this.props.onError}
+            onClose={this.props.onClose} />
+        }
         <div id="image-preview-container" ref={node => this.assignWidth(node)}>
           <img src={this.props.content.url} style={size} className="image-preview" alt={this.props.content.filename} />
         </div>
@@ -100,24 +98,7 @@ export default class ImagePreview extends React.PureComponent {
             onCancelReply={this.props.onCancelReply}
             onSendMessage={this.handleSendImage}
             onError={this.props.onError} />
-          :
-          <div id="image-preview-footer">
-            <div>
-              <div><b><FormattedMessage id="label_file_name" defaultMessage="File name:"
-                description="Label for a file name" /></b></div>
-              <div><span title={this.props.content.filename}>{fname}</span></div>
-            </div>
-            <div>
-              <div><b><FormattedMessage id="label_content_type" defaultMessage="Content type:"
-                description="Label for file content type (mime)" /></b></div>
-              <div>{this.props.content.type}</div>
-            </div>
-            <div>
-              <div><b><FormattedMessage id="label_size" defaultMessage="Size:"
-                description="Label for file size" /></b></div>
-              <div>{width} &times; {height} px; {bytesToHumanSize(this.props.content.size)}</div>
-            </div>
-          </div>}
+          : null}
       </div>
     );
   }

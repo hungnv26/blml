@@ -1,8 +1,7 @@
 import React from 'react';
-import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import { defineMessages, injectIntl } from 'react-intl';
+import MediaViewerActions from './media-viewer-actions.jsx';
 import SendMessage from './send-message.jsx';
-
-import { bytesToHumanSize } from '../lib/strformat.js';
 
 const messages = defineMessages({
   unrecognized_video_format: {
@@ -73,23 +72,31 @@ class VideoPreview extends React.PureComponent {
       return null;
     }
 
-    const width = this.props.content.width || '-';
-    const height = this.props.content.height || '-';
-
     const controlist = this.props.onSendMessage ? 'nodownload' : '';
     const autoPlay = !this.props.onSendMessage;
 
     return (
-      <div id="image-preview">
-        <div id="preview-caption-panel">
-          <span>{this.props.content.filename}</span>
-          <a href="#" onClick={e => {e.preventDefault(); this.props.onClose();}}><i className="material-icons gray">close</i></a>
-        </div>
+      <div id="image-preview" className={this.props.onSendMessage ? null : 'media-viewer'}>
+        {this.props.onSendMessage ?
+          // Preview before sending: show the name of the file being sent.
+          <div id="preview-caption-panel">
+            <span>{this.props.content.filename}</span>
+            <a href="#" onClick={e => {e.preventDefault(); this.props.onClose();}}><i className="material-icons gray">close</i></a>
+          </div>
+          :
+          // Full-size player: only the video, download/share and close.
+          <MediaViewerActions
+            url={this.props.tinode.authorizeURL(this.props.content.url)}
+            filename={this.props.content.filename}
+            mime={this.props.content.type}
+            onError={this.props.onError}
+            onClose={this.props.onClose} />
+        }
         <div id="image-preview-container">
           <video
             className="image-preview"
             controls controlsList={controlist}
-            disablePictureInPicture ref={this.videoRef}
+            disablePictureInPicture playsInline ref={this.videoRef}
             autoPlay={autoPlay}
             src={this.props.tinode.authorizeURL(this.props.content.url)}
             poster={this.props.content.preview}
@@ -104,24 +111,7 @@ class VideoPreview extends React.PureComponent {
           onCancelReply={this.props.onCancelReply}
           onSendMessage={this.handleSendVideo}
           onError={this.props.onError} />
-          :
-          <div id="image-preview-footer">
-            <div>
-              <div><b><FormattedMessage id="label_file_name" defaultMessage="File name:"
-                description="Label for a file name" /></b></div>
-              <div><span title={this.props.content.filename}>{this.props.content.filename}</span></div>
-            </div>
-            <div>
-              <div><b><FormattedMessage id="label_content_type" defaultMessage="Content type:"
-                description="Label for file content type (mime)" /></b></div>
-              <div>{this.props.content.type}</div>
-            </div>
-            <div>
-              <div><b><FormattedMessage id="label_size" defaultMessage="Size:"
-                description="Label for file size" /></b></div>
-              <div>{width} &times; {height} px; {bytesToHumanSize(this.props.content.size)}</div>
-            </div>
-          </div>}
+          : null}
       </div>
     );
   }

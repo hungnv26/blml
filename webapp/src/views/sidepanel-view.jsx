@@ -16,7 +16,9 @@ import AccSupportView from './acc-support-view.jsx';
 import LoginView from './login-view.jsx';
 import NewTopicView from './new-topic-view.jsx';
 const PasswordResetView = React.lazy(_ => import('./password-reset-view.jsx'));
-import SettingsView from './settings-view.jsx';
+import { SERVER_SETTINGS_ENABLED } from '../config.js';
+// Server address / transport settings: development builds only.
+const SettingsView = React.lazy(_ => import('./settings-view.jsx'));
 import ValidationView from './validation-view.jsx';
 const WallpapersView = React.lazy(_ => import('./wallpapers.jsx'));
 
@@ -178,13 +180,16 @@ class SidepanelView extends React.PureComponent {
               onError={this.props.onError} />
           </Suspense> :
 
-          view === 'settings' ?
-          <SettingsView
-            transport={this.props.transport}
-            serverAddress={this.props.serverAddress}
-            secureConnection={this.props.secureConnection}
-            onCancel={this.props.onCancel}
-            onUpdate={this.props.onGlobalSettings} /> :
+          view === 'settings' && SERVER_SETTINGS_ENABLED ?
+          <Suspense fallback={<div className="panel-form-row"><FormattedMessage id="loading_note"
+            defaultMessage="Loading..." description="Message shown when component is loading"/></div>}>
+            <SettingsView
+              transport={this.props.transport}
+              serverAddress={this.props.serverAddress}
+              secureConnection={this.props.secureConnection}
+              onCancel={this.props.onCancel}
+              onUpdate={this.props.onGlobalSettings} />
+          </Suspense> :
 
           view === 'edit' ?
           <Suspense fallback={<div className="panel-form-row"><FormattedMessage id="loading_note"

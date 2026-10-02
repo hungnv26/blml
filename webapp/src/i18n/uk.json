@@ -1577,7 +1577,7 @@
     "defaultMessage": "Mobile phone number required",
     "description": "Error message",
     "missing": false,
-    "obsolete": false
+    "obsolete": true
   },
   "current_email": {
     "translation": "Поточний e-mail",
@@ -1996,6 +1996,90 @@
     "translation": "",
     "defaultMessage": "This group is invite-only. Ask a member to add you.",
     "description": "Error shown when trying to join a group without an invitation",
+    "missing": true,
+    "obsolete": false
+  },
+  "close_viewer_action": {
+    "translation": "",
+    "defaultMessage": "Close",
+    "description": "Call to action [close] the full-size image or video viewer",
+    "missing": true,
+    "obsolete": false
+  },
+  "phone_number_not_recognized": {
+    "translation": "",
+    "defaultMessage": "This doesn't look like a phone number",
+    "description": "Error message when the text entered in a phone number field is not a phone number",
+    "missing": true,
+    "obsolete": false
+  },
+  "share_action": {
+    "translation": "",
+    "defaultMessage": "Share",
+    "description": "Call to action [share] an image or a video from the full-size viewer",
+    "missing": true,
+    "obsolete": false
+  },
+  "video_full_size_action": {
+    "translation": "",
+    "defaultMessage": "Full size",
+    "description": "Call to action [open video in the full-size viewer]",
+    "missing": true,
+    "obsolete": false
+  },
+  "chat_request_decline": {
+    "translation": "",
+    "defaultMessage": "Decline",
+    "description": "Action [Decline] for a 1:1 chat request.",
+    "missing": true,
+    "obsolete": false
+  },
+  "chat_request_incoming": {
+    "translation": "",
+    "defaultMessage": "{name} wants to chat with you. You can chat once you accept.",
+    "description": "1:1 chat request from another user: [Accept] [Decline] [Block].",
+    "missing": true,
+    "obsolete": false
+  },
+  "chat_request_incoming_short": {
+    "translation": "",
+    "defaultMessage": "Wants to chat with you",
+    "description": "Chat list: a 1:1 chat request from this person is waiting for acceptance",
+    "missing": true,
+    "obsolete": false
+  },
+  "chat_request_incoming_unnamed": {
+    "translation": "",
+    "defaultMessage": "Someone wants to chat with you. You can chat once you accept.",
+    "description": "1:1 chat request from a user without a name: [Accept] [Decline] [Block].",
+    "missing": true,
+    "obsolete": false
+  },
+  "chat_request_not_accepted": {
+    "translation": "",
+    "defaultMessage": "Not sent: your chat request hasn't been accepted yet.",
+    "description": "Error when sending a message in a 1:1 chat before the other person accepted the chat request",
+    "missing": true,
+    "obsolete": false
+  },
+  "chat_request_sent": {
+    "translation": "",
+    "defaultMessage": "Request sent — you can chat once {name} accepts.",
+    "description": "Shown instead of the message input after starting a new 1:1 chat that the other person has not accepted yet",
+    "missing": true,
+    "obsolete": false
+  },
+  "chat_request_sent_short": {
+    "translation": "",
+    "defaultMessage": "Request sent",
+    "description": "Chat list: the current user asked this person to chat; not accepted yet",
+    "missing": true,
+    "obsolete": false
+  },
+  "chat_request_someone": {
+    "translation": "",
+    "defaultMessage": "they",
+    "description": "Stand-in for the name of the other person in chat request messages when the name is unknown",
     "missing": true,
     "obsolete": false
   }

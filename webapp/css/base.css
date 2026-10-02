@@ -2030,6 +2030,12 @@ img.channel {
   color: var(--clr-dark);
 }
 
+/* Full-size viewer of a received/sent image or video: actions only, no file details. */
+.media-viewer-actions > div {
+  display: flex;
+  gap: 1.25rem;
+}
+
 #image-preview-container {
   display: flex;
   justify-content: space-around;
@@ -2709,6 +2715,32 @@ img.image-preview::before {
   border-radius: 50%;
   pointer-events: none;
   cursor: pointer;
+}
+
+/* Inline video player inside a bubble. */
+.inline-video.playing video {
+  display: block;
+  background-color: #000; /* Letterbox behind the video */
+  border-radius: 0.3rem;
+}
+
+.inline-video .expand-control {
+  display: flex;
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  background-color: rgba(0, 0, 0, 0.45); /* Specific rgba */
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+.inline-video .expand-control .material-icons {
+  font-size: 1.6rem;
+  pointer-events: none;
 }
 
 /* Attachment styles */

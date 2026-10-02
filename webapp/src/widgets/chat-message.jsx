@@ -94,16 +94,19 @@ class BaseChatMessage extends React.PureComponent {
 
   handlePlayVideo(e) {
     e.preventDefault();
+    // The element with the handler carries the data-* attributes (the 'full size' button of the
+    // inline player); e.target may be its icon.
+    const el = e.currentTarget || e.target;
     this.props.onExpandMedia({
       video: true,
-      url: e.target.dataset.src,
-      preview: e.target.src,
-      filename: e.target.dataset.name,
-      width: e.target.dataset.width,
-      height: e.target.dataset.height,
-      duration: e.target.dataset.duration,
-      size: e.target.dataset.size,
-      type: e.target.dataset.mime
+      url: el.dataset.src,
+      preview: el.dataset.preview || el.src,
+      filename: el.dataset.name,
+      width: el.dataset.width,
+      height: el.dataset.height,
+      duration: el.dataset.duration,
+      size: el.dataset.size,
+      type: el.dataset.mime
     });
   }
 

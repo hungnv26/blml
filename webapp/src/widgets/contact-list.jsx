@@ -9,10 +9,21 @@ import Contact from './contact.jsx';
 import ContactAction from './contact-action.jsx';
 
 import { makeImageUrl } from '../lib/blob-helpers.js';
+import { isRequestReceived, isRequestSent } from '../lib/chat-request.js';
 
 import { MESSAGE_PREVIEW_LENGTH } from '../config.js';
 
 const messages = defineMessages({
+  chat_request_incoming_short: {
+    id: 'chat_request_incoming_short',
+    defaultMessage: 'Wants to chat with you',
+    description: 'Chat list: a 1:1 chat request from this person is waiting for acceptance'
+  },
+  chat_request_sent_short: {
+    id: 'chat_request_sent_short',
+    defaultMessage: 'Request sent',
+    description: 'Chat list: the current user asked this person to chat; not accepted yet'
+  },
   badge_you: {
     id: 'badge_you',
     defaultMessage: 'you',
@@ -101,7 +112,7 @@ class ContactList extends React.PureComponent {
             }
           }
 
-          const comment = Array.isArray(c.private) ?
+          let comment = Array.isArray(c.private) ?
             c.private.join(',') : (c.private ? c.private.comment : null);
           let preview;
           let forwarded;
@@ -118,6 +129,15 @@ class ContactList extends React.PureComponent {
                   msg.content.substr(0, MESSAGE_PREVIEW_LENGTH) :
                   Drafty.preview(msg.content, MESSAGE_PREVIEW_LENGTH);
               }
+            }
+          }
+
+          // Chat list: label 1:1 chat requests without messages (contract-friend-requests.md, section 2).
+          if (this.props.showUnread && !preview && c.acs && Tinode.isP2PTopicName(key)) {
+            if (isRequestReceived(c.acs)) {
+              comment = formatMessage(messages.chat_request_incoming_short);
+            } else if (isRequestSent(c.acs)) {
+              comment = formatMessage(messages.chat_request_sent_short);
             }
           }
 

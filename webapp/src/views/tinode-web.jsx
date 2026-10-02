@@ -19,7 +19,7 @@ const MessagesView = React.lazy(_ => import('./messages-view.jsx'));
 import SidepanelView from './sidepanel-view.jsx';
 
 import { API_KEY, APP_NAME, BASE_APP_NAME, DEFAULT_COLOR_SCHEME, DEFAULT_P2P_ACCESS_MODE, DEFAULT_TEXT_SIZE, FORWARDED_PREVIEW_LENGTH,
-  LOGGING_ENABLED, MEDIA_BREAKPOINT, WAKE_UP_TICK, WAKE_UP_TIMEOUT } from '../config.js';
+  LOGGING_ENABLED, MEDIA_BREAKPOINT, SERVER_SETTINGS_ENABLED, WAKE_UP_TICK, WAKE_UP_TIMEOUT } from '../config.js';
 import { CALL_STATE_NONE, CALL_STATE_OUTGOING_INITATED,
          CALL_STATE_INCOMING_RECEIVED, CALL_STATE_IN_PROGRESS,
          CALL_HEAD_STARTED }  from '../constants.js';
@@ -29,12 +29,17 @@ import { detectServerAddress, isLocalHost, isSecureConnection } from '../lib/hos
 import LocalStorageUtil from '../lib/local-storage.js';
 import HashNavigation from '../lib/navigation.js';
 import { secondsToTime } from '../lib/strformat.js'
-import { defaultWallpaper, redactLogLine, trackCtrlRefusal, updateFavicon } from '../lib/utils.js';
+import { ctrlRefusalReason, defaultWallpaper, redactLogLine, trackCtrlRefusal, updateFavicon } from '../lib/utils.js';
 
 // Sound to play on message received.
 const POP_SOUND = new Audio('audio/msg.m4a');
 
 const messages = defineMessages({
+  chat_request_not_accepted: {
+    id: 'chat_request_not_accepted',
+    defaultMessage: 'Not sent: your chat request hasn\'t been accepted yet.',
+    description: 'Error when sending a message in a 1:1 chat before the other person accepted the chat request'
+  },
   reconnect_countdown: {
     id: 'reconnect_countdown',
     defaultMessage: 'Disconnected. Reconnecting in {seconds}…',
@@ -218,9 +223,11 @@ class TinodeWeb extends React.Component {
       ready: false,
       // Try to re-login on new connection.
       autoLogin: false,
-      transport: settings.transport || null,
-      serverAddress: settings.serverAddress || detectServerAddress(),
-      secureConnection: settings.secureConnection === undefined ?
+      // Production builds always use the server that served the page; a saved server/transport
+      // override (development builds only) is ignored.
+      transport: (SERVER_SETTINGS_ENABLED && settings.transport) || null,
+      serverAddress: (SERVER_SETTINGS_ENABLED && settings.serverAddress) || detectServerAddress(),
+      secureConnection: (!SERVER_SETTINGS_ENABLED || settings.secureConnection === undefined) ?
         isSecureConnection() : settings.secureConnection,
       serverVersion: "no connection",
       // "On" is the default, so saving the "off" state.
@@ -585,6 +592,10 @@ class TinodeWeb extends React.Component {
           'newtpk','notif','register','reset','security','settings','support','wallpapers',
           ''].includes(hash.path[0])) {
         newState.sidePanelSelected = hash.path[0];
+        if (hash.path[0] == 'settings' && !SERVER_SETTINGS_ENABLED) {
+          // Server settings exist in development builds only: show the sign-in panel instead.
+          newState.sidePanelSelected = '';
+        }
       } else {
         console.warn("Unknown sidepanel view", hash.path[0]);
       }
@@ -1212,7 +1223,12 @@ class TinodeWeb extends React.Component {
         }
         return ctrl;
       })
-      .catch(err => this.handleError(err.message, 'err'));
+      .catch(err => {
+        // 1:1 chat request not accepted yet: 403 with params.what = 'not-accepted'.
+        const notAccepted = err.code == 403 && ctrlRefusalReason(topic.name) == 'not-accepted';
+        this.handleError(notAccepted ?
+          this.props.intl.formatMessage(messages.chat_request_not_accepted) : err.message, 'err');
+      });
   }
 
   handleNewChatInvitation(topicName, action) {
@@ -1220,18 +1236,30 @@ class TinodeWeb extends React.Component {
     let response = null;
     switch (action) {
       case 'accept':
-        // Accept given permissions.
+        // Accept given permissions. For a 1:1 chat request any mode with W accepts it, and the server
+        // grants the requester W+P itself (contract-friend-requests.md, 3.3).
         const mode = topic.getAccessMode().getGiven();
         response = topic.setMeta({sub: {mode: mode}});
         if (topic.isP2PType()) {
-          // For P2P topics change 'given' permission of the peer too.
+          // For P2P topics change 'given' permission of the peer too. Not needed with the request
+          // contract (harmless 200/304), kept for servers without it.
           // In p2p topics the other user has the same name as the topic.
           response = response.then(_ => topic.setMeta({sub: {user: topicName, mode: mode}}));
         }
+        response = response.then(_ => {
+          // Refresh the open chat: the invitation gives way to the message input.
+          if (this.state.topicSelected == topicName) {
+            this.setState({topicSelectedAcs: topic.getAccessMode()});
+          }
+        });
         break;
       case 'delete':
-        // Ignore invitation by deleting it.
-        response = topic.delTopic(true);
+        // Ignore (decline) the invitation by deleting it. The requester is not told (contract 3.4).
+        response = topic.delTopic(true).then(_ => {
+          if (this.state.topicSelected == topicName) {
+            this.handleTopicSelected(null);
+          }
+        });
         break;
       case 'block':
         // Ban the topic making futher invites impossible.
@@ -1385,12 +1413,19 @@ class TinodeWeb extends React.Component {
   handleSettings() {
     this.handleError();
 
+    if (!this.state.myUserId && !SERVER_SETTINGS_ENABLED) {
+      // No signed-out settings in production builds.
+      return;
+    }
     HashNavigation.navigateTo(HashNavigation.setUrlSidePanel(window.location.hash,
       this.state.myUserId ? 'edit' : 'settings'));
   }
 
   // User updated global parameters.
   handleGlobalSettings(settings) {
+    if (!SERVER_SETTINGS_ENABLED) {
+      return;
+    }
     const serverAddress = settings.serverAddress || this.state.serverAddress;
     const transport = settings.transport || this.state.transport;
     const secureConnection = settings.secureConnection === undefined ?
@@ -1468,9 +1503,14 @@ class TinodeWeb extends React.Component {
     });
   }
 
-  handleCredAdd(method, value) {
+  handleCredAdd(method, value, params) {
     const me = this.tinode.getMeTopic();
-    me.setMeta({cred: {meth: method, val: value}})
+    const cred = {meth: method, val: value};
+    if (params) {
+      // E.g. {region: 'AU'} for a phone number.
+      cred.params = params;
+    }
+    me.setMeta({cred: cred})
       .catch(err => this.handleError(err.message, 'err'));
   }
 

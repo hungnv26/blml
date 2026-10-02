@@ -68,8 +68,8 @@ export default class CreateAccountView extends React.PureComponent {
     this.setState({meth: 'email', email: e.target.value});
   }
 
-  handlePhoneChange(number) {
-    this.setState({meth: 'tel', tel: number});
+  handlePhoneChange(number, region) {
+    this.setState({meth: 'tel', tel: number, telRegion: region});
   }
 
   handleFnChange(e) {
@@ -103,7 +103,9 @@ export default class CreateAccountView extends React.PureComponent {
         'meth': this.state.meth,
         'val': this.state.meth == 'email' ?
           this.state.email :
-            this.state.meth == 'tel' ? this.state.tel : null
+            this.state.meth == 'tel' ? this.state.tel : null,
+        // Region hint for the server (contract-friend-requests.md, 4.1). The number is already E.164.
+        'params': this.state.meth == 'tel' && this.state.telRegion ? {region: this.state.telRegion} : undefined
       },
       // Invite code travels as a 'code:<value>' tag; the server checks and
       // strips it. Omitted entirely when blank so an open server still works.

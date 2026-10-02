@@ -244,7 +244,7 @@ class SendMessage extends React.PureComponent {
   render() {
     const { formatMessage } = this.props.intl;
     const prompt = this.props.disabled ?
-      formatMessage(messages.messaging_disabled) :
+      (this.props.disabledPrompt || formatMessage(messages.messaging_disabled)) :
       (this.props.messagePrompt ?
         formatMessage(messages[this.props.messagePrompt]) :
         formatMessage(messages.type_new_message));

@@ -29,6 +29,7 @@ import { CALL_STATE_OUTGOING_INITATED, CALL_STATE_IN_PROGRESS } from '../constan
 import { blobToBase64, fileToBase64, imageScaled, importVCard, makeImageUrl } from '../lib/blob-helpers.js';
 import HashNavigation from '../lib/navigation.js';
 import { bytesToHumanSize, relativeDateFormat, shortDateFormat } from '../lib/strformat.js';
+import { isPeerAccepted, isRequestSent } from '../lib/chat-request.js';
 import { ctrlRefusalReason } from '../lib/utils.js';
 
 // Run timer with this frequency (ms) for checking notification queue.
@@ -48,6 +49,16 @@ const messages = defineMessages({
     id: 'last_seen_timestamp',
     defaultMessage: 'Last seen: {timestamp}',
     description: 'Label for the timestamp of when the user or topic was last online'
+  },
+  chat_request_sent: {
+    id: 'chat_request_sent',
+    defaultMessage: 'Request sent — you can chat once {name} accepts.',
+    description: 'Shown instead of the message input after starting a new 1:1 chat that the other person has not accepted yet'
+  },
+  chat_request_someone: {
+    id: 'chat_request_someone',
+    defaultMessage: 'they',
+    description: 'Stand-in for the name of the other person in chat request messages when the name is unknown'
   },
   group_invite_only: {
     id: 'group_invite_only',
@@ -382,6 +393,7 @@ class MessagesView extends React.Component {
         scrollPosition: 0,
         fetchingMessages: false,
         peerMessagingDisabled: false,
+        peerAccepted: false,
         channel: false,
         reply: null,
         contentToEdit: null,
@@ -470,11 +482,13 @@ class MessagesView extends React.Component {
         const peer = topic.p2pPeerDesc();
         if (peer) {
           Object.assign(nextState, {
-            peerMessagingDisabled: isPeerRestricted(peer.acs)
+            peerMessagingDisabled: isPeerRestricted(peer.acs),
+            peerAccepted: isPeerAccepted(peer)
           });
-        } else if (prevState.peerMessagingDisabled) {
+        } else {
           Object.assign(nextState, {
-            peerMessagingDisabled: false
+            peerMessagingDisabled: false,
+            peerAccepted: false
           });
         }
         Object.assign(nextState, {
@@ -499,6 +513,7 @@ class MessagesView extends React.Component {
           title: '',
           avatar: null,
           peerMessagingDisabled: false,
+          peerAccepted: false,
           channel: false,
           pins: [],
           pinsLoaded: false
@@ -834,11 +849,13 @@ class MessagesView extends React.Component {
       const peer = topic.p2pPeerDesc();
       if (peer) {
         Object.assign(newState, {
-          peerMessagingDisabled: isPeerRestricted(peer.acs)
+          peerMessagingDisabled: isPeerRestricted(peer.acs),
+          peerAccepted: isPeerAccepted(peer)
         });
-      } else if (this.state.peerMessagingDisabled) {
+      } else if (this.state.peerMessagingDisabled || this.state.peerAccepted) {
         Object.assign(newState, {
-          peerMessagingDisabled: false
+          peerMessagingDisabled: false,
+          peerAccepted: false
         });
       }
       this.setState(newState);
@@ -1675,6 +1692,7 @@ class MessagesView extends React.Component {
             description="Message shown when component is loading"/></div>}>
             <ImagePreview
               content={this.state.imagePostview}
+              onError={this.props.onError}
               onClose={this.handleClosePreview} />
           </Suspense>;
 
@@ -1858,6 +1876,10 @@ class MessagesView extends React.Component {
           this.props.online ? 'online' + (this.state.typingIndicator ? ' typing' : '') : 'offline';
 
         const titleClass = 'panel-title' + (this.state.deleted ? ' deleted' : '');
+        // New 1:1 chats start as requests the other person must accept (contract-friend-requests.md).
+        const isP2P = Tinode.isP2PTopicName(this.state.topic);
+        const requestSent = isP2P && !this.state.selfBlocked && !this.state.unconfirmed &&
+          isRequestSent(this.props.acs) && !this.state.peerAccepted;
         const darkModeClass = this.props.colorSchema == 'dark' ? 'dark' : '';
 
         let messagesComponent = (
@@ -1891,7 +1913,7 @@ class MessagesView extends React.Component {
                     onClick={this.handleUnblock}><FormattedMessage id="menu_item_unblock"
                     defaultMessage="Unblock" description="Unblock topic or user" /></a>
               </div> : null}
-            {this.state.peerMessagingDisabled && !this.state.unconfirmed && !this.state.selfBlocked ?
+            {this.state.peerMessagingDisabled && !this.state.unconfirmed && !this.state.selfBlocked && !requestSent ?
               <div id="peer-messaging-disabled-note">
                 <i className="material-icons secondary">block</i> <FormattedMessage
                   id="peers_messaging_disabled" defaultMessage="Peer's messaging is disabled."
@@ -1901,13 +1923,18 @@ class MessagesView extends React.Component {
               </div> : null}
             {this.state.selfBlocked ? null :
               this.state.unconfirmed ?
-              <Invitation onAction={this.handleNewChatAcceptance} />
+              <Invitation
+                p2p={isP2P}
+                name={this.state.title}
+                onAction={this.handleNewChatAcceptance} />
               :
               <SendMessage
                 tinode={this.props.tinode}
                 topicName={this.state.topic}
                 noInput={!!this.props.forwardMessage}
-                disabled={!this.state.isWriter || this.state.deleted}
+                disabled={!this.state.isWriter || this.state.deleted || requestSent}
+                disabledPrompt={requestSent ? formatMessage(messages.chat_request_sent,
+                  {name: this.state.title || formatMessage(messages.chat_request_someone)}) : null}
                 reply={this.state.reply}
                 initMessage={this.state.contentToEdit}
                 sendOnEnter={this.props.sendOnEnter}

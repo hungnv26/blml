@@ -254,7 +254,14 @@ function handleVideoData(el, data, attr) {
     attr.src = this.authorizeURL(sanitizeUrlForMime(attr.src, 'image'));
     attr.alt = data.name;
     if (data.ref || data.val) {
-      attr.onClick = (e) => this.onHandleClick(e, 'video');
+      // Click plays the video inline in the bubble; the player has a button to open the full-size viewer.
+      const videoSrc = sanitizeUrlForMime(attr['data-src'], 'video');
+      if (videoSrc) {
+        attr.videoSrc = this.authorizeURL(videoSrc);
+      }
+      if (this.onHandleClick) {
+        attr.onExpand = (e) => this.onHandleClick(e, 'video');
+      }
       attr.loading = 'lazy';
     }
     el = InlineVideo;

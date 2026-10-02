@@ -2,17 +2,18 @@
 
 import React from 'react';
 import { defineMessages, injectIntl } from 'react-intl';
-import { AsYouType, getExampleNumber, parsePhoneNumber } from 'libphonenumber-js/mobile';
+import { AsYouType, getExampleNumber } from 'libphonenumber-js/mobile';
 import examples from 'libphonenumber-js/mobile/examples'
 
 import * as dcodes from '../dcodes.json';
+import { asE164Phone, localRegions } from '../lib/phone';
 import { flagEmoji } from '../lib/strformat';
 
 const messages = defineMessages({
-  mobile_number_required: {
-    id: 'mobile_number_required',
-    defaultMessage: 'Mobile phone number required',
-    description: 'Error message'
+  phone_number_not_recognized: {
+    id: 'phone_number_not_recognized',
+    defaultMessage: 'This doesn\'t look like a phone number',
+    description: 'Error message when the text entered in a phone number field is not a phone number'
   }
 });
 
@@ -23,14 +24,18 @@ class PhoneEdit extends React.PureComponent {
     this.codeMap = {};
     dcodes.default.forEach(dc => { this.codeMap[dc.code] = dc.dial; });
 
-    const code = props.countryCode || 'US';
+    // Country for numbers typed in local format: the given one, else the browser's region,
+    // else the region of the user's own phone number (props.ownPhone, E.164).
+    const code = [props.countryCode].concat(localRegions(
+        typeof navigator == 'object' ? (navigator.languages || [navigator.language]) : [],
+        props.ownPhone ? [props.ownPhone] : [])).find(c => c && this.codeMap[c]) || 'US';
     const dial = this.codeMap[code];
 
     this.state = {
       countryCode: code,
       dialCode: dial,
       localNumber: '',
-      placeholderNumber: this.placeholderNumber(code, dial)
+      placeholderNumber: this.placeholderNumber(code)
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -39,28 +44,57 @@ class PhoneEdit extends React.PureComponent {
     this.showCountrySelector = this.showCountrySelector.bind(this);
   }
 
+  // Accepts the number in local format for the selected country ('0491 570 104') or in international
+  // format ('+61 491 570 104'), with spaces, dashes, dots or brackets.
   handleChange(e) {
-    const prefix = `+${this.state.dialCode}`;
-    let formatted = new AsYouType().input(`${prefix}${this.filterNumber(e.target.value)}`);
-    formatted = formatted.substring(prefix.length).trim();
-    this.setState({localNumber: formatted});
+    const value = this.filterNumber(e.target.value);
+    let formatted = value;
+    const newState = {};
+    if (value.startsWith('+')) {
+      // International format: follow the country of the number.
+      const typer = new AsYouType();
+      formatted = typer.input(value);
+      const code = typer.getCountry();
+      if (code && code != this.state.countryCode && this.codeMap[code]) {
+        Object.assign(newState, {
+          countryCode: code,
+          dialCode: this.codeMap[code],
+          placeholderNumber: this.placeholderNumber(code)
+        });
+      }
+    } else if (value.trim()) {
+      formatted = new AsYouType(this.state.countryCode).input(value);
+    }
+    // Don't reformat what the user is deleting into, e.g. a trailing ')' or '-'.
+    if (formatted.length < value.length) {
+      formatted = value;
+    }
+    newState.localNumber = formatted;
+    this.setState(newState);
+    if (this.inputField) {
+      this.inputField.setCustomValidity('');
+    }
   }
 
   handleFinished(e) {
     e.preventDefault();
-    const raw = `${this.state.dialCode}${this.state.localNumber.trim()}`.replace(/[^\d]/g, '');
-    let number = null;
-    try {
-      number = parsePhoneNumber(`+${raw}`);
-    } catch (err) {}
-
-    if (!number || !number.isValid()) {
-      this.inputField.setCustomValidity(this.props.intl.formatMessage(messages.mobile_number_required));
+    const text = this.state.localNumber.trim();
+    // Any possible number, not only a valid mobile one; sent as E.164.
+    const e164 = text ? asE164Phone(text, [this.state.countryCode]) : null;
+    if (!e164) {
+      this.inputField.setCustomValidity(text ?
+        this.props.intl.formatMessage(messages.phone_number_not_recognized) : '');
+      if (text && e.type == 'keydown') {
+        this.inputField.reportValidity();
+      }
+      // Don't leave an earlier number in the form.
+      this.props.onSubmit('');
       return;
     }
 
     this.inputField.setCustomValidity('');
-    this.props.onSubmit(number.format('E.164'));
+    // The number is in E.164; the selected country goes along as the server's params.region hint.
+    this.props.onSubmit(e164, this.state.countryCode);
   }
 
 
@@ -76,7 +110,7 @@ class PhoneEdit extends React.PureComponent {
           this.setState({
             countryCode: code,
             dialCode: dial,
-            placeholderNumber: this.placeholderNumber(code, dial)
+            placeholderNumber: this.placeholderNumber(code)
         })
       });
   }
@@ -86,14 +120,18 @@ class PhoneEdit extends React.PureComponent {
     if (!number) {
       return number;
     }
-    // Leave numbers, space, (, ), -, and .
-    // The + is not allowed: it's handled by the country code portion.
-    return number.replace(/[^-\s().\d]/g, '');
+    // Leave numbers, space, (, ), -, and . A leading + starts a number in international format.
+    const plus = /^\s*\+/.test(number);
+    return (plus ? '+' : '') + number.replace(/[^-\s().\d]/g, '').replace(/^\s+/, '');
   }
 
-  placeholderNumber(code, dial) {
-    const sample = getExampleNumber(code, examples);
-    return sample ? sample.formatInternational().substring(dial.length + 1).trim() : '123 0123';
+  // Example number in local format, e.g. '0412 345 678' for AU.
+  placeholderNumber(code) {
+    let sample = null;
+    try {
+      sample = getExampleNumber(code, examples);
+    } catch (err) {}
+    return sample ? sample.formatNational() : '123 0123';
   }
 
   render() {
@@ -104,7 +142,7 @@ class PhoneEdit extends React.PureComponent {
           +{this.state.dialCode}&nbsp;</span>
         <input type="tel" ref={ref => {this.inputField = ref}} placeholder={this.state.placeholderNumber}
             value={this.state.localNumber} onChange={this.handleChange}
-            maxLength={17} onKeyDown={this.handleKeyDown} onBlur={this.handleFinished}
+            maxLength={24} onKeyDown={this.handleKeyDown} onBlur={this.handleFinished}
             required autoFocus={this.props.autoFocus} />
       </>
     );

@@ -47,8 +47,8 @@ class CredentialEdit extends React.PureComponent {
     this.setState({email: e.target.value});
   }
 
-  handlePhoneChange(number) {
-    this.setState({tel: number});
+  handlePhoneChange(number, region) {
+    this.setState({tel: number, telRegion: region});
   }
 
   handleCodeChange(e) {
@@ -62,7 +62,8 @@ class CredentialEdit extends React.PureComponent {
       this.props.onError(null);
       this.props.onCredConfirm(this.props.method, this.state.code);
     } else if (value) {
-      this.props.onCredAdd(this.props.method, value);
+      this.props.onCredAdd(this.props.method, value,
+        this.props.method == 'tel' && this.state.telRegion ? {region: this.state.telRegion} : undefined);
       this.setState({sent: true});
       const msg = this.props.method == 'email' ? messages.password_reset_email_sent : messages.password_reset_sms_sent;
       this.props.onError(this.props.intl.formatMessage(msg), 'info');
@@ -123,6 +124,7 @@ class CredentialEdit extends React.PureComponent {
       <div className="panel-form-row">
         <PhoneEdit
           autoFocus={true}
+          ownPhone={this.props.method == 'tel' ? this.props.val : null}
           onShowCountrySelector={this.props.onShowCountrySelector}
           onSubmit={this.handlePhoneChange} />
       </div></>
