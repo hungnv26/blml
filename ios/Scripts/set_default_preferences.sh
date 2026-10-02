@@ -52,3 +52,19 @@ assign() {
 assign "$hn_index" "$host_name"
 assign "$tls_index" "$use_tls"
 assign "$bv_index" "$bundle_version"
+
+# Release builds talk only to the bundled server (chat.blml.app): drop the
+# "Connection settings" pane from the iOS Settings app, the same way the
+# login screen's "Configure Connection" is Debug-only. Debug/QA builds keep it.
+if [ "$CONFIGURATION" = "Release" ]; then
+  for i in {0..10}; do
+    file=$(/usr/libexec/PlistBuddy -c "Print PreferenceSpecifiers:${i}:File" "$prefs_file" 2>/dev/null)
+    if [ "$file" = "ConnectionSettings" ]; then
+      /usr/libexec/PlistBuddy -c "Delete PreferenceSpecifiers:${i}" "$prefs_file"
+      echo "Removed the Connection settings pane (Release)"
+      break
+    fi
+  done
+  rm -f "$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/Settings.bundle/ConnectionSettings.plist"
+  find "$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/Settings.bundle" -name "ConnectionSettings.strings" -delete
+fi

@@ -186,42 +186,78 @@ class SignupViewController: UITableViewController {
 
         guard !login.isEmpty && !pwd.isEmpty && !name.isEmpty else { return }
 
-        var isError = false
+        // The first contact field is labelled "Email or phone number": take
+        // either. A phone typed there used to get an unexplained red "!".
+        // Phone numbers are read leniently (spaces, local format, "possible"
+        // numbers) and sent as E.164; a message says what is wrong otherwise.
+        let contactText = (emailTextField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let telText = (telTextField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        var contactEmail: String?
+        var contactPhone: String?
+        if !contactText.isEmpty {
+            if case let .email(email)? = ValidatedCredential.parse(from: contactText) {
+                contactEmail = email
+            } else if let phone = Utils.normalizedPhone(contactText) {
+                contactPhone = phone
+            } else {
+                emailTextField.markAsError()
+                UiUtils.showToast(message: NSLocalizedString(
+                    "Enter an email address or a phone number.",
+                    comment: "Sign-up: the contact field holds neither an email nor a phone number"))
+                return
+            }
+        }
+        var telPhone: String?
+        // The tel field shows just the country prefix ("+61") until digits are typed.
+        let telDigits = telText.filter { ("0"..."9").contains($0) }
+        let shownPrefix = Utils.phoneNumberKit.countryCode(for: telTextField.currentRegion).map { String($0) }
+        if !telDigits.isEmpty && !(telText.hasPrefix("+") && telDigits == shownPrefix) {
+            guard let phone = Utils.normalizedPhone(telText) else {
+                telTextField.markAsError()
+                UiUtils.showToast(message: Utils.kNotAPhoneNumberMessage)
+                return
+            }
+            telPhone = phone
+        }
+        if let a = contactPhone, let b = telPhone, a != b {
+            telTextField.markAsError()
+            UiUtils.showToast(message: NSLocalizedString(
+                "Two different phone numbers were entered. Keep one of them.",
+                comment: "Sign-up: phone in the contact field differs from the phone field"))
+            return
+        }
+        let phone = telPhone ?? contactPhone
+
+        // Methods the server itself requires; an empty list falls back to email
+        // in viewDidLoad, but then a phone number does just as well.
+        let serverRequired = Cache.tinode.getRequiredCredMethods(forAuthLevel: "auth") ?? []
         var creds = [Credential]()
-        self.credMethods?.forEach { method in
+        for method in self.credMethods ?? [] {
             switch method {
             case Credential.kMethEmail:
-                let credential = UiUtils.ensureDataInTextField(emailTextField)
-                guard !credential.isEmpty, case let .email(cred) = ValidatedCredential.parse(from: credential) else {
+                if let email = contactEmail {
+                    creds.append(Credential(meth: method, val: email))
+                } else if phone == nil || serverRequired.contains(Credential.kMethEmail) {
                     emailTextField.markAsError()
-                    isError = true
+                    UiUtils.showToast(message: serverRequired.contains(Credential.kMethEmail) ?
+                        NSLocalizedString("Enter your email address.", comment: "Sign-up: email is required") :
+                        NSLocalizedString("Enter an email address or a phone number.", comment: "Sign-up: no contact given"))
                     return
                 }
-                creds.append(Credential(meth: method, val: cred))
             case Credential.kMethPhone:
-                guard telTextField.isValidNumber else {
+                guard phone != nil else {
                     telTextField.markAsError()
-                    isError = true
+                    UiUtils.showToast(message: NSLocalizedString("Enter your phone number.", comment: "Sign-up: phone is required"))
                     return
                 }
-                let cred = telTextField.utility.format(telTextField.phoneNumber!, toType: .e164)
-                creds.append(Credential(meth: method, val: cred))
             default:
                 break
             }
         }
-        guard !isError else { return }
-
-        // Optional phone number, when the server does not require one. The
-        // server confirms it on entry and it becomes the "tel:" tag that other
-        // people's address books match against.
-        if !(self.credMethods?.contains(Credential.kMethPhone) ?? false),
-           !(telTextField.text?.trimmingCharacters(in: .whitespaces).isEmpty ?? true) {
-            guard telTextField.isValidNumber, let phone = telTextField.phoneNumber else {
-                telTextField.markAsError()
-                return
-            }
-            creds.append(Credential(meth: Credential.kMethPhone, val: telTextField.utility.format(phone, toType: .e164)))
+        // The phone number, required or not, becomes the "tel:" tag that other
+        // people's address books match against. The server confirms it on entry.
+        if let phone = phone {
+            creds.append(Credential(meth: Credential.kMethPhone, val: phone))
         }
 
         func doSignUp(withPublicCard pub: TheCard, withCredentials creds: [Credential]) {

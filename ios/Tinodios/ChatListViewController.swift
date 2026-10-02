@@ -87,7 +87,10 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
         // navigationItem.title, not self.title: the storyboard sets an explicit
         // navigationItem title which would otherwise win.
         self.navigationItem.title = NSLocalizedString("Chats", comment: "Chat list title")
-        navigationController?.navigationBar.prefersLargeTitles = true
+        // Compact header: the title sits inline in a standard-height bar with
+        // the QR and "+" buttons. The big "Chats" title used to take a whole
+        // extra row above the search field.
+        navigationItem.largeTitleDisplayMode = .never
     }
 
     /// Zalo-style top-right controls: a QR scan button and a "+" menu.
@@ -165,11 +168,6 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
         // Do any additional setup after loading the view, typically from a nib.
         setup()
 
-        // Tone the large title down a step: the default ~34pt reads louder than
-        // anything else on screen. 28pt keeps the hierarchy title > search > list.
-        navigationController?.navigationBar.largeTitleTextAttributes =
-            [.font: UIFont.systemFont(ofSize: 28, weight: .bold)]
-
         styleComposeButton()
 
         // Rows are separated by whitespace instead of hairlines — with only a
@@ -179,10 +177,11 @@ class ChatListViewController: UITableViewController, ChatListDisplayLogic {
         tableView.separatorStyle = .none
         tableView.rowHeight = ChatListViewController.kRowHeight
 
-        // WhatsApp-style search box under the "Chats" title. A slim
-        // UISearchTextField in the table header rather than a UISearchController:
-        // the system bar's height cannot be reduced, and it dwarfed the rows it
-        // was meant to search.
+        // Search box under the bar. A slim UISearchTextField in the table
+        // header rather than a UISearchController: the system bar's height
+        // cannot be reduced, and it dwarfed the rows it was meant to search.
+        // Being the table header, it scrolls away with the list (collapses)
+        // and comes back when the list is pulled down to the top.
         let headerHeight: CGFloat = 46
         let header = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: headerHeight))
         header.autoresizingMask = [.flexibleWidth]

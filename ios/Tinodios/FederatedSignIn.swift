@@ -236,14 +236,13 @@ final class FederatedSignIn: NSObject {
             }
             var creds: [Credential]?
             if !rawPhone.isEmpty {
-                guard let parsed = try? Utils.phoneNumberKit.parse(rawPhone) else {
-                    UiUtils.showToast(message: NSLocalizedString("That phone number is not valid.", comment: "Error"))
+                guard let e164 = Utils.normalizedPhone(rawPhone) else {
+                    UiUtils.showToast(message: Utils.kNotAPhoneNumberMessage)
                     self?.completeSignUp(idToken: idToken, firebaseUid: firebaseUid, suggestedName: suggestedName,
                                          name: name, phone: rawPhone)
                     return
                 }
-                creds = [Credential(meth: Credential.kMethPhone,
-                                    val: Utils.phoneNumberKit.format(parsed, toType: .e164))]
+                creds = [Credential(meth: Credential.kMethPhone, val: e164)]
             }
             self?.createAccount(idToken: idToken, firebaseUid: firebaseUid, name: name, creds: creds)
         })

@@ -14,6 +14,8 @@ class MessageView: UICollectionView {
 
     weak var cellDelegate: MessageCellDelegate?
     weak var foregroundView: UIView?
+    // Request note card, see showCenteredNote.
+    weak var centeredNote: UIView?
 
     // MARK: - Initializers
 
@@ -114,7 +116,11 @@ extension MessageView {
 
             self.backgroundView = messageLabel
              */
+            // A request note says it better; don't stack "No messages here" under it.
+            guard centeredNote == nil else { return }
             let host = UIHostingController(rootView: NoContentView(.messages))
+            // Clear, so the chat wallpaper stays visible in an empty chat.
+            host.view.backgroundColor = .clear
             self.backgroundView = host.view!
         } else {
             self.backgroundView = nil
@@ -176,6 +182,41 @@ extension MessageView {
         self.isUserInteractionEnabled = false
 
         self.foregroundView = blurEffectView
+    }
+
+    /// A small card in the middle of the chat (over the wallpaper, no blur),
+    /// e.g. for a chat request. Nil removes it.
+    public func showCenteredNote(_ text: String?) {
+        if let current = centeredNote, let label = current.subviews.first as? UILabel, label.text == text {
+            return
+        }
+        centeredNote?.removeFromSuperview()
+        guard let text = text else { return }
+        backgroundView = nil
+        let card = UIView()
+        card.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.92)
+        card.layer.cornerRadius = 14
+        card.translatesAutoresizingMaskIntoConstraints = false
+        let label = UILabel()
+        label.text = text
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        label.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        label.adjustsFontForContentSizeCategory = true
+        label.textColor = .label
+        label.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(label)
+        addSubview(card)
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: card.topAnchor, constant: 14),
+            label.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -14),
+            label.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
+            label.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
+            card.centerXAnchor.constraint(equalTo: frameLayoutGuide.centerXAnchor),
+            card.centerYAnchor.constraint(equalTo: frameLayoutGuide.centerYAnchor),
+            card.widthAnchor.constraint(lessThanOrEqualTo: frameLayoutGuide.widthAnchor, constant: -48),
+        ])
+        centeredNote = card
     }
 
     public func removeNoAccessOverlay() {

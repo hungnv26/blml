@@ -119,8 +119,8 @@ class AddFriendViewController: UITableViewController {
     }
 
     private func searchPhone() {
-        guard let phone = Utils.asPhone(phoneField.text ?? "") else {
-            UiUtils.showToast(message: NSLocalizedString("Enter a full phone number with country code, like +61…", comment: "Toast"))
+        guard let phone = Utils.normalizedPhone(phoneField.text ?? "") else {
+            UiUtils.showToast(message: Utils.kNotAPhoneNumberMessage)
             return
         }
         search(tag: Tinode.kTagPhone, value: phone)

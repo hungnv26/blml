@@ -23,23 +23,28 @@ enum PhoneNumberPrompt {
 
     /// Step 1: collect the number and send it.
     static func collect(from vc: UIViewController, me: DefaultMeTopic,
-                        title: String, message: String, onChange: @escaping () -> Void) {
+                        title: String, message: String, prefill: String? = nil,
+                        onChange: @escaping () -> Void) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addTextField { field in
+            field.text = prefill
             field.placeholder = NSLocalizedString("+61 412 345 678", comment: "Phone placeholder")
             field.keyboardType = .phonePad
             field.textContentType = .telephoneNumber
         }
         alert.addAction(UIAlertAction(title: NSLocalizedString("Not now", comment: "Alert action"), style: .cancel))
         alert.addAction(UIAlertAction(title: NSLocalizedString("Save", comment: "Alert action"), style: .default) { [weak vc] _ in
-            guard let vc = vc, let raw = alert.textFields?.first?.text else { return }
+            guard let vc = vc, let raw = alert.textFields?.first?.text,
+                  !raw.trimmingCharacters(in: .whitespaces).isEmpty else { return }
             // Normalize to E.164: numbers are stored and matched in that form.
-            // Numbers typed without a country code are read in the device's region.
-            var number = raw.trimmingCharacters(in: .whitespaces)
-            if let parsed = try? Utils.phoneNumberKit.parse(number) {
-                number = Utils.phoneNumberKit.format(parsed, toType: .e164)
+            // Spaces, dashes, brackets and local format ("0412 345 678", read in
+            // the device's region) are all fine. Only something that can't be a
+            // phone number is refused, and then the prompt comes back with why.
+            guard let number = Utils.normalizedPhone(raw) else {
+                collect(from: vc, me: me, title: title, message: Utils.kNotAPhoneNumberMessage,
+                        prefill: raw, onChange: onChange)
+                return
             }
-            guard !number.isEmpty else { return }
 
             me.setMeta(cred: Credential(meth: Credential.kMethPhone, val: number)).then(
                 onSuccess: { [weak vc] msg in

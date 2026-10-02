@@ -285,13 +285,16 @@ class UiUtils {
             image: UIImage(systemName: "bubble.left.and.bubble.right.fill"), tag: 0)
 
         let contactsVC = storyboard.instantiateViewController(withIdentifier: "Find")
-        let contactsNav = UINavigationController(rootViewController: contactsVC)
+        // Inline titles on all three roots, matching "Chats".
+        contactsVC.navigationItem.title = NSLocalizedString("Contacts", comment: "Tab title")
+        let contactsNav = MainNavigationController(rootViewController: contactsVC)
         contactsNav.tabBarItem = UITabBarItem(
             title: NSLocalizedString("Contacts", comment: "Tab title"),
             image: UIImage(systemName: "person.2.fill"), tag: 1)
 
         let settingsVC = storyboard.instantiateViewController(withIdentifier: "Account Settings")
-        let settingsNav = UINavigationController(rootViewController: settingsVC)
+        settingsVC.navigationItem.title = NSLocalizedString("Settings", comment: "Tab title")
+        let settingsNav = MainNavigationController(rootViewController: settingsVC)
         settingsNav.tabBarItem = UITabBarItem(
             title: NSLocalizedString("Settings", comment: "Tab title"),
             image: UIImage(systemName: "gearshape.fill"), tag: 2)

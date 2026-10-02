@@ -22,14 +22,10 @@ enum ValidatedCredential {
             predicateStr = "^([a-z0-9_\\.+-]+)@([\\da-z\\.-]+)\\.([a-z\\.]{2,6})$"
             currObject = str
         case let .phoneNum(str):
-            do {
-                let phoneNumber = try Utils.phoneNumberKit.parse(str, ignoreType: true)
-                self = .phoneNum(Utils.phoneNumberKit.format(phoneNumber, toType: .e164))
-                return true
-            } catch {
-                Cache.log.error("Failed to parse phone number credential: %@, error: %@", str, error.localizedDescription)
-            }
-            return false
+            // Spaces, brackets, local format and "possible" numbers are fine; sent as E.164.
+            guard let e164 = Utils.normalizedPhone(str) else { return false }
+            self = .phoneNum(e164)
+            return true
         case let .URL(str):
             predicateStr = "^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?$"
             currObject = str

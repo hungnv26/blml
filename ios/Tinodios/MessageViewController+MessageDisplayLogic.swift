@@ -230,7 +230,25 @@ extension MessageViewController: MessageDisplayLogic {
         // Make sure the view is visible.
         guard self.isViewLoaded && ((self.view?.window) != nil) else { return }
 
-        if !(self.topic?.isReader ?? false) || err != nil {
+        // 1:1 chat requests (server `p2p_requires_accept`): nobody can write
+        // until the recipient accepts.
+        let peerName = self.topic?.pub?.fn ?? NSLocalizedString("this person", comment: "Fallback for a name")
+        let incomingRequest = err == nil && (self.topic?.isPendingIncomingRequest ?? false)
+        let outgoingRequest = err == nil && !incomingRequest && (self.topic?.isPendingOutgoingRequest ?? false)
+        if incomingRequest {
+            self.sendMessageBar.showRequestOverlay(.incoming(name: peerName))
+            self.collectionView.showCenteredNote(String(format: NSLocalizedString(
+                "%@ wants to chat with you.\nAccept to start chatting. If you decline, they won't be told.",
+                comment: "Chat request: recipient's note"), peerName))
+        } else if outgoingRequest {
+            self.sendMessageBar.showRequestOverlay(.outgoing(name: peerName))
+            self.collectionView.showCenteredNote(nil)
+        } else {
+            self.sendMessageBar.showRequestOverlay(.none)
+            self.collectionView.showCenteredNote(nil)
+        }
+
+        if (!(self.topic?.isReader ?? false) || err != nil) && !incomingRequest {
             self.collectionView.showNoAccessOverlay(withMessage: err?.localizedDescription)
         } else {
             self.collectionView.removeNoAccessOverlay()
@@ -242,19 +260,22 @@ extension MessageViewController: MessageDisplayLogic {
 
         let publishingForbidden = !(self.topic?.isWriter ?? false) || err != nil || blockedByMe
         // No "W" permission. Replace input field with a message "Not available".
-        // The blocked overlay must stay tappable, so it replaces this one.
-        self.sendMessageBar.toggleNotAvailableOverlay(visible: publishingForbidden && !blockedByMe)
+        // The blocked and request overlays must stay tappable / readable, so they replace this one.
+        self.sendMessageBar.toggleNotAvailableOverlay(visible: publishingForbidden && !blockedByMe && !incomingRequest && !outgoingRequest)
         if publishingForbidden {
             // Dismiss all pending messages.
             self.togglePreviewBar(with: nil)
             self.interactor?.dismissPendingMessage()
         }
         // The peer is missing either "W" or "R" permissions. Show "Peer's messaging is disabled" message.
-        if let acs = self.topic?.peer?.acs, let missing = acs.missing {
+        // (Not for a request: the peer simply hasn't answered yet.)
+        if incomingRequest || outgoingRequest {
+            self.sendMessageBar.togglePeerMessagingDisabled(visible: false)
+        } else if let acs = self.topic?.peer?.acs, let missing = acs.missing {
             self.sendMessageBar.togglePeerMessagingDisabled(visible: acs.isJoiner(for: .want) && (missing.isReader || missing.isWriter))
         }
-        // We are offered to join a chat.
-        if let acs = self.topic?.accessMode, acs.isJoiner(for: Acs.Side.given) && (acs.excessive?.description.contains("RW") ?? false) {
+        // We are offered to join a chat (groups; 1:1 requests use the panel above).
+        if !incomingRequest, let acs = self.topic?.accessMode, acs.isJoiner(for: Acs.Side.given) && (acs.excessive?.description.contains("RW") ?? false) {
             self.showInvitationDialog()
         }
     }

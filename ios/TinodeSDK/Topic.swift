@@ -424,6 +424,22 @@ open class Topic<DP: Codable & Mergeable, DR: Codable & Mergeable, SP: Codable, 
         guard let want = description.acs?.want, want.isDefined else { return false }
         return !want.isJoiner
     }
+    /// 1:1 chat request waiting for MY answer (server `p2p_requires_accept`):
+    /// the server created my side with want "JA" (no R, no W) while the
+    /// requester gave me J+W. Accept = set own want with W.
+    public var isPendingIncomingRequest: Bool {
+        guard self.topicType == .p2p, let want = description.acs?.want, let given = description.acs?.given,
+              want.isDefined, given.isDefined else { return false }
+        return want.isJoiner && !want.isReader && !want.isWriter && given.isJoiner
+    }
+    /// 1:1 chat request I sent that the other person hasn't accepted yet: my want
+    /// has W, my given lacks it (the server sets "JRA" until they accept).
+    /// A declined request looks exactly the same, by design.
+    public var isPendingOutgoingRequest: Bool {
+        guard self.topicType == .p2p, let want = description.acs?.want, let given = description.acs?.given,
+              want.isDefined, given.isDefined else { return false }
+        return want.isWriter && !given.isWriter && given.isJoiner
+    }
     public var isDeleter: Bool {
         return description.acs?.isDeleter ?? false
     }

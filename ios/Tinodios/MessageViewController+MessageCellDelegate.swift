@@ -5,6 +5,7 @@
 //  Copyright © 2022-2025 Tinode LLC. All rights reserved.
 //
 
+import AVFoundation
 import MobileVLCKit
 import UIKit
 import TinodeSDK
@@ -499,8 +500,9 @@ extension MessageViewController: MessageCellDelegate {
         cell.audioSeekTo(seekTo, url: ref, data: bits, duration: duration, key: key!)
     }
 
+    /// Opens a received picture in the full-screen viewer (black, zoomable,
+    /// swipe down to close, close + share only).
     private func showImagePreview(in cell: MessageCell, draftyEntityKey: Int?) {
-        // TODO: maybe pass nil to show "broken image" preview instead of returning.
         guard let index = messageSeqIdIndex[cell.seqId], let draftyKey = draftyEntityKey else { return }
         let msg = messages[index]
         guard let entity = msg.content?.entities?[draftyKey] else { return }
@@ -509,20 +511,27 @@ extension MessageViewController: MessageCellDelegate {
         // Need to have at least one.
         guard bits != nil || ref != nil else { return }
 
-        let content = ImagePreviewContent(
-            imgContent: ImagePreviewContent.ImageContent.rawdata(bits, ref),
-            caption: nil,
-            fileName: entity.data?["name"]?.asString(),
-            contentType: entity.data?["mime"]?.asString(),
-            size: entity.data?["size"]?.asInt64() ?? Int64(bits?.count ?? 0),
-            width: entity.data?["width"]?.asInt(),
-            height: entity.data?["height"]?.asInt(),
-            pendingMessagePreview: nil)
-        performSegue(withIdentifier: "ShowImagePreview", sender: content)
+        // The bubble's picture shows at once while the full one loads.
+        let placeholder = cell.content.attachment(ofType: "image", key: draftyKey)?.attachment.image
+        let viewer = ImageViewerController(bits: bits, ref: ref, placeholder: placeholder)
+        viewer.onDismiss = { [weak self] in
+            _ = self?.becomeFirstResponder()
+        }
+        hideComposerForPresentation()
+        present(viewer, animated: true)
     }
 
+    /// The composer is this screen's input accessory view and is drawn above
+    /// anything presented on top; hide it before a full-screen viewer appears.
+    func hideComposerForPresentation() {
+        stopInlineVideo()
+        view.endEditing(true)
+        _ = resignFirstResponder()
+    }
+
+    /// Tap on a video: plays it in place in the bubble (muted, with sound and
+    /// full-screen buttons); a second tap pauses / resumes.
     private func showVideoPreview(in cell: MessageCell, draftyEntityKey: Int?) {
-        // TODO: maybe pass nil to show "broken image" preview instead of returning.
         guard let index = messageSeqIdIndex[cell.seqId], let draftyKey = draftyEntityKey else { return }
         let msg = messages[index]
         guard let entity = msg.content?.entities?[draftyKey] else { return }
@@ -531,8 +540,58 @@ extension MessageViewController: MessageCellDelegate {
         // Need to have either bits or ref.
         guard bits != nil || ref != nil else { return }
 
+        if let current = inlineVideo, current.seqId == cell.seqId, current.entityKey == draftyKey, current.superview != nil {
+            current.togglePlayPause()
+            return
+        }
+        stopInlineVideo()
+        guard let url = VideoSourceResolver.playableURL(bits: bits, ref: ref, mime: entity.data?["mime"]?.asString()) else {
+            UiUtils.showToast(message: NSLocalizedString("This video can't be played.", comment: "Toast"))
+            return
+        }
+        guard let (_, frame) = cell.content.attachment(ofType: "video", key: draftyKey), frame.width > 40, frame.height > 40 else {
+            // No room in the bubble: straight to full screen.
+            hideComposerForPresentation()
+            FullScreenVideo.present(url: url, from: self)
+            return
+        }
+        if let audio = currentAudioPlayer, audio.isPlaying {
+            audio.pause()
+        }
+        let player = InlineVideoPlayerView(url: url, seqId: cell.seqId, entityKey: draftyKey)
+        player.delegate = self
+        player.frame = frame
+        cell.content.addSubview(player)
+        inlineVideo = player
+        player.play()
+    }
+
+    /// Puts the playing video back on its message after the cell was reloaded or reused.
+    func reattachInlineVideo(to cell: MessageCell) {
+        guard let player = inlineVideo, player.seqId == cell.seqId else { return }
+        cell.content.layoutManager.ensureLayout(for: cell.content.textContainer)
+        guard let (_, frame) = cell.content.attachment(ofType: "video", key: player.entityKey) else {
+            stopInlineVideo()
+            return
+        }
+        player.frame = frame
+        if player.superview !== cell.content {
+            player.removeFromSuperview()
+            cell.content.addSubview(player)
+        }
+    }
+
+    func stopInlineVideo() {
+        inlineVideo?.stop()
+        inlineVideo?.removeFromSuperview()
+        inlineVideo = nil
+    }
+
+    /// The old VLC-based screen, for formats AVPlayer can't play (e.g. WebM).
+    private func showLegacyVideoPlayer(seq: Int, key: Int) {
+        guard let index = messageSeqIdIndex[seq], let entity = messages[index].content?.entities?[key] else { return }
         let content = VideoPreviewContent(
-            videoSrc: .remote(bits, ref),
+            videoSrc: .remote(entity.data?["val"]?.asData(), entity.data?["ref"]?.asString()),
             duration: entity.data?["duration"]?.asInt() ?? 0,
             fileName: entity.data?["name"]?.asString(),
             contentType: entity.data?["mime"]?.asString(),
@@ -542,7 +601,6 @@ extension MessageViewController: MessageCellDelegate {
             caption: nil,
             pendingMessagePreview: nil
         )
-
         performSegue(withIdentifier: "ShowVideoPreview", sender: content)
     }
 
@@ -576,5 +634,26 @@ extension MessageViewController: PinnedMessagesDelegate {
     /// Tap on the message.
     func didTapMessage(seq: Int) {
         scrollToAndAnimate(seqId: seq)
+    }
+}
+
+extension MessageViewController: InlineVideoPlayerViewDelegate {
+    func inlineVideoWantsFullScreen(_ view: InlineVideoPlayerView, url: URL, at time: CMTime) {
+        hideComposerForPresentation()
+        FullScreenVideo.present(url: url, from: self, startAt: time)
+    }
+
+    func inlineVideoDidFinish(_ view: InlineVideoPlayerView) {
+        if inlineVideo === view {
+            stopInlineVideo()
+        }
+    }
+
+    func inlineVideoFailed(_ view: InlineVideoPlayerView) {
+        let seq = view.seqId, key = view.entityKey
+        if inlineVideo === view {
+            stopInlineVideo()
+        }
+        showLegacyVideoPlayer(seq: seq, key: key)
     }
 }

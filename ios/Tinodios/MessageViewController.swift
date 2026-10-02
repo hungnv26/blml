@@ -287,6 +287,9 @@ class MessageViewController: UIViewController {
     // Currently playing or paused media player.
     internal var currentAudioPlayer: VLCMediaPlayer?
 
+    // Video playing in place inside its bubble (at most one).
+    internal var inlineVideo: InlineVideoPlayerView?
+
     // Max inband attachment/entity size.
     private var maxInbandSize: Int64 {
         // Attachment size less base64 expansion and overhead.
@@ -502,6 +505,11 @@ class MessageViewController: UIViewController {
         }
     }
 
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopInlineVideo()
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
@@ -510,6 +518,11 @@ class MessageViewController: UIViewController {
         if case let .forwarded(_, _, fwdPreview) = self.interactor?.pendingMessage {
             self.isForwardingMessage = true
             self.showInPreviewBar(content: fwdPreview, forwarded: true)
+        }
+        // Back from a full-screen player or viewer: bring the composer back
+        // (it was hidden while the media covered the chat).
+        if presentedViewController == nil && !isFirstResponder && !sendMessageBar.inputField.isFirstResponder {
+            _ = becomeFirstResponder()
         }
         self.interactor?.attachToTopic(interactively: true)
         self.interactor?.loadMessagesFromCache(scrollToMostRecentMessage: false)
@@ -858,6 +871,9 @@ extension MessageViewController: UICollectionViewDataSource {
 
         // Draw the bubble
         bubbleDecorator(for: message, at: indexPath)(cell.containerView)
+
+        // A video playing in place survives the cell being reloaded or reused.
+        reattachInlineVideo(to: cell)
 
         return cell
     }
@@ -1350,6 +1366,16 @@ extension MessageViewController: UICollectionViewDelegate {
             UIView.transition(with: self.goToLatestButton, duration: 0.4, options: .transitionCrossDissolve, animations: {
                 self.goToLatestButton.isHidden = isHidden
             }, completion: nil)
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard let player = inlineVideo, (cell as? MessageCell)?.seqId == player.seqId else { return }
+        // A reload hands the player to the new cell in cellForItem; only a video
+        // that really scrolled out of sight is stopped.
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, let current = self.inlineVideo, current === player, current.window == nil else { return }
+            self.stopInlineVideo()
         }
     }
 

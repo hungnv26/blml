@@ -21,6 +21,10 @@
 		0A35BA9E22836CCF00AA5E2F /* ContactsSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A35BA9D22836CCF00AA5E2F /* ContactsSynchronizer.swift */; };
 		B0C0A5E2260100020079A97E /* ContactsConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C0A5E1260100010079A97E /* ContactsConsent.swift */; };
 		B0C0A5E4260100040079A97E /* PhoneNumberPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C0A5E3260100030079A97E /* PhoneNumberPrompt.swift */; };
+		B263FC4DB139C21A5F8760D8 /* InlineVideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B163FC4DB139C21A5F8760D8 /* InlineVideoPlayerView.swift */; };
+		B28F29CCBC4206D7658FF01A /* MediaViewerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18F29CCBC4206D7658FF01A /* MediaViewerController.swift */; };
+		B2A6530D1603C5966D0BCCBE /* MainNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A6530D1603C5966D0BCCBE /* MainNavigationController.swift */; };
+		B214785FCA60AE76DBE31390 /* PhoneNumbers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B114785FCA60AE76DBE31390 /* PhoneNumbers.swift */; };
 		B0C0A5E6260100060079A97E /* FederatedSignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C0A5E5260100050079A97E /* FederatedSignIn.swift */; };
 		0A35BAA02283A37500AA5E2F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A35BA9F2283A37500AA5E2F /* Utils.swift */; };
 		B0AA5C34260000340079A97E /* WallpaperViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AA5C18260000180079A97E /* WallpaperViewController.swift */; };
@@ -217,6 +221,10 @@
 		0A35BA9D22836CCF00AA5E2F /* ContactsSynchronizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsSynchronizer.swift; sourceTree = "<group>"; };
 		B0C0A5E1260100010079A97E /* ContactsConsent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsConsent.swift; sourceTree = "<group>"; };
 		B0C0A5E3260100030079A97E /* PhoneNumberPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneNumberPrompt.swift; sourceTree = "<group>"; };
+		B163FC4DB139C21A5F8760D8 /* InlineVideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineVideoPlayerView.swift; sourceTree = "<group>"; };
+		B18F29CCBC4206D7658FF01A /* MediaViewerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViewerController.swift; sourceTree = "<group>"; };
+		B1A6530D1603C5966D0BCCBE /* MainNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainNavigationController.swift; sourceTree = "<group>"; };
+		B114785FCA60AE76DBE31390 /* PhoneNumbers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneNumbers.swift; sourceTree = "<group>"; };
 		B0C0A5E5260100050079A97E /* FederatedSignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FederatedSignIn.swift; sourceTree = "<group>"; };
 		0A35BA9F2283A37500AA5E2F /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		B0AA5CF2260000F20079A97E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B0AA5CF1260000F10079A97E /* PrivacyInfo.xcprivacy */; };
@@ -482,6 +490,10 @@
 				0ACB5F0F22097665008FE740 /* ChatListRouter.swift */,
 				B0C0A5E5260100050079A97E /* FederatedSignIn.swift */,
 				B0C0A5E3260100030079A97E /* PhoneNumberPrompt.swift */,
+				B163FC4DB139C21A5F8760D8 /* InlineVideoPlayerView.swift */,
+				B18F29CCBC4206D7658FF01A /* MediaViewerController.swift */,
+				B1A6530D1603C5966D0BCCBE /* MainNavigationController.swift */,
+				B114785FCA60AE76DBE31390 /* PhoneNumbers.swift */,
 				0A0380D921B3CC8100A3FA0E /* ChatListViewController.swift */,
 				0A8EA5AF29838E5900B116EA /* CredentialsChangeViewController.swift */,
 				7DDADC5321D5C2E6009733B5 /* CredentialsViewController.swift */,
@@ -1050,6 +1062,10 @@
 				0A35BA9E22836CCF00AA5E2F /* ContactsSynchronizer.swift in Sources */,
 				B0C0A5E2260100020079A97E /* ContactsConsent.swift in Sources */,
 				B0C0A5E4260100040079A97E /* PhoneNumberPrompt.swift in Sources */,
+				B263FC4DB139C21A5F8760D8 /* InlineVideoPlayerView.swift in Sources */,
+				B28F29CCBC4206D7658FF01A /* MediaViewerController.swift in Sources */,
+				B2A6530D1603C5966D0BCCBE /* MainNavigationController.swift in Sources */,
+				B214785FCA60AE76DBE31390 /* PhoneNumbers.swift in Sources */,
 				B0C0A5E6260100060079A97E /* FederatedSignIn.swift in Sources */,
 				0A0D92D72840EFEF00B5B5B0 /* CallProviderDelegate.swift in Sources */,
 				B03066432805F2AA00497EF4 /* EntityTextAttachment.swift in Sources */,

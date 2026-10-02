@@ -30,6 +30,8 @@ public class Description<DP: Codable & Mergeable, DR: Codable & Mergeable>: Desc
     var getClear: Int { return clear ?? 0 }
 
     var pub: DP?
+    /// Read-only access to `public` for code outside the SDK.
+    public var publicData: DP? { return pub }
     var priv: DR?
     var trusted: TrustedType?
 

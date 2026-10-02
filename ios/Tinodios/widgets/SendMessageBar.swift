@@ -31,10 +31,24 @@ protocol SendMessageBarDelegate: AnyObject {
     func sendMessageBar(textChangedTo text: String)
     func sendMessageBar(enablePeersMessaging: Bool)
     func sendMessageBarUnblock()
+    /// Accept / Decline / Block on an incoming 1:1 chat request.
+    func sendMessageBar(requestAction: SendMessageBar.RequestAction)
     func sendMessageBar(recordAudio: AudioBarAction)
 }
 
 class SendMessageBar: UIView {
+    /// What replaces the composer in a 1:1 chat that is still a request.
+    enum RequestState: Equatable {
+        case none
+        /// I asked; waiting for `name` to accept.
+        case outgoing(name: String)
+        /// `name` asked me: Accept / Decline / Block.
+        case incoming(name: String)
+    }
+    enum RequestAction {
+        case accept, decline, block
+    }
+
     enum AudioBarState {
         case longInitial // Initial locked state: recording audio.
         case longPlayback // Locked state: playing back the recording
@@ -533,6 +547,89 @@ class SendMessageBar: UIView {
             inputField.resignFirstResponder()
         }
         blockedView.isHidden = !visible
+    }
+
+    // MARK: - Chat requests
+
+    private var requestView: UIView?
+    private(set) var requestState: RequestState = .none
+
+    /// Replaces the composer while a 1:1 chat is a request: "Request sent…" for
+    /// the requester, Accept / Decline / Block for the recipient.
+    func showRequestOverlay(_ state: RequestState) {
+        guard state != requestState else { return }
+        requestState = state
+        requestView?.removeFromSuperview()
+        requestView = nil
+        guard state != .none else { return }
+
+        let accent = UIColor(fromHexCode: 0xff00a884)
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.backgroundColor = self.backgroundColor ?? .systemBackground
+
+        let content: UIView
+        switch state {
+        case .outgoing(let name):
+            let icon = UIImageView(image: UIImage(systemName: "clock",
+                                                  withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)))
+            icon.tintColor = .secondaryLabel
+            icon.setContentHuggingPriority(.required, for: .horizontal)
+            let label = UILabel()
+            label.text = String(format: NSLocalizedString("Request sent — you can chat once %@ accepts.",
+                                                          comment: "Shown instead of the composer while a chat request is pending"), name)
+            label.font = UIFont.preferredFont(forTextStyle: .subheadline)
+            label.adjustsFontForContentSizeCategory = true
+            label.textColor = .secondaryLabel
+            label.numberOfLines = 2
+            let stack = UIStackView(arrangedSubviews: [icon, label])
+            stack.spacing = 8
+            stack.alignment = .center
+            content = stack
+        case .incoming:
+            func button(_ title: String, color: UIColor, filled: Bool, action: RequestAction) -> UIButton {
+                let b = UIButton(type: .system)
+                b.setTitle(title, for: .normal)
+                b.titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
+                b.titleLabel?.adjustsFontForContentSizeCategory = true
+                b.setTitleColor(filled ? .white : color, for: .normal)
+                b.backgroundColor = filled ? color : color.withAlphaComponent(0.12)
+                b.layer.cornerRadius = 18
+                b.contentEdgeInsets = UIEdgeInsets(top: 6, left: 14, bottom: 6, right: 14)
+                b.heightAnchor.constraint(equalToConstant: 36).isActive = true
+                b.addAction(UIAction { [weak self] _ in self?.delegate?.sendMessageBar(requestAction: action) }, for: .touchUpInside)
+                return b
+            }
+            let stack = UIStackView(arrangedSubviews: [
+                button(NSLocalizedString("Accept", comment: "Chat request: accept"), color: accent, filled: true, action: .accept),
+                button(NSLocalizedString("Decline", comment: "Chat request: decline"), color: .secondaryLabel, filled: false, action: .decline),
+                button(NSLocalizedString("Block", comment: "Chat request: block"), color: .systemRed, filled: false, action: .block)
+            ])
+            stack.spacing = 10
+            stack.distribution = .fillEqually
+            content = stack
+        case .none:
+            return
+        }
+        content.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(content)
+        addSubview(container)
+        NSLayoutConstraint.activate([
+            container.topAnchor.constraint(equalTo: topAnchor),
+            container.bottomAnchor.constraint(equalTo: bottomAnchor),
+            container.leadingAnchor.constraint(equalTo: leadingAnchor),
+            container.trailingAnchor.constraint(equalTo: trailingAnchor),
+            content.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            content.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: 16),
+            content.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -16),
+            content.centerYAnchor.constraint(equalTo: container.topAnchor, constant: 30),
+        ])
+        if case .incoming = state {
+            content.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16).isActive = true
+        }
+        bringSubviewToFront(container)
+        inputField.resignFirstResponder()
+        requestView = container
     }
 
     public func togglePeerMessagingDisabled(visible: Bool) {

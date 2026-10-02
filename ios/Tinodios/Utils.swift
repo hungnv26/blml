@@ -162,9 +162,7 @@ public class Utils {
         return UIGraphicsGetImageFromCurrentImageContext()!
     }
 
-    private static let kTelRegex = try! NSRegularExpression(pattern: #"^(?:\+?(\d{1,3}))?[- (.]*(\d{3})[- ).]*(\d{3})[- .]*(\d{2})[- .]*(\d{2})?$"#)
-    private static let kTelCharsRegex = try! NSRegularExpression(pattern: #"^\+?[0-9][0-9 ().-]{7,}$"#)
-    private static let kTelReplacementRegex = try! NSRegularExpression(pattern: "[- ().]*")
+    private static let kTelCharsRegex = try! NSRegularExpression(pattern: #"^\+?[0-9(][0-9 ().\-/]{7,}$"#)
     /// Checks (loosely) if the given string is a phone. If so, returns the phone number in a format
     /// as close to E.164 as possible.
     public static func asPhone(_ val: String) -> String? {
@@ -173,12 +171,11 @@ public class Utils {
         // device's region and returned in E.164 ("+61491570104"): that is how phone numbers are
         // stored on accounts, so a local-format number used to find nobody. Same as the address
         // book upload (CNPhoneNumber.e164).
+        // Possible-but-not-valid numbers count too (see PhoneNumbers.swift); the
+        // character test keeps short numeric aliases from being read as phones.
         if kTelCharsRegex.firstMatch(in: val, options: [], range: NSRange(location: 0, length: val.utf16.count)) != nil,
-           let parsed = try? phoneNumberKit.parse(val, withRegion: PhoneNumberUtility.defaultRegionCode(), ignoreType: true) {
-            return phoneNumberKit.format(parsed, toType: .e164)
-        }
-        if kTelRegex.firstMatch(in: val, options: [], range: NSRange(location: 0, length: val.utf16.count)) != nil {
-            return kTelReplacementRegex.stringByReplacingMatches(in: val, range: NSRange(location: 0, length: val.utf16.count), withTemplate: "")
+           let e164 = normalizedPhone(val) {
+            return e164
         }
         return nil
     }

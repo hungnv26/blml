@@ -119,6 +119,10 @@ class VideoPreviewController: UIViewController {
             //imageDetailsPanel.bounds = CGRect()
             break
         case .remote(let bits, let ref):
+            // Watching a received video (fallback player for formats AVPlayer
+            // can't play): no title, no file details, black like a player.
+            navigationItem.title = ""
+            fileNameLabel.superview?.superview?.isHidden = true
             if let ref = ref, let tinodeUrl = URL(string: ref, relativeTo: Cache.tinode.baseURL(useWebsocketProtocol: false)) {
                 url = Cache.tinode.addAuthQueryParams(tinodeUrl)
             } else if let bits = bits, !bits.isEmpty {
@@ -203,7 +207,9 @@ class VideoPreviewController: UIViewController {
     }
 
     private func setInterfaceColors() {
-        if traitCollection.userInterfaceStyle == .dark {
+        if case .remote = previewContent?.videoSrc {
+            self.view.backgroundColor = .black
+        } else if traitCollection.userInterfaceStyle == .dark {
             self.view.backgroundColor = .black
         } else {
             self.view.backgroundColor = .white

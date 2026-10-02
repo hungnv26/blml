@@ -153,6 +153,19 @@ class ChatListViewCell: UITableViewCell {
                 topic.comment
             setMessageStatusVisibility(hidden: true)
         }
+        // 1:1 chat requests: say so instead of a (non-existent) last message.
+        if topic.isPendingIncomingRequest {
+            subtitle.attributedText = NSAttributedString(
+                string: NSLocalizedString("Chat request · wants to chat with you", comment: "Chat list: incoming chat request"),
+                attributes: [.foregroundColor: UIColor(fromHexCode: 0xff00a884),
+                             .font: UIFont.systemFont(ofSize: subtitle.font.pointSize, weight: .semibold)])
+            setMessageStatusVisibility(hidden: true)
+        } else if topic.isPendingOutgoingRequest && topic.latestMessage == nil {
+            subtitle.attributedText = NSAttributedString(
+                string: NSLocalizedString("Request sent · Waiting to be accepted", comment: "Chat list: outgoing chat request"),
+                attributes: [.foregroundColor: UIColor.secondaryLabel])
+            setMessageStatusVisibility(hidden: true)
+        }
         subtitle.sizeToFit()
         if topic.isChannel {
             channelIndicator.isHidden = false
@@ -201,7 +214,8 @@ class ChatListViewCell: UITableViewCell {
         iconBlocked.isHidden = !topic.isJoiner
         iconBlockedWidth.constant = topic.isJoiner ? .leastNonzeroMagnitude : ChatListViewCell.kIconWidth + ChatListViewCell.kIconSeparator * 2
 
-        iconMuted.isHidden = topic.isSlfType || !topic.isMuted
+        // A pending request has no P yet; that isn't the user muting it.
+        iconMuted.isHidden = topic.isSlfType || !topic.isMuted || topic.isPendingIncomingRequest
 
         // Avatar image
         icon.set(pub: topic.pub, id: topic.name, online: (topic.isChannel || topic.isSlfType) ? nil : topic.online, deleted: topic.deleted)

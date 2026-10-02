@@ -415,6 +415,22 @@ public class SharedUtils {
         return .failed
     }
 
+    /// Display name of a user we have nothing cached for (e.g. a stranger's chat
+    /// request), read straight from the server's {meta desc} reply: an unknown
+    /// topic's desc is not persisted, so fetchDesc alone can't name it.
+    public static func fetchPublicName(using tinode: Tinode, for topicName: String) -> String? {
+        guard tinode.isConnectionAuthenticated || SharedUtils.connectAndLoginSync(using: tinode, inBackground: true) else {
+            return nil
+        }
+        do {
+            let msg = try tinode.getMeta(topic: topicName, query: MsgGetMeta.desc()).getResult()
+            return (msg?.meta?.desc as? DefaultDescription)?.publicData?.fn
+        } catch {
+            BaseDb.log.error("Failed to fetch the name for [%@]: %@", topicName, error.localizedDescription)
+        }
+        return nil
+    }
+
     // Synchronously connects to topic |topicName| and fetches its messages
     // if the last received message was prior to |seq|.
     @discardableResult

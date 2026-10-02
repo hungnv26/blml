@@ -256,6 +256,27 @@ extension MessageViewController: SendMessageBarDelegate {
         interactor?.unblockTopic()
     }
 
+    func sendMessageBar(requestAction: SendMessageBar.RequestAction) {
+        switch requestAction {
+        case .accept:
+            interactor?.acceptInvitation()
+        case .decline:
+            // Contract: delete my side of the request. The requester is not told.
+            interactor?.ignoreInvitation()
+        case .block:
+            let name = topic?.pub?.fn ?? NSLocalizedString("this person", comment: "Fallback for a name")
+            let alert = UIAlertController(
+                title: String(format: NSLocalizedString("Block %@?", comment: "Alert title"), name),
+                message: NSLocalizedString("They won't be able to message you. You can unblock them in Settings › Account and Security › Blocked contacts.", comment: "Block from a chat request"),
+                preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "Alert action"), style: .cancel))
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Block", comment: "Alert action"), style: .destructive) { [weak self] _ in
+                self?.interactor?.blockTopic()
+            })
+            present(alert, animated: true)
+        }
+    }
+
     func sendMessageBar(recordAudio action: AudioBarAction) {
         switch action {
         case .start:

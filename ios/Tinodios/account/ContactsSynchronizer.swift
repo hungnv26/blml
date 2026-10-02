@@ -209,9 +209,8 @@ extension CNPhoneNumber {
     /// device's region — which is what the person saving them meant. Android
     /// already does the same using the SIM country.
     var e164: String {
-        if let parsed = try? Utils.phoneNumberKit.parse(
-            self.stringValue, withRegion: PhoneNumberUtility.defaultRegionCode(), ignoreType: true) {
-            return Utils.phoneNumberKit.format(parsed, toType: .e164)
+        if let e164 = Utils.normalizedPhone(self.stringValue) {
+            return e164
         }
         // Not a number PhoneNumberKit understands: send the digits as before
         // rather than dropping the contact.

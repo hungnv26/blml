@@ -58,6 +58,7 @@ class NotificationService: UNNotificationServiceExtension {
             switch topicType {
             case .p2p:
                 var user = store.userGet(uid: from) as? DefaultUser
+                var fetchedName: String?
                 if user == nil {
                     // If we don't have the user info, fetch it from the server.
                     let tinode = SharedUtils.createTinode()
@@ -69,12 +70,16 @@ class NotificationService: UNNotificationServiceExtension {
                     } else {
                         self.log.info("No new desc data fetched for %@.", from)
                     }
+                    if user == nil && store.topicGet(from: nil, withName: topicName) == nil {
+                        // A stranger (typically a chat request): nothing cached to name them by.
+                        fetchedName = SharedUtils.fetchPublicName(using: tinode, for: from)
+                    }
                     tinode.disconnect()
                 }
                 // In a p2p chat the topic is named after the peer, so a cached topic carries the name too
                 // (the user row may be missing while the topic is known, and then nothing is fetched).
                 let topic = user == nil ? store.topicGet(from: nil, withName: topicName) as? DefaultComTopic : nil
-                senderName = user?.pub?.fn ?? topic?.pub?.fn ?? NSLocalizedString("Unknown", comment: "Placeholder for missing user name")
+                senderName = user?.pub?.fn ?? topic?.pub?.fn ?? fetchedName ?? NSLocalizedString("Unknown", comment: "Placeholder for missing user name")
                 break
             case .grp:
                 let topic = store.topicGet(from: nil, withName: topicName) as? DefaultComTopic
@@ -90,8 +95,16 @@ class NotificationService: UNNotificationServiceExtension {
                     bestAttemptContent.body = senderName + ": " + bestAttemptContent.body
                 }
             } else if action == "sub" {
-                bestAttemptContent.title = NSLocalizedString("New chat", comment: "Push notification title")
-                bestAttemptContent.body = senderName
+                // 1:1 chat request (server p2p_requires_accept): my side was created with
+                // want "JA" — no R/W until I accept. Say what it is and what to do.
+                let modeWant = payload["modeWant"] as? String ?? ""
+                if topicType == .p2p && modeWant.contains("J") && !modeWant.contains("W") && !modeWant.contains("R") {
+                    bestAttemptContent.title = String(format: NSLocalizedString("%@ wants to chat with you", comment: "Push title: incoming chat request"), senderName)
+                    bestAttemptContent.body = NSLocalizedString("Open BLML to accept or decline the request.", comment: "Push body: incoming chat request")
+                } else {
+                    bestAttemptContent.title = NSLocalizedString("New chat", comment: "Push notification title")
+                    bestAttemptContent.body = senderName
+                }
             }
         } else {
             self.contentHandler!(request.content)

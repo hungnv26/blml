@@ -132,11 +132,13 @@ class CredentialsChangeViewController: UITableViewController {
             }
             return cred
         case Credential.kMethPhone:
-            guard newTelField.isValidNumber else {
+            // Any plausible number (spaces, local format, "possible" numbers), sent as E.164.
+            guard let e164 = Utils.normalizedPhone(newTelField.text ?? "") else {
                 newTelField.markAsError()
+                UiUtils.showToast(message: Utils.kNotAPhoneNumberMessage)
                 return nil
             }
-            return newTelField.utility.format(newTelField.phoneNumber!, toType: .e164)
+            return e164
         default:
             Cache.log.error("Unknown cred method: %@", method)
             return nil

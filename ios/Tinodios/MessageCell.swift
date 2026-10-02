@@ -193,6 +193,9 @@ class MessageCell: UICollectionViewCell {
 
         audioPlayer?.stop()
         audioPlayer = nil
+        // A video playing in place belongs to the message, not to this recycled
+        // cell: detach it (the chat re-attaches it to the message's new cell).
+        content.subviews.filter { $0 is InlineVideoPlayerView }.forEach { $0.removeFromSuperview() }
         seqId = 0
         mediaEntityKey = nil
 
@@ -243,6 +246,8 @@ class MessageCell: UICollectionViewCell {
         switch true {
         case progressView.cancelButton.frame.contains(convert(touchLocation, to: progressView)):
             delegate?.didTapCancelUpload(in: self)
+        case inlineVideoHandledTap(at: touchLocation):
+            break
         case content.frame.contains(convert(touchLocation, to: containerView)):
             let url = content.getURLForTap(convert(touchLocation, to: content))
             delegate?.didTapContent(in: self, url: url)
@@ -254,6 +259,16 @@ class MessageCell: UICollectionViewCell {
             delegate?.didTapOutsideContent(in: self)
             break
         }
+    }
+
+    /// The bubble doesn't take touches itself (taps are routed by hand from the
+    /// chat's gesture recognizer), so a video playing in place gets its taps here.
+    private func inlineVideoHandledTap(at location: CGPoint) -> Bool {
+        guard let player = content.subviews.first(where: { $0 is InlineVideoPlayerView }) as? InlineVideoPlayerView else { return false }
+        let point = convert(location, to: player)
+        guard player.bounds.contains(point) else { return false }
+        player.handleTap(at: point)
+        return true
     }
 
     @objc func cancelUploadClicked(sender: UIButton!) {

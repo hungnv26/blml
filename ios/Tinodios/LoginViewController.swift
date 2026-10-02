@@ -13,6 +13,15 @@ import TinodeSDK
 import TinodiosDB
 
 class LoginViewController: UIViewController {
+    /// "Configure Connection" (QR / server address) exists for development and
+    /// QA only. BLML talks to one server, chat.blml.app, so Release builds don't
+    /// offer it. QA Debug builds still get it, and pick their host at build time
+    /// with `xcodebuild HOST_NAME=… USE_TLS=…` as before.
+    #if DEBUG
+    static let kAllowServerConfig = true
+    #else
+    static let kAllowServerConfig = false
+    #endif
 
     @IBOutlet weak var userNameTextEdit: UITextField!
     @IBOutlet weak var passwordTextEdit: UITextField!
@@ -50,7 +59,7 @@ class LoginViewController: UIViewController {
             self.configureConnectionButton.isHidden = true
         } else {
             // Branding is not configured. Show "Configure connection" button, hide "Powered by" view.
-            self.configureConnectionButton.isHidden = false
+            self.configureConnectionButton.isHidden = !LoginViewController.kAllowServerConfig
             self.poweredByStack.isHidden = true
         }
         if let logo = SharedUtils.smallIcon {
@@ -215,6 +224,13 @@ class LoginViewController: UIViewController {
                 self.serviceNameLabel.text = serviceName
             }
         }
+    }
+
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
+        if identifier == "Login2Branding" {
+            return LoginViewController.kAllowServerConfig
+        }
+        return super.shouldPerformSegue(withIdentifier: identifier, sender: sender)
     }
 
     @IBAction func loginClicked(_ sender: Any) {

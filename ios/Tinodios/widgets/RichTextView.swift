@@ -47,6 +47,27 @@ class RichTextView: UITextView {
 
     // MARK: public methods
 
+    /// The entity attachment of the given type and Drafty key, with its frame in
+    /// this view's coordinates (used to lay a player over a video's poster).
+    public func attachment(ofType type: String, key: Int) -> (attachment: EntityTextAttachment, frame: CGRect)? {
+        var found: (EntityTextAttachment, CGRect)?
+        let full = NSRange(location: 0, length: textStorage.length)
+        textStorage.enumerateAttribute(.attachment, in: full, options: []) { value, range, stop in
+            guard let att = value as? EntityTextAttachment, att.type == type, att.draftyEntityKey == key else { return }
+            let glyphIndex = layoutManager.glyphIndexForCharacter(at: range.location)
+            let line = layoutManager.lineFragmentRect(forGlyphAt: glyphIndex, effectiveRange: nil)
+            let location = layoutManager.location(forGlyphAt: glyphIndex)
+            let size = layoutManager.attachmentSize(forGlyphAt: glyphIndex)
+            // Attachments sit on the baseline; bounds.origin.y shifts them.
+            let frame = CGRect(x: line.minX + location.x + textContainerInset.left,
+                               y: line.minY + location.y - size.height - att.bounds.origin.y + textContainerInset.top,
+                               width: size.width, height: size.height)
+            found = (att, frame)
+            stop.pointee = true
+        }
+        return found
+    }
+
     public func getURLForTap(_ location: CGPoint) -> URL? {
         // See discussion: https://stackoverflow.com/questions/19318092/how-to-detect-touch-on-nstextattachment/49153247#49153247
 
