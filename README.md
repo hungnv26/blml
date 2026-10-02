@@ -109,6 +109,12 @@ photos you want to find again later.
 same server, so a conversation looks the same wherever you pick it up, and
 history follows you between devices.
 
+<p>
+  <a href="https://apps.apple.com/app/blml/id6799954229"><img src="brand/badges/app-store-en.svg" height="40" alt="Download BLML on the App Store"></a>
+  <a href="https://chat.blml.app/android"><img src="brand/badges/android-en.svg" height="40" alt="Download BLML for Android"></a>
+  <a href="https://chat.blml.app"><img src="brand/badges/web-en.svg" height="40" alt="Use BLML in your browser"></a>
+</p>
+
 Every download is gathered on **[blml.app](https://blml.app)**, which reads in
 Vietnamese or English:
 

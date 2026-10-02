@@ -80,6 +80,11 @@
   .btn.primary:hover { background: #00967a; }
   .btn.ghost { border-color: var(--line); color: var(--ink); background: var(--panel); }
   .btn.ghost:hover { border-color: var(--green); color: var(--green); }
+  .cta.badges a { display: block; line-height: 0; transition: opacity .15s; }
+  .cta.badges a:hover { opacity: .85; }
+  .cta.badges img { height: 44px; width: auto; }
+  /* the language switch resets display to the default; keep the badge row a row */
+  .lang-en body .cta.badges[lang="en"] { display: flex; }
   .cta-note { text-align: center; color: var(--ink-faint); font-size: .9rem; margin: 0; }
 
   .shots { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; padding: 3rem 0 1rem; }
@@ -129,6 +134,7 @@
     header img.logo { width: 84px; height: 84px; }
     /* Full-width buttons stack more cleanly than three ragged pills. */
     .cta { flex-direction: column; align-items: stretch; gap: .6rem; }
+    .cta.badges { flex-direction: row; align-items: center; justify-content: center; }
     .btn { justify-content: center; }
   }
 </style>
@@ -157,13 +163,15 @@
     No ads. No algorithms deciding what you see. No company reading your
     messages to sell you things.
   </p>
-  <div class="cta">
-    <a class="btn primary" href="https://chat.blml.app/android">
-      <span lang="vi">Tải cho Android</span><span lang="en">Download for Android</span></a>
-    <a class="btn ghost" href="https://apps.apple.com/app/blml/id6799954229">
-      <span lang="vi">Tải trên App Store</span><span lang="en">Get it on the App Store</span></a>
-    <a class="btn ghost" href="https://chat.blml.app">
-      <span lang="vi">Mở trên trình duyệt</span><span lang="en">Open in browser</span></a>
+  <div class="cta badges" lang="vi">
+    <a href="https://apps.apple.com/app/blml/id6799954229"><img src="/img/badges/app-store-vi.svg" width="120" height="40" alt="Tải BLML trên App Store"></a>
+    <a href="https://chat.blml.app/android"><img src="/img/badges/android-vi.svg" width="134" height="40" alt="Tải BLML cho Android"></a>
+    <a href="https://chat.blml.app"><img src="/img/badges/web-vi.svg" width="140" height="40" alt="Dùng BLML trên trình duyệt"></a>
+  </div>
+  <div class="cta badges" lang="en">
+    <a href="https://apps.apple.com/app/blml/id6799954229"><img src="/img/badges/app-store-en.svg" width="120" height="40" alt="Download BLML on the App Store"></a>
+    <a href="https://chat.blml.app/android"><img src="/img/badges/android-en.svg" width="134" height="40" alt="Download BLML for Android"></a>
+    <a href="https://chat.blml.app"><img src="/img/badges/web-en.svg" width="126" height="40" alt="Use BLML in your browser"></a>
   </div>
   <p class="cta-note" lang="vi">Miễn phí · Chỉ dành cho người được mời · Chạy trên máy chủ riêng</p>
   <p class="cta-note" lang="en">Free · Invite-only · Runs on our own server</p>
