@@ -22,6 +22,7 @@ import (
 	"github.com/tinode/chat/server/auth"
 	"github.com/tinode/chat/server/store"
 	"github.com/tinode/chat/server/store/types"
+	"github.com/tinode/chat/server/validate"
 
 	"maps"
 
@@ -178,6 +179,20 @@ func decodeStoreErrorExplicitTs(err error, id, topic string, serverTs, incomingR
 	params map[string]any) *ServerComMessage {
 
 	var errmsg *ServerComMessage
+
+	// BLML: a validator error with a reason (e.g. a phone number without a country code): the
+	// response code comes from the wrapped store error, the text and params.reason tell the user why.
+	var verr *validate.Error
+	if errors.As(err, &verr) && verr.Err != nil {
+		defer func() {
+			errmsg.Ctrl.Text = verr.Text
+			p := make(map[string]any, len(params)+1)
+			maps.Copy(p, params)
+			p["reason"] = verr.Reason
+			errmsg.Ctrl.Params = p
+		}()
+		err = verr.Err
+	}
 
 	if err == nil {
 		errmsg = NoErrExplicitTs(id, topic, serverTs, incomingReqTs)
@@ -376,6 +391,15 @@ func filterTags(tags []string, namespaces map[string]bool) []string {
 // empty slice if the tag is invalid.
 // TODO: consider inferring country code from user location.
 func rewriteTag(orig, countryCode string) []string {
+	// BLML: a "tel:" tag is normalised like the credential, so "tel:+61 491 570 111" or
+	// "tel:0491570111" (with the session's region) find the account tagged "tel:+61491570111".
+	if strings.HasPrefix(orig, "tel:") {
+		if tag := normalizeTelTag(orig, countryCode); tag != "" {
+			return []string{tag}
+		}
+		return []string{orig}
+	}
+
 	// Check if the tag already has a prefix e.g. basic:alice.
 	if prefixedTagRegexp.MatchString(orig) {
 		return []string{orig}
@@ -412,6 +436,62 @@ func rewriteTag(orig, countryCode string) []string {
 	// invalid generic tag
 
 	return nil
+}
+
+// normalizeTelTag returns the "tel:+E164" tag for a phone number written any common way, using
+// region for numbers without a country code, or "" if it is not a phone number or phone tags
+// are not in use.
+func normalizeTelTag(number, region string) string {
+	conf, ok := globals.validators["tel"]
+	if !ok || !conf.addToTags {
+		return ""
+	}
+	vld := store.Store.GetValidator("tel")
+	if vld == nil {
+		return ""
+	}
+	tag, err := vld.PreCheck(number, map[string]any{"region": region})
+	if err != nil {
+		return ""
+	}
+	return tag
+}
+
+// A search token that may be a piece of a phone number written with spaces: "+61", "(04)",
+// "491", "570-111", "tel:+61".
+var phoneFragmentRegexp = regexp.MustCompile(`^(tel:)?[+(]?[0-9][0-9().\-]*$`)
+
+// joinPhoneTokens joins runs of adjacent search tokens that together form a phone number, so an
+// unquoted "+61 491 570 111" is searched as one number instead of four tags. A run must start
+// with "+", "0" or "(" and is joined only if the result normalises to a plausible number.
+func joinPhoneTokens(tokens []string, region string) []string {
+	if _, ok := globals.validators["tel"]; !ok || len(tokens) < 2 {
+		return tokens
+	}
+	out := make([]string, 0, len(tokens))
+	for i := 0; i < len(tokens); {
+		j := i
+		for j < len(tokens) && phoneFragmentRegexp.MatchString(tokens[j]) {
+			j++
+		}
+		if j == i {
+			out = append(out, tokens[i])
+			i++
+			continue
+		}
+		first := strings.TrimPrefix(tokens[i], "tel:")
+		if j-i >= 2 && strings.ContainsAny(first[:1], "+0(") {
+			joined := strings.Join(tokens[i:j], "")
+			if normalizeTelTag(joined, region) != "" {
+				out = append(out, joined)
+				i = j
+				continue
+			}
+		}
+		out = append(out, tokens[i:j]...)
+		i = j
+	}
+	return out
 }
 
 // rewriteTagSlice calls rewriteTag for each slice member and return a new slice with original and converted values.

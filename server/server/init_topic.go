@@ -245,10 +245,26 @@ func initTopicP2P(t *Topic, sreg *ClientComMessage) error {
 
 	// If topic exists, load subscriptions
 	var subs []types.Subscription
+	// BLML: all subscriptions of an existing topic including deleted ones; loaded only when a live one
+	// is missing and 1:1 chat requests are on.
+	var allSubs []types.Subscription
 	if stopic != nil {
 		// Subs already have Public swapped
 		if subs, err = store.Topics.GetUsers(t.name, nil); err != nil {
 			return err
+		}
+
+		if len(subs) < 2 && globals.p2pRequiresAccept {
+			if allSubs, err = store.Topics.GetUsersAny(t.name, nil); err != nil {
+				return err
+			}
+			if len(allSubs) == 2 && p2pSubsPending(allSubs) {
+				// BLML: an unanswered or declined chat request. Load both subscriptions as they are,
+				// deleted ones marked deleted, and recreate nothing: a declined recipient must not get
+				// the request back because the requester reopened the chat, and a returning user gets
+				// their old (pending) access, not fresh defaults. thisUserSub undeletes the subscriber.
+				subs = allSubs
+			}
 		}
 
 		// Case 3, fail
@@ -294,6 +310,8 @@ func initTopicP2P(t *Topic, sreg *ClientComMessage) error {
 				delID:     subs[i].DelId,
 				recvID:    subs[i].RecvSeqId,
 				readID:    subs[i].ReadSeqId,
+				// Only a pending chat request is loaded with a deleted subscription (see above).
+				deleted: subs[i].DeletedAt != nil,
 			}
 		}
 	} else {
@@ -340,6 +358,20 @@ func initTopicP2P(t *Topic, sreg *ClientComMessage) error {
 			}
 		}
 
+		// BLML: a new chat request: the other user has never had a subscription to this topic.
+		// The requester is granted no W/P and the other user's want has no R/W until they accept,
+		// whatever the two users' default access says.
+		newRequest := false
+		if globals.p2pRequiresAccept && sub2 == nil {
+			newRequest = true
+			for i := range allSubs {
+				if allSubs[i].User == userID2.String() {
+					// A deleted subscription of an accepted chat: recreated as upstream does.
+					newRequest = false
+				}
+			}
+		}
+
 		// Other user's (responder's) subscription is missing
 		if sub2 == nil {
 			sub2 = &types.Subscription{
@@ -381,6 +413,9 @@ func initTopicP2P(t *Topic, sreg *ClientComMessage) error {
 				users[u2].Access.Anon,
 				users[u2].Access.Auth,
 				globals.typesModeCP2P)
+			if newRequest {
+				userData.modeGiven = p2pRequestGiven
+			}
 
 			// By default assign the same mode that user1 gave to user2 (could be changed below)
 			userData.modeWant = sub2.ModeGiven
@@ -440,6 +475,9 @@ func initTopicP2P(t *Topic, sreg *ClientComMessage) error {
 				globals.typesModeCP2P)
 			// Ensure sanity
 			sub2.ModeWant = sub2.ModeWant&globals.typesModeCP2P | types.ModeApprove
+			if newRequest {
+				sub2.ModeWant = p2pRequestWant
+			}
 		}
 
 		// Create everything

@@ -228,12 +228,12 @@ func replyCreateUser(s *Session, msg *ClientComMessage, rec *auth.Rec) {
 	validated, _, err := addCreds(user.Uid(), creds, rec.Tags, s.lang, tmpToken)
 	if err != nil {
 		logs.Warn.Println("create user: failed to save or validate credential", err, "sid=", s.sid)
-		s.queueOut(decodeStoreError(err, msg.Id, msg.Timestamp, nil))
-
-		// Delete incomplete user record.
-		if err = store.Users.Delete(user.Uid(), true); err != nil {
-			logs.Warn.Println("create user: failed to delete incomplete user record", err, "sid=", s.sid)
+		// BLML: delete the incomplete user record BEFORE replying, so a client that reacts to the
+		// error at once (e.g. retries or logs in) never sees the half-made account.
+		if derr := store.Users.Delete(user.Uid(), true); derr != nil {
+			logs.Warn.Println("create user: failed to delete incomplete user record", derr, "sid=", s.sid)
 		}
+		s.queueOut(decodeStoreError(err, msg.Id, msg.Timestamp, nil))
 		return
 	}
 
@@ -441,6 +441,17 @@ func addCreds(uid types.Uid, creds []MsgCredClient, extraTags []string,
 				extraTags = append(extraTags, cr.Method+":"+value)
 			}
 			continue
+		}
+
+		// BLML: store the value normalised (phone numbers as E.164), as autoConfirmCred does.
+		// Upstream passed the raw value, so "+61 491 570 111" and "+61491570111" were different
+		// credentials and the tag did not match phonebook searches.
+		if cr.Value != "" {
+			norm, err := vld.PreCheck(cr.Value, cr.Params)
+			if err != nil {
+				return nil, nil, err
+			}
+			cr.Value = strings.TrimPrefix(norm, cr.Method+":")
 		}
 
 		isNew, err := vld.Request(uid, cr.Value, lang, cr.Response, tmpToken)

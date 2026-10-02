@@ -270,7 +270,18 @@ func (h *Hub) run() {
 					go replyOfflineTopicGetSub(msg.sess, msg)
 				}
 			} else if msg.Set != nil {
-				go replyOfflineTopicSetSub(msg.sess, msg)
+				// BLML: a loaded p2p topic must apply the change itself, otherwise its cached access
+				// modes go stale: an unblock or a chat-request acceptance sent from the chat list would
+				// not take effect until the topic unloads. (Upstream always wrote to the DB here.)
+				if t := h.topicGet(msg.RcptTo); t != nil && types.GetTopicCat(msg.RcptTo) == types.TopicCatP2P {
+					select {
+					case t.meta <- msg:
+					default:
+						msg.sess.queueOut(ErrServiceUnavailableReply(msg, types.TimeNow()))
+					}
+				} else {
+					go replyOfflineTopicSetSub(msg.sess, msg)
+				}
 			}
 
 		case status := <-h.userStatus:
@@ -402,7 +413,9 @@ func (h *Hub) topicUnreg(sess *Session, topic string, msg *ClientComMessage, rea
 		// Case 1 (unregister and delete)
 		if t := h.topicGet(topic); t != nil {
 			// Case 1.1: topic is online
-			if (!asUid.IsZero() && t.owner == asUid) || (t.cat == types.TopicCatP2P && t.subsCount() < 2) {
+			// BLML: a pending/declined chat request is not deleted with its last live subscription.
+			if (!asUid.IsZero() && t.owner == asUid) ||
+				(t.cat == types.TopicCatP2P && t.subsCount() < 2 && !t.p2pRequestPending()) {
 				// Case 1.1.1: requester is the owner or last sub in a p2p topic
 				t.markPaused(true)
 				hard := true
@@ -455,8 +468,10 @@ func (h *Hub) topicUnreg(sess *Session, topic string, msg *ClientComMessage, rea
 			}
 
 			tcat := topicCat(topic)
+			// BLML: an unanswered or declined chat request is kept (only subscriptions are deleted).
+			requestPending := tcat == types.TopicCatP2P && p2pRequestPendingInStore(topic)
 			if len(subs) == 0 {
-				if tcat == types.TopicCatP2P {
+				if tcat == types.TopicCatP2P && !requestPending {
 					// No subscribers: delete.
 					store.Topics.Delete(topic, false, true)
 				}
@@ -483,7 +498,7 @@ func (h *Hub) topicUnreg(sess *Session, topic string, msg *ClientComMessage, rea
 			if !(sub.ModeGiven & sub.ModeWant).IsOwner() {
 				// Case 1.2.2.1 Not the owner, but possibly last subscription in a P2P topic.
 
-				if tcat == types.TopicCatP2P && len(subs) < 2 {
+				if tcat == types.TopicCatP2P && len(subs) < 2 && !requestPending {
 					// This is a P2P topic and fewer than 2 subscriptions, delete the entire topic
 					if err := store.Topics.Delete(topic, false, msg.Del.Hard); err != nil {
 						sess.queueOut(ErrUnknownReply(msg, now))
@@ -512,7 +527,10 @@ func (h *Hub) topicUnreg(sess *Session, topic string, msg *ClientComMessage, rea
 					presSingleUserOfflineOffline(asUid, uid2.UserId(), "?none+rem", nilPresParams, "")
 					// Don't change the online status of user1, just ask user2 to stop notification exchange.
 					// Tell user2 that user1 is offline but let him keep sending updates in case user1 resubscribes.
-					presSingleUserOfflineOffline(uid2, uname1, "off", nilPresParams, "")
+					// BLML: not for a chat request (a decline is not announced).
+					if !requestPending {
+						presSingleUserOfflineOffline(uid2, uname1, "off", nilPresParams, "")
+					}
 				}
 
 				// Inform plugin that the subscription was deleted.
@@ -808,6 +826,7 @@ func replyOfflineTopicSetSub(sess *Session, msg *ClientComMessage) {
 	}
 
 	update := make(map[string]any)
+	accepting := false
 	if msg.Set.Desc != nil && msg.Set.Desc.Private != nil {
 		private, ok := msg.Set.Desc.Private.(map[string]any)
 		if !ok {
@@ -838,6 +857,9 @@ func replyOfflineTopicSetSub(sess *Session, msg *ClientComMessage) {
 		}
 
 		if modeWant != sub.ModeWant {
+			// BLML: the recipient of a 1:1 chat request accepting it from the chat list.
+			accepting = types.GetTopicCat(msg.RcptTo) == types.TopicCatP2P && globals.p2pRequiresAccept &&
+				p2pWantUnaccepted(sub.ModeWant) && modeWant.IsWriter()
 			update["ModeWant"] = modeWant
 			// Cache it for later use
 			sub.ModeWant = modeWant
@@ -850,6 +872,9 @@ func replyOfflineTopicSetSub(sess *Session, msg *ClientComMessage) {
 			logs.Warn.Println("replyOfflineTopicSetSub update:", err)
 			sess.queueOut(decodeStoreErrorExplicitTs(err, msg.Id, msg.Original, now, msg.Timestamp, nil))
 		} else {
+			if accepting {
+				p2pAcceptRequestOffline(topicName, asUid, sub)
+			}
 			var params any
 			if update["ModeWant"] != nil {
 				params = map[string]any{

@@ -126,3 +126,21 @@ func ReadTemplateFile(pathTempl *template.Template, lang string) (*template.Temp
 	templ, err := template.ParseFiles(path)
 	return templ, path, err
 }
+
+// Error is a credential validation error that tells the client why the value was refused.
+// Err is the store error class (e.g. t.ErrMalformed) that decides the response code;
+// Reason is a stable machine-readable token sent as ctrl.params.reason; Text is a short
+// human-readable message sent as ctrl.text.
+type Error struct {
+	Err    error
+	Reason string
+	Text   string
+}
+
+func (e *Error) Error() string {
+	return e.Text
+}
+
+func (e *Error) Unwrap() error {
+	return e.Err
+}

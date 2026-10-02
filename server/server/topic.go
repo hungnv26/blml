@@ -476,6 +476,14 @@ func (t *Topic) handleMeta(msg *ClientComMessage) {
 		t.handleMetaGet(msg, asUid, asChan, authLevel)
 
 	case msg.Set != nil:
+		// BLML: a {set} from a session not attached to this p2p topic (routed here by the hub so the
+		// cached modes stay right) is held to the offline rules: an existing subscription only.
+		if t.cat == types.TopicCatP2P && msg.sess != nil && msg.sess.getSub(t.name) == nil {
+			if pud, ok := t.perUser[asUid]; !ok || pud.deleted {
+				msg.sess.queueOut(ErrNotFoundReply(msg, types.TimeNow()))
+				return
+			}
+		}
 		// Set request
 		t.handleMetaSet(msg, asUid, asChan, authLevel)
 
@@ -929,7 +937,11 @@ func (t *Topic) sendImmediateSubNotifications(asUid types.Uid, acs *MsgAccessMod
 			t.presSingleUserOffline(uid2, mode2, status, nilPresParams, "", false)
 
 			// Also send a push notification to the other user.
-			sendPush(t.pushForP2PSub(asUid, uid2, pud2.modeWant, pud2.modeGiven, now))
+			// BLML: while a chat request is pending only its creation notifies: reopening, cancelling
+			// and re-requesting, or the declined recipient looking at it again stay silent.
+			if sreg.Sub.Created || !t.p2pRequestPending() {
+				sendPush(t.pushForP2PSub(asUid, uid2, pud2.modeWant, pud2.modeGiven, now))
+			}
 		}
 	} else if t.cat == types.TopicCatGrp && !asChan && sreg.Sub.Newsub {
 		// For new group subscriptions, notify other group members.
@@ -1097,6 +1109,15 @@ func (t *Topic) handlePubBroadcast(msg *ClientComMessage) {
 		return
 	}
 
+	if t.p2pRequestPending() {
+		// BLML: a 1:1 chat request nobody has accepted yet (or one that was declined). Checked before
+		// the block so the requester cannot tell a decline or a block from an unanswered request.
+		resp := ErrPermissionDenied(msg.Id, t.original(asUid), msg.Timestamp)
+		resp.Ctrl.Params = map[string]any{"what": "not-accepted"}
+		msg.sess.queueOut(resp)
+		return
+	}
+
 	if t.isReadOnly() || t.p2pBlocked() {
 		// BLML: nothing is stored or delivered while either side of a p2p chat has blocked the other.
 		msg.sess.queueOut(ErrPermissionDenied(msg.Id, t.original(asUid), msg.Timestamp))
@@ -1163,7 +1184,8 @@ func (t *Topic) handleNoteBroadcast(msg *ClientComMessage) {
 
 	// BLML: a blocked p2p chat carries no typing or read notifications to the other side.
 	// The sender's own read/recv counters are still updated below.
-	blocked := t.p2pBlocked()
+	// Same for a 1:1 chat request that has not been accepted.
+	blocked := t.p2pBlocked() || t.p2pRequestPending()
 
 	switch msg.Note.What {
 	case "kp", "kpa", "kpv":
@@ -1537,6 +1559,11 @@ func (t *Topic) thisUserSub(sess *Session, pkt *ClientComMessage, asUid types.Ui
 	// (channel readers are not permanently cached).
 	// It could be an actual subscription (IsJoiner() == true) or a ban (IsJoiner() == false).
 	userData, existingSub := t.perUser[asUid]
+	// BLML: want before this request, to detect the recipient accepting a 1:1 chat request.
+	prevWant := types.ModeUnset
+	if existingSub {
+		prevWant = userData.modeWant
+	}
 	if !existingSub || userData.deleted {
 		// New subscription or a not yet cached channel reader, either new or existing.
 
@@ -1877,6 +1904,12 @@ func (t *Topic) thisUserSub(sess *Session, pkt *ClientComMessage, asUid types.Ui
 			Given: userData.modeGiven.String(),
 			Mode:  (userData.modeGiven & userData.modeWant).String(),
 		}
+	}
+
+	// BLML: the recipient of a 1:1 chat request accepted it by asking for W. Grant the requester too.
+	if t.cat == types.TopicCatP2P && globals.p2pRequiresAccept && p2pWantUnaccepted(prevWant) &&
+		userData.modeWant.IsWriter() {
+		t.p2pAcceptRequest(asUid)
 	}
 
 	// BLML: a plain {sub} to a P2P topic the user has blocked attaches read-only (see p2pBlocked)
@@ -2502,6 +2535,8 @@ func (t *Topic) replyGetSub(sess *Session, asUid types.Uid, authLevel auth.Level
 			query, subs, err = pluginFind(asUid, query)
 			if err == nil && subs == nil && query != "" {
 				if and, opt, err := parseSearchQuery(query); err == nil {
+					// BLML: "+61 491 570 111" typed without quotes is one phone number.
+					and = joinPhoneTokens(and, sess.countryCode)
 					var req [][]string
 					for _, tag := range and {
 						rewritten := rewriteTag(tag, sess.countryCode)
@@ -3494,6 +3529,9 @@ func (t *Topic) replyLeaveUnsub(sess *Session, msg *ClientComMessage, asUid type
 	}
 
 	pud := t.perUser[asUid]
+	// BLML: leaving an unanswered/declined chat request: the other side is told nothing and the
+	// topic is kept (see p2pRequestPending).
+	requestPending := t.p2pRequestPending()
 	// Delete user's subscription from the database; msg could be nil, so cannot use msg.Original.
 	if pud.isChan {
 		// Handle channel reader.
@@ -3533,8 +3571,13 @@ func (t *Topic) replyLeaveUnsub(sess *Session, msg *ClientComMessage, asUid type
 		t.channelSubUnsub(asUid, false)
 	}
 
-	// Send prsence notifictions to admins, other users, and user's other sessions.
-	t.notifySubChange(asUid, asUid, asChan, oldWant, oldGiven, types.ModeUnset, types.ModeUnset, sess.sid)
+	if requestPending {
+		// Only the user's own other sessions learn that the chat is gone.
+		t.presSingleUserOffline(asUid, types.ModeUnset, "gone", nilPresParams, sess.sid, false)
+	} else {
+		// Send prsence notifictions to admins, other users, and user's other sessions.
+		t.notifySubChange(asUid, asUid, asChan, oldWant, oldGiven, types.ModeUnset, types.ModeUnset, sess.sid)
+	}
 
 	// Evict all user's sessions, clear cached data, send notifications.
 	t.evictUser(asUid, true, sess.sid)
@@ -3548,7 +3591,8 @@ func (t *Topic) replyLeaveUnsub(sess *Session, msg *ClientComMessage, asUid type
 	}
 
 	// If all P2P users were deleted, suspend the topic to let it shut down.
-	if t.cat == types.TopicCatP2P && t.subsCount() == 0 {
+	// BLML: not a chat request: it keeps the record that stops the requester re-requesting.
+	if t.cat == types.TopicCatP2P && t.subsCount() == 0 && !requestPending {
 		t.markPaused(true)
 		globals.hub.unreg <- &topicUnreg{del: true, sess: nil, rcptTo: t.name, pkt: nil}
 	}

@@ -170,6 +170,8 @@ var globals struct {
 	registrationCodeExempt map[string]bool
 	// Group topics can only be joined by invitation.
 	groupInviteOnly bool
+	// New 1:1 chats start as a request the other person must accept before anyone can post.
+	p2pRequiresAccept bool
 	// Tag namespaces (prefixes) which are immutable to the client.
 	immutableTagNS map[string]bool
 	// Tag namespaces which are immutable on User and partially mutable on Topic:
@@ -307,6 +309,10 @@ type configType struct {
 	// their own. Overrides the groups' stored default access. Missing means true;
 	// set to false for upstream Tinode behaviour (default access decides).
 	GroupInviteOnly *bool `json:"group_invite_only"`
+	// A new 1:1 chat starts as a request: the requester cannot post, type or send receipts until
+	// the other person accepts (sets their own want to include W). Existing chats are not affected.
+	// Missing means true; set to false for upstream Tinode behaviour (users' default access decides).
+	P2PRequiresAccept *bool `json:"p2p_requires_accept"`
 	// Maximum message size allowed from client. Intended to prevent malicious client from sending
 	// very large files inband (does not affect out of band uploads).
 	MaxMessageSize int `json:"max_message_size"`
@@ -487,6 +493,10 @@ func main() {
 	globals.groupInviteOnly = config.GroupInviteOnly == nil || *config.GroupInviteOnly
 	if !globals.groupInviteOnly {
 		logs.Info.Println("Groups are OPEN: anyone allowed by a group's default access can join it")
+	}
+	globals.p2pRequiresAccept = config.P2PRequiresAccept == nil || *config.P2PRequiresAccept
+	if !globals.p2pRequiresAccept {
+		logs.Info.Println("1:1 chat requests are OFF: new p2p chats work without the other person accepting")
 	}
 
 	if len(globals.registrationCodes) > 0 {

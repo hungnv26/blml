@@ -9,7 +9,6 @@ import (
 	"strings"
 	textt "text/template"
 
-	"github.com/nyaruka/phonenumbers"
 	"github.com/tinode/chat/server/logs"
 	"github.com/tinode/chat/server/store"
 	t "github.com/tinode/chat/server/store/types"
@@ -122,27 +121,15 @@ func (v *validator) IsInitialized() bool {
 
 // PreCheck validates the credential and parameters without sending an SMS or making the call.
 // If credential is valid, it's formatted and prefixed with a tag namespace.
+// BLML: any possible number in any common notation is accepted (see Normalize); numbers without
+// a country code need params "region" (or the older "countryCode"). Errors are *validate.Error
+// with a reason the client can show.
 func (*validator) PreCheck(cred string, params map[string]any) (string, error) {
-	// Parse will try to extract the number from any text, make sure it's just the number.
-	if !phonenumbers.VALID_PHONE_NUMBER_PATTERN.MatchString(cred) {
-		return "", t.ErrMalformed
-	}
-	countryCode, ok := params["countryCode"].(string)
-	if !ok {
-		countryCode = "US"
-	}
-	number, err := phonenumbers.Parse(cred, countryCode)
+	e164, err := Normalize(cred, regionParam(params))
 	if err != nil {
-		return "", t.ErrMalformed
+		return "", err
 	}
-	if !phonenumbers.IsValidNumber(number) {
-		return "", t.ErrMalformed
-	}
-	if numType := phonenumbers.GetNumberType(number); numType != phonenumbers.FIXED_LINE_OR_MOBILE &&
-		numType != phonenumbers.MOBILE {
-		return "", t.ErrMalformed
-	}
-	return validatorName + ":" + phonenumbers.Format(number, phonenumbers.E164), nil
+	return validatorName + ":" + e164, nil
 }
 
 // Request sends a request for confirmation to the user: makes a record in DB and nothing else.
