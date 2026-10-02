@@ -70,6 +70,8 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
     private boolean mPinSaved = true;
     // False in the Archived and Blocked lists: Saved messages is neither.
     private boolean mShowSavedRow = true;
+    // Text of the empty list; 0 keeps the layout's "You have no chats".
+    private int mEmptyTextRes = 0;
 
     ChatsAdapter(Context context, ClickListener clickListener, @Nullable Filter filter) {
         super();
@@ -143,6 +145,12 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             holder.bindSaved(savedTopic());
             return;
         }
+        if (holder.viewType == R.layout.contact_empty) {
+            if (mEmptyTextRes != 0) {
+                ((TextView) holder.itemView).setText(mEmptyTextRes);
+            }
+            return;
+        }
         final int adapterPosition = position;
         position -= pinnedCount();
         if (holder.viewType == R.layout.contact) {
@@ -212,6 +220,11 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             return R.layout.contact_empty;
         }
         return R.layout.contact;
+    }
+
+    /** Text shown when the list is empty, e.g. "No blocked contacts". */
+    void setEmptyText(int textRes) {
+        mEmptyTextRes = textRes;
     }
 
     /** Don't pin Saved messages on top: used by the Archived and Blocked lists. */

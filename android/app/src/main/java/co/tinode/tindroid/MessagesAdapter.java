@@ -349,6 +349,27 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         confirmBuilder.show();
     }
 
+    // "Recall for everyone?" from the hold-a-message sheet: it can't be undone, so ask first.
+    private void showRecallConfirmationDialog(final int pos) {
+        final StoredMessage msg = getMessage(pos);
+        if (msg == null || mActivity.isFinishing() || mActivity.isDestroyed()) {
+            return;
+        }
+        // New messages may arrive while the dialog is up: find the message again by seq.
+        final int seq = msg.seq;
+        new AlertDialog.Builder(mActivity)
+                .setTitle(R.string.recall_confirm_title)
+                .setMessage(R.string.recall_confirm_message)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.action_recall_short, (dialog, which) -> {
+                    int now = findInCursor(mCursor, seq);
+                    if (now >= 0) {
+                        sendDeleteMessages(new int[]{now}, true);
+                    }
+                })
+                .show();
+    }
+
     private int[] getSelectedArray() {
         if (mSelectedItems == null || mSelectedItems.size() == 0) {
             return null;
@@ -1226,7 +1247,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                     sendDeleteMessages(new int[]{pos}, false));
             if (canDeleteForAll(topic, new int[]{pos})) {
                 addSheetRow(list, dialog, R.string.action_recall, R.drawable.ic_delete_red, true, () ->
-                        sendDeleteMessages(new int[]{pos}, true));
+                        showRecallConfirmationDialog(pos));
             }
         }
         root.addView(list, new android.widget.LinearLayout.LayoutParams(

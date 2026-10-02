@@ -72,6 +72,7 @@
     <string name="error_invite_code_invalid">Sign-up needs a valid invite code. Ask whoever invited you for the current one.</string>
     <string name="error_new_account_failed">Account registration failed:</string>
     <string name="no_chats">You have no chats\n\n¯\\_(ツ)_/¯</string>
+    <string name="no_blocked_contacts">No blocked contacts</string>
 
     <!-- Used for the AlphabetIndexer in ContactsListFragment to provide quick navigation by
      alphabet using ListView fast scroll. -->
@@ -405,6 +406,9 @@
     <string name="action_delete_for_me">Delete for me</string>
     <string name="action_recall">Recall for everyone</string>
     <string name="recall_refused">Couldn\'t delete for everyone: you can only recall your own recent messages. It was deleted for you only.</string>
+    <string name="recall_confirm_title">Recall for everyone?</string>
+    <string name="recall_confirm_message">This deletes the message for everyone in this chat. It can\'t be undone.</string>
+    <string name="action_recall_short">Recall</string>
     <string name="action_select_multiple">Select multiple</string>
     <string name="hint_enter_code">Configuration code</string>
     <string name="code_required">Code required</string>

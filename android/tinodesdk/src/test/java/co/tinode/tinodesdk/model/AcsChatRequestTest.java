@@ -22,6 +22,21 @@ public class AcsChatRequestTest {
     }
 
     @Test
+    public void incomingNeedsWritableGiven() {
+        // Contract section 2: the recipient's own given is as usual, with J and W. Without W it's
+        // not a state the server produces for a request.
+        Acs a = new Acs("JRA", "JA");
+        assertFalse(a.isChatRequestIncoming());
+    }
+
+    @Test
+    public void unblockedRequestIsPendingAgain() {
+        // Unblock from Blocked contacts sends want + "JP": "A" becomes "JPA", pending incoming.
+        Acs a = new Acs("JRWPAD", "JPA");
+        assertTrue(a.isChatRequestIncoming());
+    }
+
+    @Test
     public void accepted() {
         Acs a = new Acs("JRWPAD", "JRWPAD");
         assertFalse(a.isChatRequestIncoming());

@@ -269,12 +269,12 @@ public class Acs implements Serializable {
     /**
      * BLML chat request, recipient's side: the other person asked to chat and this user hasn't
      * accepted yet. The server sets the recipient's want to "JA": J but neither R nor W, while
-     * given has J (contract-friend-requests.md, section 2).
+     * given is as usual, with J and W (contract-friend-requests.md, section 2).
      */
     @JsonIgnore
     public boolean isChatRequestIncoming() {
         return want != null && given != null && want.isJoiner() && !want.isReader() && !want.isWriter() &&
-                given.isJoiner();
+                given.isJoiner() && given.isWriter();
     }
 
     /**

@@ -917,17 +917,22 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
     /**
      * A 1:1 chat someone else started that this user hasn't accepted yet (BLML chat requests).
      * Show Accept / Decline / Block instead of the composer.
+     * <p>
+     * A pending request never has messages: the server refuses every {pub} until it's accepted
+     * (contract-friend-requests.md, 3.2). A chat with messages is therefore never a request, even
+     * if a stale cached access mode says so (it's corrected when the topic is next fetched).
      */
     public boolean isChatRequestIncoming() {
-        return isP2PType() && mDesc.acs != null && mDesc.acs.isChatRequestIncoming();
+        return isP2PType() && getSeq() <= 0 && mDesc.acs != null && mDesc.acs.isChatRequestIncoming();
     }
 
     /**
      * A 1:1 chat this user started that the other person hasn't accepted yet: "Request sent".
-     * Nothing can be sent until they accept (the server answers 403 "not-accepted").
+     * Nothing can be sent until they accept (the server answers 403 "not-accepted"), so it has
+     * no messages either.
      */
     public boolean isChatRequestOutgoing() {
-        return isP2PType() && mDesc.acs != null && mDesc.acs.isChatRequestOutgoing();
+        return isP2PType() && getSeq() <= 0 && mDesc.acs != null && mDesc.acs.isChatRequestOutgoing();
     }
 
     /**

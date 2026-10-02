@@ -437,6 +437,10 @@ public class ChatsActivity extends BaseActivity
                 datasetChanged();
             } else if ("off".equals(pres.what) || "on".equals(pres.what)) {
                 datasetChanged();
+            } else if ("acs".equals(pres.what)) {
+                // Access changed: a chat request was accepted, blocked or unblocked. The row's
+                // "Chat request" / "Request sent" label depends on it.
+                datasetChanged();
             }
         }
 

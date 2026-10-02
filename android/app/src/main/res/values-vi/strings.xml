@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Vietnamese (BLML). Covers the strings BLML added or changed since 19b042e (chat requests,
+  blocking, media viewer, phone numbers, sign-up), the ones added on 2026-10-02 round 3, and a
+  few older ones shown on those same screens (Block, Save, Recall, Blocked contacts).
+  Anything not listed here falls back to English (values/strings.xml).
+-->
+<resources>
+    <!-- Sign-in / sign-up -->
+    <string name="error_login_failed">Đăng nhập không thành công</string>
+    <string name="error_wrong_login">Sai tên đăng nhập hoặc mật khẩu.</string>
+    <string name="description_optional">Mô tả (không bắt buộc)</string>
+    <string name="invite_code_required">Mã mời (bắt buộc)</string>
+    <!-- Shown above the SIGN UP button. %1$s is the Terms of Use URL, %2$s the Privacy Policy URL. -->
+    <string name="sign_up_terms">Khi đăng ký, bạn đồng ý với &lt;a href="%1$s"&gt;Điều khoản sử dụng&lt;/a&gt; và &lt;a href="%2$s"&gt;Chính sách quyền riêng tư&lt;/a&gt;.</string>
+    <string name="email_address_taken">Địa chỉ email này đã được một tài khoản khác sử dụng.</string>
+
+    <!-- Phone numbers -->
+    <string name="phone_number_required">Vui lòng nhập số điện thoại</string>
+    <string name="phone_number_invalid">Có vẻ đây không phải số điện thoại. Hãy kiểm tra lại các chữ số, hoặc bắt đầu bằng dấu + và mã quốc gia.</string>
+
+    <!-- Chat list -->
+    <string name="no_blocked_contacts">Không có liên hệ nào bị chặn</string>
+    <string name="blocked_contacts">Liên hệ bị chặn</string>
+    <string name="verified">đã xác minh</string>
+    <string name="staff">nhân viên</string>
+    <string name="danger">nguy hiểm</string>
+
+    <!-- Blocking and groups -->
+    <string name="you_blocked_contact">Bạn đã chặn liên hệ này</string>
+    <string name="action_unblock">Bỏ chặn</string>
+    <string name="unblock_contact">Bỏ chặn liên hệ</string>
+    <string name="group_invite_only">Nhóm này chỉ dành cho người được mời. Hãy nhờ một thành viên thêm bạn vào nhóm.</string>
+
+    <!-- 1:1 chat requests (qa/runs/2026-10-02/contract-friend-requests.md) -->
+    <string name="chat_request_sent">Đã gửi yêu cầu — bạn có thể trò chuyện khi %1$s chấp nhận.</string>
+    <string name="chat_request_sent_unnamed">Đã gửi yêu cầu — bạn có thể trò chuyện khi người ấy chấp nhận.</string>
+    <string name="chat_request_incoming">%1$s muốn trò chuyện với bạn</string>
+    <string name="chat_request_incoming_unnamed">Có người muốn trò chuyện với bạn</string>
+    <string name="chat_request_incoming_note">Người này chưa thể nhắn tin cho bạn cho đến khi bạn chấp nhận. Nếu bạn từ chối, họ sẽ không nhận được thông báo.</string>
+    <string name="block">Chặn</string>
+    <string name="chat_request_accept">Chấp nhận</string>
+    <string name="chat_request_decline">Từ chối</string>
+    <string name="chat_request_label">Yêu cầu trò chuyện</string>
+    <string name="chat_request_sent_label">Đã gửi yêu cầu</string>
+    <string name="chat_request_not_accepted">%1$s chưa chấp nhận yêu cầu trò chuyện của bạn.</string>
+    <string name="notification_chat_request_title">Yêu cầu trò chuyện</string>
+    <string name="notification_chat_request_body">%1$s muốn trò chuyện với bạn</string>
+    <string name="notification_chat_request_body_unnamed">Có người muốn trò chuyện với bạn</string>
+
+    <!-- Messages -->
+    <string name="action_delete_for_me">Xóa ở phía tôi</string>
+    <string name="action_recall">Thu hồi với mọi người</string>
+    <string name="action_recall_short">Thu hồi</string>
+    <string name="recall_confirm_title">Thu hồi với mọi người?</string>
+    <string name="recall_confirm_message">Tin nhắn sẽ bị xóa với mọi người trong cuộc trò chuyện này. Bạn không thể hoàn tác.</string>
+    <string name="recall_refused">Không thể xóa với mọi người: bạn chỉ thu hồi được tin nhắn gần đây của chính mình. Tin nhắn chỉ được xóa ở phía bạn.</string>
+
+    <!-- Photo and video viewer -->
+    <string name="action_back">Quay lại</string>
+    <string name="action_share">Chia sẻ</string>
+    <string name="action_save">Lưu</string>
+    <string name="action_full_screen">Toàn màn hình</string>
+    <string name="preparing_to_share">Đang chuẩn bị để chia sẻ…</string>
+
+    <!-- Calls -->
+    <string name="toggle_speakerphone_button">Bật/tắt loa ngoài</string>
+</resources>

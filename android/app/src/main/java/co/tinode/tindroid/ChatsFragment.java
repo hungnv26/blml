@@ -119,6 +119,9 @@ public class ChatsFragment extends Fragment implements ActionMode.Callback, UiUt
         if (mIsArchive || mIsBanned) {
             mAdapter.hideSavedRow();
         }
+        if (mIsBanned) {
+            mAdapter.setEmptyText(R.string.no_blocked_contacts);
+        }
         rv.setAdapter(mAdapter);
 
         // Progress indicator.

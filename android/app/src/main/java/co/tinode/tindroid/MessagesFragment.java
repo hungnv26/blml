@@ -993,6 +993,10 @@ public class MessagesFragment extends Fragment implements MenuProvider {
         UiUtils.setupToolbar(activity, mTopic.getPub(), mTopicName,
                 mTopic.getOnline(), mTopic.getLastSeen(), mTopic.isDeleted(), mTopic.getSubCnt());
 
+        // Call buttons follow the request / block state: re-check them on every change,
+        // including the early return below.
+        activity.invalidateOptionsMenu();
+
         Acs acs = mTopic.getAccessMode();
         if (acs == null || !acs.isModeDefined()) {
             return;
@@ -1062,9 +1066,6 @@ public class MessagesFragment extends Fragment implements MenuProvider {
                 setSendPanelVisible(activity, R.id.sendMessagePanel);
             }
         }
-
-        // Call buttons depend on the request state.
-        activity.invalidateOptionsMenu();
 
         // Group invitations still use the sheet; 1:1 requests have the inline panel above.
         if (!mTopic.isP2PType() && acs.isJoiner(Acs.Side.GIVEN) &&
@@ -1147,16 +1148,45 @@ public class MessagesFragment extends Fragment implements MenuProvider {
                 menu.findItem(R.id.action_archive).setVisible(!mTopic.isArchived());
                 menu.findItem(R.id.action_unarchive).setVisible(mTopic.isArchived());
 
-                // No calls until a chat request is accepted (or while blocked): the server
-                // would refuse them anyway.
-                boolean callsEnabled = mTopic.isP2PType() &&
-                        Cache.getTinode().getServerParam("iceServers") != null &&
-                        !mTopic.isChatRequestIncoming() && !mTopic.isChatRequestOutgoing() &&
-                        !mTopic.isBlockedByMe();
+                boolean callsEnabled = callsAllowed();
                 menu.findItem(R.id.action_video_call).setVisible(callsEnabled);
                 menu.findItem(R.id.action_audio_call).setVisible(callsEnabled);
             }
+        } else {
+            // The chat isn't known yet: the menu's default would show the call buttons.
+            MenuItem item = menu.findItem(R.id.action_video_call);
+            if (item != null) {
+                item.setVisible(false);
+            }
+            item = menu.findItem(R.id.action_audio_call);
+            if (item != null) {
+                item.setVisible(false);
+            }
         }
+    }
+
+    /**
+     * Call / Video call only in an accepted 1:1 chat neither side has blocked: not while a chat
+     * request is pending either way, not while the access mode isn't known yet. The server
+     * would refuse the call anyway.
+     */
+    private boolean callsAllowed() {
+        if (mTopic == null || !mTopic.isP2PType() || mTopic.isDeleted() ||
+                Cache.getTinode().getServerParam("iceServers") == null) {
+            return false;
+        }
+        Acs acs = mTopic.getAccessMode();
+        if (acs == null || !acs.isModeDefined()) {
+            return false;
+        }
+        if (mTopic.isBlockedByMe() || mTopic.isBlocked() || !mTopic.isWriter() ||
+                mTopic.isChatRequestIncoming() || mTopic.isChatRequestOutgoing()) {
+            return false;
+        }
+        // Blocked by the other person: J is missing from their want.
+        Subscription<VxCard, PrivateType> peer = mTopic.getPeer();
+        return peer == null || peer.acs == null || !peer.acs.isWantDefined() ||
+                peer.acs.isJoiner(Acs.Side.WANT);
     }
 
     @Override
