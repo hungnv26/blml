@@ -254,6 +254,23 @@ def claim_phone(u, skip=()):
 USED_PHONES = set()
 
 
+def ensure_conn(u):
+    """Reconnect u's main session if the server dropped it while it sat idle (the client only
+    answers the server's pings while reading, and some sections sleep for seconds)."""
+    alive = not u.conn.closed
+    if alive:
+        try:
+            u.conn.ws.ping()
+            u.conn.drain(0.2)
+            alive = not u.conn.closed
+        except Exception:
+            alive = False
+    if not alive:
+        u.conn = Conn()
+        u.conn.call({"login": {"scheme": "token", "secret": u.token}})
+        u.conn.call({"sub": {"topic": "me"}})
+
+
 _SEARCHER = []
 
 
@@ -263,6 +280,7 @@ def free_phone():
     if not _SEARCHER:
         _SEARCHER.append(make_user("QS Pool Checker"))
     s = _SEARCHER[0]
+    ensure_conn(s)
     for p in PHONE_POOL:
         if p in USED_PHONES:
             continue
@@ -290,6 +308,34 @@ def pub(u, topic, content, head=None, noecho=False):
     if head:
         body["head"] = head
     return u.conn.call({"pub": body})
+
+
+FULL_P2P = "JRWPAD"  # what a p2p chat ends up with on this server (p2p_delete_enabled)
+
+
+def accept(b, a):
+    """b accepts a's chat request the way the contract says: own want with W, in a {sub}."""
+    return b.conn.call({"sub": {"topic": a.uid, "set": {"sub": {"mode": FULL_P2P}}, "get": {"what": "desc sub"}}})
+
+
+def befriend(a, b):
+    """A working 1:1 chat since round 2: a requests (plain sub), b accepts. Returns (a's ctrl, b's ctrl)."""
+    r1 = sub(a, b.uid)
+    r2 = accept(b, a)
+    return r1, r2
+
+
+def acs_of(ctrl):
+    return ((ctrl or {}).get("params") or {}).get("acs") or {}
+
+
+def desc_acs(u, topic):
+    ctrl, metas, _ = u.conn.get(topic, "desc")
+    for m in metas:
+        acs = (m.get("desc") or {}).get("acs")
+        if acs:
+            return acs
+    return {}
 
 
 def seq_of(ctrl):
@@ -528,9 +574,8 @@ def s_account_deletion():
     d = make_user("QS Doomed", phone=True)
     peer = make_user("QS DelPeer")
     # p2p between d and peer, with history
-    sub(d, peer.uid)
+    befriend(d, peer)
     r = pub(d, peer.uid, "msg from soon-deleted user")
-    sub(peer, d.uid)
     # group owned by d with peer as member
     g1 = d.conn.call({"sub": {"topic": "new", "set": {"desc": {"public": {"fn": "QS doomed-owned"}}}}})
     g_owned = g1.get("topic")
@@ -621,17 +666,32 @@ def s_tel():
     r = b.conn.call({"set": {"topic": "me", "cred": {"meth": "tel", "val": spaced}}})
     check("T6", "same number written with spaces on a second account -> 409", code_of(r) == 409,
           f"{spaced!r} -> {code_of(r)}")
-    for bad in ("12345", "abc", "+6149157", "+61 2 9999 9999 9999", "<script>"):
+    for bad, reason in (("12345", "region-required"), ("abc", "not-a-number"), ("+6149157", "too-short"),
+                        ("+61 2 9999 9999 9999", "too-long"), ("<script>", "not-a-number"),
+                        ("+999 123 456 789", "invalid-country-code")):
         r = b.conn.call({"set": {"topic": "me", "cred": {"meth": "tel", "val": bad}}})
-        check("T7", f"malformed number {bad!r} -> 400", code_of(r) == 400, f"{code_of(r)} {r and r.get('text')}")
-    # landline (AU fixed line) is refused by PreCheck: only mobiles allowed
-    r = b.conn.call({"set": {"topic": "me", "cred": {"meth": "tel", "val": "+61 2 9374 4000"}}})
-    info("T8", "fixed-line number", f"+61 2 9374 4000 -> {code_of(r)} {r and r.get('text')}")
+        got = ((r or {}).get("params") or {}).get("reason")
+        check("T7", f"malformed number {bad!r} -> 400 reason={reason} with a readable text",
+              code_of(r) == 400 and got == reason and (r.get("text") or "") not in ("", "malformed"),
+              f"{code_of(r)} {r and r.get('text')!r} reason={got}")
+    r = b.conn.call({"set": {"topic": "me", "cred": {"meth": "tel", "val": "0491 570 999", "params": {"region": "XX"}}}})
+    check("T7b", "unknown region hint -> 400 reason=invalid-region",
+          code_of(r) == 400 and ((r or {}).get("params") or {}).get("reason") == "invalid-region", f"{code_of(r)} {r and r.get('text')!r}")
+    # landline: any plausible number is accepted now, not only mobiles (ACMA fiction range 02 5550 xxxx)
+    x = make_user("QS Tel X")
+    fixed = f"+61 2 5550 {secrets.randbelow(10000):04d}"
+    r = x.conn.call({"set": {"topic": "me", "cred": {"meth": "tel", "val": fixed}}})
+    want_tag = "tel:" + fixed.replace(" ", "")
+    check("T8", "fixed-line number accepted and stored as E.164", code_of(r) == 200 and want_tag in get_tags(x),
+          f"{fixed} -> {code_of(r)} {r and r.get('text')} tags={get_tags(x)}")
+    x.conn.call({"del": {"topic": "me", "what": "cred", "cred": {"meth": "tel", "val": fixed.replace(" ", "")}}})
     # local format
     p2 = free_phone()
     local = "0" + p2[3:]
     r = b.conn.call({"set": {"topic": "me", "cred": {"meth": "tel", "val": local}}})
-    info("T9", "local-format number, no countryCode param (hi.lang en-AU)", f"{local} -> {code_of(r)} {r and r.get('text')}")
+    reason = ((r or {}).get("params") or {}).get("reason")
+    check("T9", "local-format number without a region -> 400 reason=region-required (clear message, not a bare 400)",
+          code_of(r) == 400 and reason == "region-required", f"{local} -> {code_of(r)} {r and r.get('text')!r} reason={reason}")
     if code_of(r) != 200:
         r = b.conn.call({"set": {"topic": "me", "cred": {"meth": "tel", "val": local, "params": {"countryCode": "AU"}}}})
         check("T10", "local-format number with countryCode=AU -> 200 and stored as E.164",
@@ -639,6 +699,31 @@ def s_tel():
     else:
         check("T10", "local-format number stored as E.164", f"tel:{p2}" in get_tags(b), str(get_tags(b)))
     b.phone = p2
+    # region hint (the documented name) and every common notation; all stored as E.164
+    for cid, fmt, params in (("T10b", lambda q: f"0{q[3:6]} {q[6:9]} {q[9:]}", {"region": "AU"}),
+                             ("T10c", lambda q: f"{q[:3]}-{q[3:6]}-{q[6:9]}-{q[9:]}", None),
+                             ("T10d", lambda q: f"({q[3:4].replace('4', '04')}{q[4:6]}) {q[6:9]}.{q[9:]}", {"region": "au"}),
+                             ("T10e", lambda q: f"{q[:3]} (0) {q[3:6]} {q[6:9]} {q[9:]}", None)):
+        u = make_user("QS Tel " + cid)
+        q = free_phone()
+        val = fmt(q)
+        cred = {"meth": "tel", "val": val}
+        if params:
+            cred["params"] = params
+        r = u.conn.call({"set": {"topic": "me", "cred": cred}})
+        check(cid, f"{val!r} params={params} -> 200 and tagged tel:{q}", code_of(r) == 200 and f"tel:{q}" in get_tags(u),
+              f"{code_of(r)} {r and r.get('text')} tags={[t for t in get_tags(u) if t.startswith('tel:')]}")
+    # "possible but not valid": 0495 is not an AU mobile range in libphonenumber's metadata
+    u = make_user("QS Tel Possible")
+    q = free_phone()
+    odd = "+61495" + q[6:]
+    r = u.conn.call({"set": {"topic": "me", "cred": {"meth": "tel", "val": odd[:3] + " " + odd[3:6] + " " + odd[6:]}}})
+    check("T10f", "possible-but-not-valid number (+61 495 …) accepted", code_of(r) == 200 and f"tel:{odd}" in get_tags(u),
+          f"{code_of(r)} {r and r.get('text')}")
+    # one account per number, whatever the notation
+    r = u.conn.call({"set": {"topic": "me", "cred": {"meth": "tel", "val": f"(0{p[3:6]}) {p[6:9]}-{p[9:]}",
+                                                     "params": {"region": "AU"}}}})
+    check("T6b", "a taken number in local notation with region -> 409", code_of(r) == 409, f"{code_of(r)} {r and r.get('text')}")
 
     # tag namespace is protected
     r = b.conn.call({"set": {"topic": "me", "tags": ["tel:" + p, "hello"]}})
@@ -711,7 +796,7 @@ def s_p2p():
     c = make_user("QS Carol")
     r = sub(a, b.uid)
     check("P1", "A subscribes to p2p with B", code_of(r) in (200, 201), f"{code_of(r)}")
-    r = sub(b, a.uid)
+    r = accept(b, a)
     r = pub(a, b.uid, "hello bob")
     s1 = seq_of(r)
     check("P2", "A publishes -> 202 + seq", code_of(r) == 202 and s1, f"{code_of(r)} seq={s1}")
@@ -1031,9 +1116,8 @@ def update_mode(u, topic, delta):
 def s_blocking():
     a = make_user("QS Blocker")
     b = make_user("QS Blocked")
-    sub(a, b.uid)
+    befriend(a, b)
     pub(a, b.uid, "hi")
-    sub(b, a.uid)
     r = pub(b, a.uid, "before block")
     check("B1", "B can post to A before the block", code_of(r) == 202, f"{code_of(r)}")
     # the apps: topic.updateMode(null, "-JP")
@@ -1090,9 +1174,8 @@ def s_blocking():
     # what would work: the blocker lowers the PEER's given mode (no W)
     c2 = make_user("QS Blocker2")
     d2 = make_user("QS Blocked2")
-    sub(c2, d2.uid)
+    befriend(c2, d2)
     pub(c2, d2.uid, "hi")
-    sub(d2, c2.uid)
     r = c2.conn.call({"set": {"topic": d2.uid, "sub": {"user": d2.uid, "mode": "JRP"}}})
     r2 = pub(d2, c2.uid, "after given change")
     check("B3b", "server does enforce a p2p ban when the peer's given mode drops W (set sub user=peer mode=JRP)",
@@ -1145,6 +1228,11 @@ def s_fnd():
     spaced = "+61 " + t.phone[3:6] + " " + t.phone[6:9] + " " + t.phone[9:]
     subs, _ = find(s.conn, spaced.replace(" ", "_"))
     info("F8", "search by '+61_491_570_1xx' (spaces as underscores)", f"{len(subs)} result(s)")
+    local_spaced = f"(0{t.phone[3:6]}) {t.phone[6:9]} {t.phone[9:]}"
+    for cid, q in (("F8b", spaced), ("F8c", f'"{spaced}"'), ("F8d", spaced.replace(" ", "-")),
+                   ("F8e", f'"tel:{spaced}"'), ("F8f", local_spaced), ("F8g", f"tel:0{t.phone[3:]}")):
+        subs, _ = find(s.conn, q)
+        check(cid, f"phone search tolerant of formatting: {q!r}", any(fuid(x) == t.uid for x in subs), f"{len(subs)} result(s)")
     s_us = make_user("QS Searcher US", lang="en-US")
     subs, _ = find(s_us.conn, local)
     info("F9", "local-format phone search from a client with hi.lang en-US", f"{len(subs)} result(s)")
@@ -1183,7 +1271,7 @@ def s_fnd():
 def s_blocking_for_fnd():
     a = make_user("QS FBlocker")
     b = make_user("QS FBlocked")
-    sub(a, b.uid)
+    befriend(a, b)
     update_mode(a, b.uid, "-JP")
     return a, b
 
@@ -1200,8 +1288,7 @@ def psql(sql):
 def s_report():
     rep = make_user("QS Reporter")
     bad = make_user("QS Abuser")
-    sub(rep, bad.uid)
-    sub(bad, rep.uid)
+    befriend(rep, bad)
     pub(bad, rep.uid, "abusive message")
     before = psql("select count(*) from messages where topic='sys'")
     # iOS / Android frames
@@ -1379,7 +1466,7 @@ def s_robustness():
     check("X12", "sub with empty topic -> 4xx", code_of(r) is not None and 400 <= code_of(r) < 500, f"{code_of(r)}")
     # NUL and odd unicode in content
     peer = make_user("QS Robust Peer")
-    sub(u, peer.uid)
+    befriend(u, peer)
     r = pub(u, peer.uid, "nul\u0000byte")
     check("X13", "message containing U+0000 -> accepted or 400, never 5xx", code_of(r) is not None and code_of(r) < 500,
           f"{code_of(r)} {r and r.get('text')}")
@@ -1461,7 +1548,7 @@ def s_robustness():
     # many messages
     a = make_user("QS Load A")
     b = make_user("QS Load B")
-    sub(a, b.uid)
+    befriend(a, b)
     t0 = time.time()
     for i in range(200):
         a.conn.send({"pub": {"id": f"L{i}", "topic": b.uid, "content": f"load {i}", "noecho": True}})
@@ -1533,7 +1620,7 @@ def s_logs():
     old_pw, u.password = u.password, newpw
     marker = "qs-log-marker-" + secrets.token_hex(8)
     peer = make_user("QS Logpeer")
-    sub(u, peer.uid)
+    befriend(u, peer)
     r = pub(u, peer.uid, marker, head={"mime": "text/plain"})
     time.sleep(1.5)
     logs = server_log_since(since)
@@ -1557,7 +1644,212 @@ def s_logs():
           f"{len(in_lines)} 'in:' line(s) since {since}")
 
 
-SECTIONS = [("accounts", s_accounts), ("tel", s_tel), ("p2p", s_p2p), ("groups", s_groups),
+# ───────────────────── 1:1 chat requests (contract-friend-requests.md) ─────────────────────
+
+def what_of(ctrl):
+    return ((ctrl or {}).get("params") or {}).get("what")
+
+
+def pending_incoming(acs):
+    w, g = acs.get("want") or "", acs.get("given") or ""
+    return "J" in w and "R" not in w and "W" not in w and "J" in g
+
+
+def pending_outgoing(acs):
+    w, g = acs.get("want") or "", acs.get("given") or ""
+    return "W" in w and "W" not in g and "J" in g
+
+
+def shipped_invitation(acs):
+    """The test the App Store / Play / web builds use to show Accept/Ignore/Block."""
+    w, g = acs.get("want") or "", acs.get("given") or ""
+    excessive = "".join(ch for ch in "JRWPASDO" if ch in g and ch not in w)
+    return "J" in g and "RW" in excessive
+
+
+def pres_about(u, uid, seconds=1.5):
+    """pres frames about uid that reached u's main session within `seconds`; clears the inbox."""
+    u.conn.drain(seconds)
+    got = [f["pres"] for f in u.conn.inbox if "pres" in f
+           and (f["pres"].get("src") == uid or f["pres"].get("topic") == uid)]
+    u.conn.inbox.clear()
+    return got
+
+
+def my_sub_in_list(u, topic):
+    ctrl, metas, _ = u.conn.get("me", "sub")
+    return [x for m in metas for x in (m.get("sub") or []) if x.get("topic") == topic and not x.get("deleted")]
+
+
+def s_requests():
+    a = make_user("QS Requester")
+    b = make_user("QS Recipient")
+    b.conn.inbox.clear()
+    r = sub(a, b.uid)
+    acs = acs_of(r)
+    check("Q1", "request: A subscribes to B -> 200, A given JRA (no W/P), A want has W",
+          code_of(r) == 200 and acs.get("given") == "JRA" and "W" in (acs.get("want") or ""), f"{code_of(r)} acs={acs}")
+    check("Q1b", "requester's state is 'pending outgoing'", pending_outgoing(acs), str(acs))
+    f = b.conn.wait(is_pres("me", "acs", a.uid), 3)
+    dacs = ((f or {}).get("pres") or {}).get("dacs") or {}
+    check("Q2", "recipient is told on 'me': pres acs src=A, want JA, given with W",
+          bool(f) and dacs.get("want") == "JA" and "W" in (dacs.get("given") or ""), json.dumps(f)[:220] if f else "nothing")
+    mine = my_sub_in_list(b, a.uid)
+    acs_l = (mine[0].get("acs") if mine else {}) or {}
+    check("Q2b", "request is in the recipient's chat list as 'pending incoming'", pending_incoming(acs_l), json.dumps(mine)[:200])
+    info("Q2c", "push to the recipient", "what=sub on creation only (unit tests TestP2PRequest*; no device tokens locally)")
+    r = pub(a, b.uid, "early hello")
+    check("Q3", "requester publishing before acceptance -> 403 params.what=not-accepted",
+          code_of(r) == 403 and what_of(r) == "not-accepted", f"{code_of(r)} params={r and r.get('params')}")
+    r = sub(b, a.uid, get="desc sub data")
+    acs_b = desc_acs(b, a.uid)
+    check("Q4", "recipient opens the request (plain sub) -> 200, still pending incoming",
+          code_of(r) == 200 and pending_incoming(acs_b), f"{code_of(r)} acs={acs_b}")
+    check("Q4b", "...which is exactly when the shipped apps show Accept / Ignore / Block", shipped_invitation(acs_b), str(acs_b))
+    r = pub(b, a.uid, "recipient early")
+    check("Q5", "recipient publishing before accepting -> 403 not-accepted",
+          code_of(r) == 403 and what_of(r) == "not-accepted", f"{code_of(r)} {r and r.get('params')}")
+    b.conn.inbox.clear()
+    a.conn.send({"note": {"topic": b.uid, "what": "kp"}})
+    f = b.conn.wait(lambda f: "info" in f and f["info"].get("from") == a.uid, 1.5)
+    check("Q6", "requester's typing note is not delivered before acceptance", f is None, json.dumps(f)[:150] if f else "none")
+    r = pub(a, b.uid, "still early")
+    check("Q7", "opening the request did not accept it (A still 403)", code_of(r) == 403, f"{code_of(r)}")
+    # Accept exactly as the shipped apps do: own want = given, then the peer's given.
+    a.conn.inbox.clear()
+    given = acs_b.get("given") or FULL_P2P
+    r = b.conn.call({"set": {"topic": a.uid, "sub": {"mode": given}}})
+    check("Q8", "recipient accepts ({set sub mode=<given>}, the apps' Accept) -> 200",
+          code_of(r) == 200 and "W" in (acs_of(r).get("want") or ""), f"{code_of(r)} acs={acs_of(r)}")
+    f = a.conn.wait(lambda f: "pres" in f and f["pres"].get("what") == "acs"
+                    and "W" in (((f["pres"].get("dacs") or {}).get("given")) or ""), 3)
+    check("Q9", "requester is told at once: pres acs with given +W", bool(f), json.dumps(f)[:220] if f else "nothing")
+    r2 = b.conn.call({"set": {"topic": a.uid, "sub": {"user": a.uid, "mode": given}}})
+    check("Q8b", "the apps' second Accept frame (peer's given) is harmless", code_of(r2) in (200, 304),
+          f"{code_of(r2)} {r2 and r2.get('text')}")
+    acs_a = desc_acs(a, b.uid)
+    check("Q10", "requester is now 'accepted' (want and given have W)",
+          "W" in (acs_a.get("want") or "") and "W" in (acs_a.get("given") or ""), str(acs_a))
+    b.conn.inbox.clear()
+    r = pub(a, b.uid, "hello after accept")
+    f = b.conn.wait(is_data(a.uid, seq_of(r)), 3)
+    check("Q11", "after acceptance A's message is delivered", code_of(r) == 202 and bool(f), f"{code_of(r)} got={bool(f)}")
+    a.conn.inbox.clear()
+    r = pub(b, a.uid, "hi back")
+    f = a.conn.wait(is_data(b.uid, seq_of(r)), 3)
+    check("Q12", "...and B's reply reaches A", code_of(r) == 202 and bool(f), f"{code_of(r)} got={bool(f)}")
+    b.conn.inbox.clear()
+    a.conn.send({"note": {"topic": b.uid, "what": "kp"}})
+    f = b.conn.wait(is_info(a.uid, "kp", a.uid), 3)
+    check("Q13", "typing notes flow after acceptance", bool(f), "")
+    _, msgs = history(b, a.uid)
+    early = [m.get("content") for m in msgs if "early" in str(m.get("content"))]
+    check("Q14", "nothing sent before acceptance was stored", not early, f"{len(msgs)} message(s), early={early}")
+
+    # ── decline, and no re-request spam
+    c = make_user("QS Spammer")
+    d = make_user("QS Decliner")
+    sub(c, d.uid)
+    d.conn.wait(is_pres("me", "acs", c.uid), 3)
+    sub(d, c.uid)
+    c.conn.inbox.clear()
+    r = d.conn.call({"del": {"topic": c.uid, "what": "topic", "hard": True}})
+    check("Q15", "recipient declines (del topic hard = the apps' Ignore) -> 200", code_of(r) == 200, f"{code_of(r)} {r and r.get('text')}")
+    told = pres_about(c, d.uid)
+    check("Q16", "requester is not told about the decline", not told, json.dumps(told)[:200])
+    r = pub(c, d.uid, "please?")
+    check("Q17", "after a decline the requester still gets 403 not-accepted",
+          code_of(r) == 403 and what_of(r) == "not-accepted", f"{code_of(r)} {r and r.get('params')}")
+    acs_c = desc_acs(c, d.uid)
+    check("Q17b", "...and still sees 'pending outgoing' (decline not revealed)", pending_outgoing(acs_c), str(acs_c))
+    d.conn.inbox.clear()
+    c.conn.call({"leave": {"topic": d.uid}})
+    r1 = sub(c, d.uid)  # reopen
+    rd = c.conn.call({"del": {"topic": d.uid, "what": "topic", "hard": True}})  # delete own side
+    time.sleep(5.5)  # let the idle topic unload, so the re-request goes through the store
+    r2 = sub(c, d.uid)  # request again
+    acs2 = acs_of(r2) or desc_acs(c, d.uid)
+    told = pres_about(d, c.uid)
+    check("Q18", "requester reopening, deleting and re-requesting does not notify the recipient again",
+          code_of(r1) == 200 and code_of(rd) == 200 and code_of(r2) == 200 and not told,
+          f"reopen {code_of(r1)}, delete {code_of(rd)}, re-request {code_of(r2)}, recipient got {json.dumps(told)[:150]}")
+    check("Q18b", "the re-request is the same pending request (given has no W)", "W" not in (acs2.get("given") or "W"), str(acs2))
+    r = pub(c, d.uid, "spam")
+    check("Q18c", "...and still cannot post", code_of(r) == 403, f"{code_of(r)}")
+    check("Q19", "declined request stays out of the recipient's chat list", not my_sub_in_list(d, c.uid), "")
+    r = sub(d, c.uid)
+    acs_d = acs_of(r) or desc_acs(d, c.uid)
+    check("Q20", "a decliner who opens the chat later sees the request again (pending incoming)",
+          code_of(r) == 200 and pending_incoming(acs_d), f"{code_of(r)} acs={acs_d}")
+    r = d.conn.call({"set": {"topic": c.uid, "sub": {"mode": FULL_P2P}}})
+    r2 = pub(c, d.uid, "finally")
+    check("Q21", "...can accept it, and then the requester can post", code_of(r) == 200 and code_of(r2) == 202,
+          f"accept {code_of(r)}, pub {code_of(r2)}")
+
+    # ── block from the request
+    e = make_user("QS Req E")
+    fb = make_user("QS Req Blocker")
+    sub(e, fb.uid)
+    sub(fb, e.uid)
+    r, mode = update_mode(fb, e.uid, "-JP")
+    check("Q22", "recipient blocks the request (want -JP, the apps' Block) -> 200", code_of(r) == 200 and "J" not in mode,
+          f"want={mode} -> {code_of(r)}")
+    r = pub(e, fb.uid, "hello?")
+    check("Q23", "blocked requester gets the same 403 not-accepted (block not revealed)",
+          code_of(r) == 403 and what_of(r) == "not-accepted", f"{code_of(r)} {r and r.get('params')}")
+    r, mode = update_mode(fb, e.uid, "+JP")
+    r2 = pub(e, fb.uid, "hello again?")
+    check("Q24", "unblock with +JP returns to the pending request (requester still 403)",
+          code_of(r) == 200 and "W" not in mode and code_of(r2) == 403, f"want={mode} -> {code_of(r)}, pub {code_of(r2)}")
+    r = fb.conn.call({"set": {"topic": e.uid, "sub": {"mode": FULL_P2P}}})
+    r2 = pub(e, fb.uid, "hello at last")
+    check("Q25", "unblock with a full mode = unblock and accept", code_of(r) == 200 and code_of(r2) == 202,
+          f"{code_of(r)} pub {code_of(r2)}")
+
+    # ── chats that existed before this server version
+    gname, hname = f"QS Legacy G {RUN}", f"QS Legacy H {RUN}"
+    g = make_user(gname)
+    h = make_user(hname)
+    sub(g, h.uid)
+    g.conn.call({"leave": {"topic": h.uid}})
+    time.sleep(5.5)  # idle topic unloads after 4 s, so the next {sub} reads the rows below
+    topic = psql("select s.topic from subscriptions s join users u on u.id=s.userid "
+                 f"where u.public->>'fn'='{hname}' and s.topic like 'p2p%' limit 1")
+    upd = psql(f"update subscriptions set modewant='JRWPAD', modegiven='JRWPAD' where topic='{topic}'")
+    r1 = sub(g, h.uid)
+    r2 = pub(g, h.uid, "legacy hello")
+    r3 = sub(h, g.uid)
+    r4 = pub(h, g.uid, "legacy reply")
+    check("Q26", "a chat whose subscriptions predate the policy (JRWPAD both sides) works both ways, no request",
+          topic.startswith("p2p") and upd == "UPDATE 2" and [code_of(x) for x in (r1, r2, r3, r4)] == [200, 202, 200, 202],
+          f"{upd!r}; sub/pub/sub/pub = {[code_of(x) for x in (r1, r2, r3, r4)]}")
+    r = h.conn.call({"del": {"topic": g.uid, "what": "topic", "hard": True}})
+    g.conn.call({"leave": {"topic": h.uid}})
+    time.sleep(5.5)
+    r2 = sub(g, h.uid)
+    r3 = pub(g, h.uid, "are you there?")
+    r4 = sub(h, g.uid)
+    acs_h = acs_of(r4) or desc_acs(h, g.uid)
+    check("Q27", "an existing friend who deleted the chat gets it back on the next message, without a request",
+          code_of(r) == 200 and code_of(r3) == 202 and "W" in (acs_h.get("want") or "") and "W" in (acs_h.get("given") or ""),
+          f"del {code_of(r)}, pub {code_of(r3)}, sub {code_of(r4)} acs={acs_h}")
+
+    # ── groups and "Saved messages" are not requests
+    o = make_user("QS ReqGrpOwner")
+    m = make_user("QS ReqGrpMember")
+    r = o.conn.call({"sub": {"topic": "new", "set": {"desc": {"public": {"fn": "QS request-free group"}}}}})
+    grp = (r or {}).get("topic")
+    o.conn.call({"set": {"topic": grp, "sub": {"user": m.uid}}})
+    sub(m, grp)
+    r = pub(m, grp, "group works")
+    check("Q28", "groups unaffected: an invited member posts at once", code_of(r) == 202, f"{code_of(r)}")
+    sub(o, "slf")
+    r = pub(o, "slf", "note to self")
+    check("Q29", "'Saved messages' (slf) unaffected", code_of(r) == 202, f"{code_of(r)} {r and r.get('text')}")
+    o.conn.call({"del": {"topic": grp, "what": "topic", "hard": True}})
+
+
+SECTIONS = [("accounts", s_accounts), ("tel", s_tel), ("requests", s_requests), ("p2p", s_p2p), ("groups", s_groups),
             ("blocking", s_blocking), ("fnd", s_fnd), ("report", s_report), ("uploads", s_uploads),
             ("misc", s_misc), ("logs", s_logs), ("robustness", s_robustness)]
 

@@ -16,6 +16,18 @@ person" in a chat while an app is being tested.
     qa/blml_qa.py group   qa_peer "QA group" qa_ios qa_android qa_web
     qa/blml_qa.py find    qa_peer "+61491570101"          # directory search
     qa/blml_qa.py topics  qa_peer                         # the account's chat list
+    qa/blml_qa.py sendfile qa_peer qa_ios photo.jpg ["caption"]  # image or video (mp4/mov) as an attachment
+
+  1:1 chat requests (qa/runs/2026-10-02/contract-friend-requests.md). A NEW chat is a
+  request: `send` to someone you have no chat with yet answers 403 not-accepted.
+    qa/blml_qa.py request qa_peer3 qa_ios                 # qa_peer3 asks qa_ios to chat (plain sub)
+    qa/blml_qa.py accept  qa_peer3 qa_ios                 # qa_peer3 accepts a request FROM qa_ios
+    qa/blml_qa.py decline qa_peer3 qa_ios                 # the apps' Ignore: del topic hard
+    qa/blml_qa.py block   qa_peer3 qa_ios                 # want -JP
+    qa/blml_qa.py unblock qa_peer3 qa_ios                 # want +JP (a blocked request returns to pending)
+    qa/blml_qa.py state   qa_peer3 qa_ios                 # own/peer acs + pending/accepted/blocked
+    qa/blml_qa.py newuser qa_req1 "QA Request One" [+61491570111]  # extra throwaway account (chat requests)
+    qa/blml_qa.py accept  qa_req1 qa_ios                  # accept a pending 1:1 chat request
 
 Logins and generated passwords live in qa/test-accounts.env (gitignored). This
 tool refuses to talk to anything but a server on this machine: the accounts it
@@ -106,6 +118,7 @@ class Session:
         c = self.call({"login": {"scheme": "basic", "secret": secret}})
         if c["code"] >= 300:
             raise RuntimeError(f"login {login}: {c['code']} {c.get('text')}")
+        self.token = c["params"].get("token")
         return c["params"]["user"]
 
 
@@ -175,6 +188,113 @@ def cmd_seed():
     print(f"saved logins to {ACCOUNTS_FILE.relative_to(HERE.parent)}")
 
 
+def cmd_newuser(login, name, phone=None):
+    """A fresh account with no chats yet, for testing 1:1 chat requests."""
+    accts = load_accounts()
+    a = accts.setdefault(login, {})
+    a.setdefault("password", secrets.token_urlsafe(12))
+    a["name"] = name
+    if phone:
+        a["phone"] = phone
+    s = Session()
+    try:
+        a["uid"] = s.login(login, a["password"])
+        print(f"exists   {login}")
+    except RuntimeError:
+        secret = base64.b64encode(f"{login}:{a['password']}".encode()).decode()
+        c = s.call({"acc": {"user": "new", "scheme": "basic", "secret": secret, "login": True,
+                            "tags": ["code:" + invite_code()], "desc": {"public": {"fn": name}}}})
+        if c["code"] >= 300:
+            sys.exit(f"create {login}: {c['code']} {c.get('text')}")
+        a["uid"] = c["params"]["user"]
+        print(f"created  {login} {a['uid']}")
+    if phone:
+        s.call({"sub": {"topic": "me"}})
+        c = s.call({"set": {"topic": "me", "cred": {"meth": "tel", "val": phone}}})
+        print(f"         phone {phone}: {c['code']} {c.get('text')}")
+    s.ws.close()
+    save_accounts(accts)
+
+
+def cmd_accept(login, target):
+    """Recipient accepts a 1:1 chat request (contract 3.3): own want with W."""
+    s = session_for(login)
+    topic = topic_for(target)
+    c = s.call({"sub": {"topic": topic, "set": {"sub": {"mode": "JRWPAD"}}, "get": {"what": "desc sub"}}})
+    print(json.dumps({"code": c["code"], "text": c.get("text"), "acs": (c.get("params") or {}).get("acs")}))
+
+
+def _acs_state(own, peer):
+    """Classify a p2p chat as in contract-friend-requests.md section 2."""
+    w, g = own.get("want") or "", own.get("given") or ""
+    if "J" not in w:
+        return "blocked by me"
+    if peer and "J" not in (peer.get("want") or ""):
+        return "blocked by peer"
+    if "R" not in w and "W" not in w and "J" in g:
+        return "pending incoming (request to accept)"
+    if "W" in w and "W" not in g:
+        return "pending outgoing (request sent / declined)"
+    if "W" in w and "W" in g:
+        return "accepted"
+    return "other"
+
+
+def cmd_request(login, target):
+    """Requester side of a 1:1 chat request (contract 3.1): a plain {sub}. Prints the acs."""
+    s = session_for(login)
+    c = s.call({"sub": {"topic": topic_for(target), "get": {"what": "desc sub"}}}, tries=200)
+    acs = (c.get("params") or {}).get("acs") or {}
+    print(json.dumps({"code": c["code"], "text": c.get("text"), "acs": acs,
+                      "state": _acs_state(acs, None) if acs else None}))
+
+
+def cmd_decline(login, target):
+    """Recipient declines a request (contract 3.4): {del topic hard}, the apps' Ignore."""
+    s = session_for(login)
+    c = s.call({"del": {"topic": topic_for(target), "what": "topic", "hard": True}})
+    print(json.dumps({"code": c["code"], "text": c.get("text")}))
+
+
+def _set_want(login, target, delta):
+    s = session_for(login)
+    topic = topic_for(target)
+    s.call({"sub": {"topic": topic, "get": {"what": "desc"}}}, tries=200)
+    drain(s, 1.0)  # {meta desc} follows the ctrl
+    want = ""
+    for f in s.backlog:
+        acs = ((f.get("meta") or {}).get("desc") or {}).get("acs")
+        if acs:
+            want = acs.get("want") or ""
+    out, sign = set(want.replace("N", "")), None
+    for ch in delta:
+        if ch in "+-":
+            sign = ch
+        elif sign == "+":
+            out.add(ch)
+        else:
+            out.discard(ch)
+    mode = "".join(ch for ch in "JRWPASDO" if ch in out) or "N"
+    c = s.call({"set": {"topic": topic, "sub": {"mode": mode}}})
+    print(json.dumps({"code": c["code"], "text": c.get("text"), "want": mode}))
+
+
+def cmd_state(login, target):
+    """Own and peer access modes of a p2p chat, classified per the contract."""
+    s = session_for(login)
+    s.call({"sub": {"topic": topic_for(target), "get": {"what": "desc sub"}}}, tries=200)
+    drain(s, 1.0)
+    own, peer = {}, {}
+    for f in s.backlog:
+        m = f.get("meta") or {}
+        if (m.get("desc") or {}).get("acs"):
+            own = m["desc"]["acs"]
+        for sub in m.get("sub") or []:
+            if sub.get("user") and sub.get("user") != s.uid:
+                peer = sub.get("acs") or {}
+    print(json.dumps({"own": own, "peer": peer, "state": _acs_state(own, peer)}))
+
+
 def cmd_send(login, target, text, head=None):
     s = session_for(login)
     topic = join(s, topic_for(target))
@@ -183,6 +303,62 @@ def cmd_send(login, target, text, head=None):
         msg["head"] = head
     c = s.call({"pub": msg})
     print(json.dumps({"code": c["code"], "topic": topic, "seq": (c.get("params") or {}).get("seq")}))
+
+
+def _upload(s, path):
+    """POST the file to the server's upload endpoint; returns the relative download URL."""
+    import mimetypes
+    import urllib.request
+    data = Path(path).read_bytes()
+    mime = mimetypes.guess_type(path)[0] or "application/octet-stream"
+    boundary = "blmlqa" + secrets.token_hex(8)
+    body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{Path(path).name}\"\r\n"
+            f"Content-Type: {mime}\r\n\r\n").encode() + data + f"\r\n--{boundary}--\r\n".encode()
+    req = urllib.request.Request(f"http://{HOST}/v0/file/u/", data=body, method="POST", headers={
+        "Content-Type": f"multipart/form-data; boundary={boundary}",
+        "X-Tinode-APIKey": API_KEY,
+        "X-Tinode-Auth": f"Token {s.token}",
+    })
+    with urllib.request.urlopen(req) as resp:
+        ctrl = json.loads(resp.read())["ctrl"]
+    if ctrl["code"] >= 300:
+        raise RuntimeError(f"upload: {ctrl}")
+    return ctrl["params"]["url"], mime, len(data)
+
+
+def cmd_sendfile(login, target, path, caption=""):
+    """Sends an image or a video as an out-of-band attachment, the way the apps do."""
+    import subprocess
+    import tempfile
+    s = session_for(login)
+    topic = join(s, topic_for(target))
+    url, mime, size = _upload(s, path)
+    name = Path(path).name
+    if mime.startswith("image/"):
+        from PIL import Image
+        w, h = Image.open(path).size
+        ent = {"tp": "IM", "data": {"mime": mime, "ref": url, "width": w, "height": h, "name": name, "size": size}}
+    elif mime.startswith("video/"):
+        probe = json.loads(subprocess.run(
+            ["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height:format=duration",
+             "-of", "json", path], capture_output=True, check=True).stdout)
+        w, h = probe["streams"][0]["width"], probe["streams"][0]["height"]
+        duration = int(float(probe["format"]["duration"]) * 1000)
+        with tempfile.TemporaryDirectory() as tmp:
+            poster = Path(tmp) / "poster.png"
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", path, "-frames:v", "1", "-vf", "scale=320:-2", str(poster)], check=True)
+            preview = base64.b64encode(poster.read_bytes()).decode()
+        ent = {"tp": "VD", "data": {"mime": mime, "ref": url, "width": w, "height": h, "duration": duration,
+                                     "name": name, "size": size, "premime": "image/png", "preview": preview}}
+    else:
+        ent = {"tp": "EX", "data": {"mime": mime, "ref": url, "name": name, "size": size}}
+    txt = " " + (("\n" + caption) if caption else "")
+    content = {"txt": txt, "fmt": [{"at": 0, "len": 1, "key": 0}], "ent": [ent]}
+    if caption:
+        content["fmt"].append({"at": 1, "len": 1, "tp": "BR"})
+    c = s.call({"pub": {"topic": topic, "content": content, "head": {"mime": "text/x-drafty"},
+                        "extra": {"attachments": [url]}, "noecho": False}})
+    print(json.dumps({"code": c["code"], "topic": topic, "seq": (c.get("params") or {}).get("seq"), "ref": url}))
 
 
 def cmd_delete(login, target, seq):
@@ -312,6 +488,14 @@ COMMANDS = {
     "group": cmd_group,
     "find": cmd_find,
     "topics": cmd_topics,
+    "sendfile": cmd_sendfile,
+    "newuser": cmd_newuser,
+    "accept": cmd_accept,
+    "request": cmd_request,
+    "decline": cmd_decline,
+    "block": lambda login, target: _set_want(login, target, "-JP"),
+    "unblock": lambda login, target: _set_want(login, target, "+JP"),
+    "state": cmd_state,
 }
 
 if __name__ == "__main__":
