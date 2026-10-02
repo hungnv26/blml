@@ -58,10 +58,17 @@ ssh -o BatchMode=yes -o ConnectTimeout=10 "$TARGET" \
   || die "cannot ssh to $TARGET, or provision-vps.sh has not been run there"
 
 if [ "$FORCE" != "--force" ]; then
-  remote_users="$(ssh "$TARGET" "cd $REMOTE_DIR/deploy 2>/dev/null && \
+  # "none" only when nothing is deployed there yet. A deployed server whose user
+  # count can't be read is treated as having users: failing open here would
+  # overwrite a live database without asking.
+  remote_users="$(ssh "$TARGET" "[ -d $REMOTE_DIR/deploy ] || { echo none; exit 0; }; \
+    cd $REMOTE_DIR/deploy && set -a && . ./secrets.env && set +a && \
     docker compose exec -T db psql -U postgres -d tinode -tAc \
-    'SELECT count(*) FROM users' 2>/dev/null" || echo "")"
-  if [ -n "$remote_users" ] && [ "$remote_users" -gt 0 ] 2>/dev/null; then
+    'SELECT count(*) FROM users' 2>/dev/null" </dev/null || echo "")"
+  if [ "$remote_users" != "none" ] && ! [ "$remote_users" -ge 0 ] 2>/dev/null; then
+    die "cannot read the user count on $TARGET; refusing to overwrite it (use --force if you are sure)"
+  fi
+  if [ "$remote_users" != "none" ] && [ "$remote_users" -gt 0 ]; then
     printf '\n\033[1;31mThe server already has %s user accounts.\033[0m\n' "$remote_users"
     printf 'Continuing REPLACES them with your local database. Type yes to proceed: '
     read -r reply

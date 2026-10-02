@@ -94,7 +94,7 @@ gen  180 ios-logo-1024-60@3x.png
 gen   76 ios-logo-1024-76.png
 gen  152 ios-logo-1024-76@2x.png
 gen  167 ios-logo-1024-83.5@2x.png
-ok "16 app icon sizes"
+ok "15 app icon sizes"
 
 # The in-app logo on the login, signup, reset-password and launch screens. Separate
 # asset from AppIcon — miss it and the app still shows the Tinode logo at runtime.

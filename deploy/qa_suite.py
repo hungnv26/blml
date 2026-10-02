@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Pre-release functional pass against the live BLML stack."""
-import json, base64, urllib.request, urllib.error, ssl, sys
+import json, base64, os, urllib.request, urllib.error, ssl, sys
 from websocket import create_connection
 
-WS = "ws://localhost:6060/v0/channels?apikey=AQAAAAABAAC-d-KsShjNeHzNi7myV36_"
+APIKEY = os.environ["QA_APIKEY"]
+WS = "ws://localhost:6060/v0/channels?apikey=" + APIKEY
 HTTP = "http://localhost:6060"
-APIKEY = "AQAAAAABAAC-d-KsShjNeHzNi7myV36_"
-CODE = "***REMOVED-INVITE-CODE***"
+CODE = os.environ["QA_INVITE_CODE"]
+PASSWORD = os.environ["QA_PASSWORD"]
 results = []
 
 # The signup checks create a real account. Suffix it per run so a leftover from
@@ -44,7 +45,7 @@ def ctrl(ws, mid, tries=12):
 # ── 1. login ──
 ws = conn()
 ws.send(json.dumps({"login":{"id":"L","scheme":"basic",
-    "secret": base64.b64encode(b"macs:***REMOVED-PASSWORD***").decode()}}))
+    "secret": base64.b64encode(f"macs:{PASSWORD}".encode()).decode()}}))
 c,_ = ctrl(ws,"L")
 check("login (macs)", c and c.get("code")==200)
 TOKEN = (c.get("params") or {}).get("token") if c else None
@@ -66,7 +67,7 @@ ws.close()
 def search_subs(term):
     w = conn()
     w.send(json.dumps({"login":{"id":"L","scheme":"basic",
-        "secret": base64.b64encode(b"macs:***REMOVED-PASSWORD***").decode()}}))
+        "secret": base64.b64encode(f"macs:{PASSWORD}".encode()).decode()}}))
     ctrl(w,"L")
     w.send(json.dumps({"sub":{"id":"F","topic":"fnd"}})); ctrl(w,"F")
     w.send(json.dumps({"set":{"id":"F2","topic":"fnd","desc":{"public":term}}})); ctrl(w,"F2")

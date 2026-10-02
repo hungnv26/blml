@@ -13,8 +13,8 @@ VPS=${VPS:-root@45.32.107.71}
 DC="docker compose --env-file secrets.env -f docker-compose.yml -f docker-compose.prod.yml"
 
 echo "1. server push handler"
-ssh -o ConnectTimeout=15 "$VPS" "docker logs blml-blml-1 2>&1 | grep -i 'Push handlers configured' | tail -1" \
-  | sed 's/^/   /' || echo "   (no line found — push handler did not load)"
+line=$(ssh -o ConnectTimeout=15 "$VPS" "docker logs blml-blml-1 2>&1 | grep -i 'Push handlers configured' | tail -1")
+if [ -n "$line" ]; then echo "   $line"; else echo "   (no line found — push handler did not load)"; fi
 
 echo
 echo "2. registered devices"

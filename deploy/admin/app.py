@@ -6,9 +6,10 @@ and storage totals are not exposed over the Tinode protocol at all. Guarded by
 a bearer token (ADMIN_TOKEN) and, in the compose file, bound to 127.0.0.1 so
 it is unreachable from the network even with the token.
 """
+import hmac
 import html
-import json
 import os
+import traceback
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
@@ -34,7 +35,7 @@ def query(sql, args=()):
 
 def gather():
     users = query("""
-        SELECT public->>'fn', state, createdat, lastseen,
+        SELECT public->>'fn', createdat, lastseen,
                (SELECT string_agg(tag, ', ') FROM usertags t WHERE t.userid = u.id)
         FROM users u ORDER BY createdat""")
     topics = query("""
@@ -113,15 +114,17 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         token = parse_qs(parsed.query).get("token", [""])[0]
-        if token != ADMIN_TOKEN:
+        if not hmac.compare_digest(token.encode(), ADMIN_TOKEN.encode()):
             self._deny()
             return
         try:
             users, topics, msgs, files, db_size = gather()
-        except Exception as e:
+        except Exception:
+            traceback.print_exc()
             self.send_response(500)
+            self.send_header("Content-Type", "text/plain")
             self.end_headers()
-            self.wfile.write(str(e).encode())
+            self.wfile.write(b"internal error\n")
             return
 
         user_rows = "".join(
@@ -130,7 +133,7 @@ class Handler(BaseHTTPRequestHandler):
                 created.date().isoformat() if created else "?",
                 ago(lastseen),
                 html.escape(tags or ""))
-            for fn, state, created, lastseen, tags in users)
+            for fn, created, lastseen, tags in users)
         topic_rows = "".join(
             "<tr><td><code>{}</code></td><td>{}</td><td class=\"num\">{}</td><td>{}</td></tr>".format(
                 html.escape(name), html.escape(fn or ""), seq or 0, ago(touched))

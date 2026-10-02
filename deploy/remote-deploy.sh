@@ -45,6 +45,7 @@ fi
 if [ -f /tmp/tinode.sql ]; then
   echo "==> Restoring database"
   $COMPOSE exec -T db psql -U postgres -d tinode -q -v ON_ERROR_STOP=1 < /tmp/tinode.sql
+  rm -f /tmp/tinode.sql
   echo "    $($COMPOSE exec -T db psql -U postgres -d tinode -tAc \
     'SELECT count(*) FROM users' </dev/null) accounts restored"
 fi
@@ -53,11 +54,11 @@ if [ -f /tmp/uploads.tar ]; then
   echo "==> Restoring media"
   docker run --rm -v blml_uploads:/u -w /u -v /tmp:/in alpine \
     sh -c 'tar xf /in/uploads.tar' </dev/null
+  rm -f /tmp/uploads.tar
 fi
 
 echo "==> Building and starting everything (the Go build takes a few minutes)"
 $COMPOSE up -d --build
 
-rm -f /tmp/tinode.sql /tmp/uploads.tar
 echo "==> Stack up"
 $COMPOSE ps --format '    {{.Name}}  {{.State}}'
