@@ -1097,7 +1097,8 @@ func (t *Topic) handlePubBroadcast(msg *ClientComMessage) {
 		return
 	}
 
-	if t.isReadOnly() {
+	if t.isReadOnly() || t.p2pBlocked() {
+		// BLML: nothing is stored or delivered while either side of a p2p chat has blocked the other.
 		msg.sess.queueOut(ErrPermissionDenied(msg.Id, t.original(asUid), msg.Timestamp))
 		return
 	}
@@ -1160,10 +1161,14 @@ func (t *Topic) handleNoteBroadcast(msg *ClientComMessage) {
 		mode = types.ModeInvalid
 	}
 
+	// BLML: a blocked p2p chat carries no typing or read notifications to the other side.
+	// The sender's own read/recv counters are still updated below.
+	blocked := t.p2pBlocked()
+
 	switch msg.Note.What {
 	case "kp", "kpa", "kpv":
 		// Filter out "kp*" from users with no 'W' permission (or people without a subscription).
-		if !mode.IsWriter() || t.isReadOnly() {
+		if !mode.IsWriter() || t.isReadOnly() || blocked {
 			return
 		}
 	case "read", "recv":
@@ -1247,6 +1252,10 @@ func (t *Topic) handleNoteBroadcast(msg *ClientComMessage) {
 
 	if seq > 0 {
 		t.perUser[asUid] = pud
+	}
+
+	if blocked {
+		return
 	}
 
 	// Read/recv/kp: notify users offline in the topic on their 'me'.
@@ -1420,7 +1429,8 @@ func (t *Topic) subscriptionReply(asChan bool, msg *ClientComMessage) error {
 	hasJoined := true
 	if modeChanged != nil {
 		if acs, err := types.ParseAcs([]byte(modeChanged.Mode)); err == nil {
-			hasJoined = acs.IsJoiner()
+			// BLML: a plain {sub} to a blocked P2P topic attaches read-only, as in thisUserSub.
+			hasJoined = acs.IsJoiner() || (t.cat == types.TopicCatP2P && mode == "")
 		}
 	}
 
@@ -1594,6 +1604,17 @@ func (t *Topic) thisUserSub(sess *Session, pkt *ClientComMessage, asUid types.Ui
 		} else {
 			// All other topic types.
 
+			// BLML: groups are invite-only. Joining needs a live subscription created by an invite
+			// (anotherUserSub), so neither a stranger who learns the group id nor a member removed
+			// by an admin (soft-deleted subscription) can join on their own. Applies to existing
+			// groups regardless of their stored default access.
+			if t.cat == types.TopicCatGrp && globals.groupInviteOnly && asLvl != auth.LevelRoot {
+				resp := ErrPermissionDeniedReply(pkt, now)
+				resp.Ctrl.Params = map[string]any{"what": "invite-only"}
+				sess.queueOut(resp)
+				return nil, errors.New("group is invite-only")
+			}
+
 			if !existingSub {
 
 				// Check if the user has been subscribed previously and if so, use previous modeGiven.
@@ -1746,7 +1767,9 @@ func (t *Topic) thisUserSub(sess *Session, pkt *ClientComMessage, asUid types.Ui
 		// If user has not requested a new access mode, provide one by default.
 		if modeWant == types.ModeUnset {
 			// If the user has self-banned before, un-self-ban. Otherwise do not make a change.
-			if !oldWant.IsJoiner() {
+			// BLML: not in P2P topics, where dropping J is how the clients block the peer and a plain
+			// {sub} is just opening the chat. Unblocking there takes an explicit mode with J.
+			if !oldWant.IsJoiner() && t.cat != types.TopicCatP2P {
 				// Set permissions NO WORSE than default, but possibly better (admin or owner banned himself).
 				userData.modeWant = userData.modeGiven | t.accessFor(asLvl)
 			}
@@ -1856,7 +1879,9 @@ func (t *Topic) thisUserSub(sess *Session, pkt *ClientComMessage, asUid types.Ui
 		}
 	}
 
-	if !userData.modeWant.IsJoiner() {
+	// BLML: a plain {sub} to a P2P topic the user has blocked attaches read-only (see p2pBlocked)
+	// instead of evicting, so the blocker can still open the chat and read the history.
+	if !userData.modeWant.IsJoiner() && !(t.cat == types.TopicCatP2P && modeWant == types.ModeUnset) {
 		// The user is self-banning from the topic. Re-subscription will unban.
 		t.evictUser(asUid, false, "")
 		// The callee will send NoErrOK
@@ -3188,18 +3213,18 @@ func (t *Topic) replyDelMsg(sess *Session, asUid types.Uid, asChan bool, msg *Cl
 	del := msg.Del
 
 	pud := t.perUser[asUid]
-	if !(pud.modeGiven & pud.modeWant).IsDeleter() {
-		// User must have an R permission: if the user cannot read messages, he has
-		// no business of deleting them.
-		if !(pud.modeGiven & pud.modeWant).IsReader() {
-			sess.queueOut(ErrPermissionDeniedReply(msg, now))
-			return errors.New("del.msg: permission denied")
-		}
-
-		// User has just the R permission, cannot hard-delete messages, silently
-		// switching to soft-deleting
-		del.Hard = false
+	mode := pud.modeGiven & pud.modeWant
+	// User must have an R permission: if the user cannot read messages, he has
+	// no business of deleting them.
+	if !mode.IsDeleter() && !mode.IsReader() {
+		sess.queueOut(ErrPermissionDeniedReply(msg, now))
+		return errors.New("del.msg: permission denied")
 	}
+	// BLML: delete-for-everyone (hard) is for the author of the messages. Only group users with
+	// the D permission (owner, admins given D) may hard-delete anyone's messages; in P2P topics
+	// D does not extend to the peer's messages. Others' messages are refused below rather than
+	// silently soft-deleted as upstream does.
+	checkAuthor := del.Hard && !(t.cat == types.TopicCatGrp && mode.IsDeleter())
 
 	var err error
 	var ranges []types.Range
@@ -3247,6 +3272,16 @@ func (t *Topic) replyDelMsg(sess *Session, asUid types.Uid, asChan bool, msg *Cl
 	if err != nil {
 		sess.queueOut(ErrMalformedReply(msg, now))
 		return err
+	}
+
+	if checkAuthor {
+		if own, err := t.messagesAllFrom(asUid, ranges); err != nil {
+			sess.queueOut(ErrUnknownReply(msg, now))
+			return err
+		} else if !own {
+			sess.queueOut(ErrPermissionDeniedReply(msg, now))
+			return errors.New("del.msg: hard-delete of another user's message")
+		}
 	}
 
 	forUser := asUid
@@ -3803,6 +3838,22 @@ func (t *Topic) p2pOtherUser(uid types.Uid) types.Uid {
 	panic("Not a valid P2P topic")
 }
 
+// p2pBlocked reports whether either participant of a P2P topic has blocked the other.
+// BLML clients block by dropping J (and P) from their own modeWant ("-JP"). Upstream treats that
+// as leaving the topic only, so the peer could keep posting; here it stops all messages and
+// typing/read notifications in both directions until the blocker restores J.
+func (t *Topic) p2pBlocked() bool {
+	if t.cat != types.TopicCatP2P {
+		return false
+	}
+	for _, pud := range t.perUser {
+		if !pud.modeWant.IsJoiner() {
+			return true
+		}
+	}
+	return false
+}
+
 // Get per-session value of fnd.Public
 func (t *Topic) fndGetPublic(sess *Session) string {
 	if t.cat == types.TopicCatFnd {
@@ -4046,4 +4097,46 @@ func calculateUnreadInRanges(readID, lastID int, ranges []types.Range) int {
 	}
 
 	return count
+}
+
+// messagesAllFrom reports whether every message still stored in ranges was sent by uid.
+// Messages are fetched newest first one page at a time, each page continuing below the
+// oldest message of the previous one, so ranges of any length are checked in full.
+func (t *Topic) messagesAllFrom(uid types.Uid, ranges []types.Range) (bool, error) {
+	from := uid.String()
+	for len(ranges) > 0 {
+		msgs, err := store.Messages.GetAll(t.name, types.ZeroUid, &types.QueryOpt{IdRanges: ranges})
+		if err != nil {
+			return false, err
+		}
+		if len(msgs) == 0 {
+			break
+		}
+		for i := range msgs {
+			if msgs[i].From != from {
+				return false, nil
+			}
+		}
+		ranges = rangesBelow(ranges, msgs[len(msgs)-1].SeqId)
+	}
+	return true, nil
+}
+
+// rangesBelow clips sorted inclusive-exclusive ranges to IDs strictly less than seq.
+// A range with Hi == 0 is the single ID Low.
+func rangesBelow(ranges []types.Range, seq int) []types.Range {
+	var out []types.Range
+	for _, r := range ranges {
+		if r.Low >= seq {
+			break
+		}
+		if r.Hi > seq {
+			r.Hi = seq
+		}
+		if r.Hi == r.Low+1 {
+			r.Hi = 0
+		}
+		out = append(out, r)
+	}
+	return out
 }

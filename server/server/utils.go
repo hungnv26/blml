@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -714,6 +715,88 @@ func truncateStringIfTooLong(s string) string {
 	}
 
 	return s[:1024] + "..."
+}
+
+// Maximum length of a client frame in the log.
+const maxLoggedFrameLen = 512
+
+// frameForLog renders a client frame (JSON) for logging with secrets and user content removed:
+// auth secrets ("secret", "tmpsecret"), credential values and responses ("val", "resp"),
+// invite codes ("code:" tags) and message "content" and "head". Message type, ids, topics and
+// the size of what was removed are kept. A frame which is not valid JSON is logged by size only.
+func frameForLog(raw []byte) string {
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	dec.UseNumber()
+	var frame any
+	if err := dec.Decode(&frame); err != nil {
+		return fmt.Sprintf("<%d bytes, malformed>", len(raw))
+	}
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	// Keep the "<redacted>" placeholders readable.
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(redactForLog("", frame)); err != nil {
+		return fmt.Sprintf("<%d bytes>", len(raw))
+	}
+	out := bytes.TrimSuffix(buf.Bytes(), []byte("\n"))
+	if len(out) > maxLoggedFrameLen {
+		return string(out[:maxLoggedFrameLen]) + "<...>"
+	}
+	return string(out)
+}
+
+// redactForLog returns a copy of the decoded JSON value v found under the given key,
+// with sensitive values replaced by placeholders. See frameForLog.
+func redactForLog(key string, v any) any {
+	switch key {
+	case "secret", "tmpsecret", "val", "resp":
+		return "<redacted>"
+	case "content":
+		size := 0
+		if b, err := json.Marshal(v); err == nil {
+			size = len(b)
+		}
+		return fmt.Sprintf("<redacted %d bytes>", size)
+	case "head":
+		// Header names (mime, reply, replace, webrtc...) are useful for debugging; values are not.
+		if m, ok := v.(map[string]any); ok {
+			keys := make([]string, 0, len(m))
+			for k := range m {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			return "<redacted: " + strings.Join(keys, ",") + ">"
+		}
+		return "<redacted>"
+	case "tags":
+		if list, ok := v.([]any); ok {
+			tags := make([]any, len(list))
+			for i, tag := range list {
+				if s, ok := tag.(string); ok && strings.HasPrefix(s, kRegistrationCodeTag) {
+					tag = kRegistrationCodeTag + "<redacted>"
+				}
+				tags[i] = tag
+			}
+			return tags
+		}
+	}
+
+	switch val := v.(type) {
+	case map[string]any:
+		m := make(map[string]any, len(val))
+		for k, item := range val {
+			m[k] = redactForLog(k, item)
+		}
+		return m
+	case []any:
+		list := make([]any, len(val))
+		for i, item := range val {
+			// Objects in arrays are redacted by their own keys, e.g. "cred":[{"meth":..,"val":..}].
+			list[i] = redactForLog("", item)
+		}
+		return list
+	}
+	return v
 }
 
 // Convert relative filepath to absolute.

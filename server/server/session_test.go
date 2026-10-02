@@ -161,6 +161,7 @@ func TestDispatchLogin(t *testing.T) {
 		State:     types.StateOK,
 	}
 	ss.EXPECT().GetLogicalAuthHandler("basic").Return(aa)
+	aa.EXPECT().IsInitialized().Return(true)
 	aa.EXPECT().Authenticate([]byte(secret), gomock.Any()).Return(authRec, nil, nil)
 	// Token generation.
 	ss.EXPECT().GetLogicalAuthHandler("token").Return(aa)
@@ -1068,6 +1069,7 @@ func TestDispatchAccNew(t *testing.T) {
 		State:     types.StateOK,
 	}
 	ss.EXPECT().GetLogicalAuthHandler("basic").Return(aa)
+	aa.EXPECT().IsInitialized().Return(true)
 	// This login is available.
 	aa.EXPECT().IsUnique([]byte(secret), remoteAddr).Return(true, nil)
 	uu.EXPECT().Create(gomock.Any(), gomock.Any()).DoAndReturn(

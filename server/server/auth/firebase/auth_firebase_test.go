@@ -7,6 +7,7 @@ import (
 
 	fbauth "firebase.google.com/go/auth"
 
+	"github.com/tinode/chat/server/auth"
 	"github.com/tinode/chat/server/store/types"
 )
 
@@ -136,5 +137,28 @@ func TestInitRejectsBadConfig(t *testing.T) {
 				t.Fatal("Init() accepted a bad config")
 			}
 		})
+	}
+}
+
+// An authenticator that was never configured (no auth_config.firebase, so Init
+// was not called) must refuse every request instead of dereferencing a nil verifier.
+func TestUnconfigured(t *testing.T) {
+	a := &authenticator{}
+	if a.IsInitialized() {
+		t.Fatal("zero authenticator reports initialized")
+	}
+	for _, secret := range []string{"", "garbage-token"} {
+		if rec, _, err := a.Authenticate([]byte(secret), ""); rec != nil || err != types.ErrUnsupported {
+			t.Errorf("Authenticate(%q) = %v, %v; want nil, ErrUnsupported", secret, rec, err)
+		}
+		if ok, err := a.IsUnique([]byte(secret), ""); ok || err != types.ErrUnsupported {
+			t.Errorf("IsUnique(%q) = %v, %v; want false, ErrUnsupported", secret, ok, err)
+		}
+		if rec, err := a.AddRecord(&auth.Rec{}, []byte(secret), ""); rec != nil || err != types.ErrUnsupported {
+			t.Errorf("AddRecord(%q) = %v, %v; want nil, ErrUnsupported", secret, rec, err)
+		}
+	}
+	if err := a.DelRecords(types.Uid(1)); err != nil {
+		t.Errorf("DelRecords() = %v, want nil", err)
 	}
 }

@@ -607,11 +607,11 @@ func authFileRequest(authMethod, secret, sid, remoteAddr string) (types.Uid, []b
 		decodedSecret := make([]byte, base64.StdEncoding.DecodedLen(len(secret)))
 		n, err := base64.StdEncoding.Decode(decodedSecret, []byte(secret))
 		if err != nil {
-			logs.Info.Println("media: invalid auth secret", authMethod, "'"+secret+"'")
+			logs.Info.Println("media: invalid auth secret", authMethod, len(secret), "bytes")
 			return uid, nil, types.ErrMalformed
 		}
 
-		if authhdl := store.Store.GetLogicalAuthHandler(authMethod); authhdl != nil {
+		if authhdl := store.Store.GetLogicalAuthHandler(authMethod); authhdl != nil && authhdl.IsInitialized() {
 			rec, challenge, err := authhdl.Authenticate(decodedSecret[:n], remoteAddr)
 			if err != nil {
 				return uid, nil, err

@@ -3217,6 +3217,9 @@ func TestReplyDelMsgHardDelete(t *testing.T) {
 		init:   true,
 	}
 
+	// Both messages are user1's own: delete-for-everyone is allowed in p2p.
+	helper.mm.EXPECT().GetAll(topicName, types.ZeroUid, gomock.Any()).Return([]types.Message{
+		{SeqId: 8, From: user1.String()}, {SeqId: 7, From: user1.String()}}, nil)
 	// Mock the message deletion for hard delete (forUser = types.ZeroUid)
 	helper.mm.EXPECT().DeleteList(topicName, 1, types.ZeroUid, gomock.Any(), []types.Range{{Low: 7, Hi: 9}}).Return(nil)
 

@@ -166,7 +166,13 @@ func (a *authenticator) IsInitialized() bool {
 
 // verify checks the token and the provider. Any failure is reported as
 // ErrFailed: a client must not learn why a token was rejected.
+// Every entry point that reads a token goes through here, so an authenticator
+// that was never configured (no auth_config.firebase, Init not called) answers
+// ErrUnsupported instead of dereferencing a nil verifier.
 func (a *authenticator) verify(secret []byte) (*identity, error) {
+	if a.verifier == nil {
+		return nil, types.ErrUnsupported
+	}
 	idToken := strings.TrimSpace(string(secret))
 	if idToken == "" {
 		return nil, types.ErrMalformed
@@ -276,6 +282,10 @@ func (authenticator) GenSecret(rec *auth.Rec) ([]byte, time.Time, error) {
 
 // DelRecords deletes the Firebase binding of the given user.
 func (a *authenticator) DelRecords(uid types.Uid) error {
+	if !a.IsInitialized() {
+		// Not configured: no bindings can exist under this scheme.
+		return nil
+	}
 	return store.Users.DelAuthRecords(uid, a.name)
 }
 

@@ -444,13 +444,8 @@ func (s *Session) dispatchRaw(raw []byte) {
 		return
 	}
 
-	toLog := raw
-	truncated := ""
-	if len(raw) > 512 {
-		toLog = raw[:512]
-		truncated = "<...>"
-	}
-	logs.Info.Printf("in: '%s%s' sid='%s' uid='%s'", toLog, truncated, s.sid, s.uid)
+	// Never log the frame verbatim: it may carry passwords, invite codes and message text.
+	logs.Info.Printf("in: '%s' sid='%s' uid='%s'", frameForLog(raw), s.sid, s.uid)
 
 	if err := json.Unmarshal(raw, &msg); err != nil {
 		// Malformed message
@@ -897,9 +892,10 @@ func (s *Session) acc(msg *ClientComMessage) {
 		}
 
 		authHdl := store.Store.GetLogicalAuthHandler(msg.Acc.TmpScheme)
-		if authHdl == nil {
+		if authHdl == nil || !authHdl.IsInitialized() {
 			logs.Warn.Println("s.acc: unknown authentication scheme", msg.Acc.TmpScheme, s.sid)
 			s.queueOut(ErrAuthUnknownScheme(msg.Id, "", msg.Timestamp))
+			return
 		}
 
 		var err error
@@ -942,7 +938,9 @@ func (s *Session) login(msg *ClientComMessage) {
 	}
 
 	handler := store.Store.GetLogicalAuthHandler(msg.Login.Scheme)
-	if handler == nil {
+	// A handler which was never configured (no auth_config block, so Init was not called)
+	// is treated as unknown: e.g. firebase without Google/Apple sign-in set up.
+	if handler == nil || !handler.IsInitialized() {
 		logs.Warn.Println("s.login: unknown authentication scheme", msg.Login.Scheme, s.sid)
 		s.queueOut(ErrAuthUnknownScheme(msg.Id, "", msg.Timestamp))
 		return

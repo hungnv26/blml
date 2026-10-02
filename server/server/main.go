@@ -168,6 +168,8 @@ var globals struct {
 	registrationCodes []string
 	// Auth schemes (real names) that skip the registration-code gate.
 	registrationCodeExempt map[string]bool
+	// Group topics can only be joined by invitation.
+	groupInviteOnly bool
 	// Tag namespaces (prefixes) which are immutable to the client.
 	immutableTagNS map[string]bool
 	// Tag namespaces which are immutable on User and partially mutable on Topic:
@@ -300,6 +302,11 @@ type configType struct {
 	// Authentication schemes exempt from the registration-code gate, e.g.
 	// ["firebase"] to let Google/Apple sign-ups in without an invite code.
 	RegistrationCodeExemptSchemes []string `json:"registration_code_exempt_schemes"`
+	// Group topics can only be joined by invitation from a member with the S permission:
+	// a user cannot join by knowing the group id, and a removed member cannot rejoin on
+	// their own. Overrides the groups' stored default access. Missing means true;
+	// set to false for upstream Tinode behaviour (default access decides).
+	GroupInviteOnly *bool `json:"group_invite_only"`
 	// Maximum message size allowed from client. Intended to prevent malicious client from sending
 	// very large files inband (does not affect out of band uploads).
 	MaxMessageSize int `json:"max_message_size"`
@@ -477,6 +484,11 @@ func main() {
 	for _, scheme := range config.RegistrationCodeExemptSchemes {
 		globals.registrationCodeExempt[strings.TrimSpace(scheme)] = true
 	}
+	globals.groupInviteOnly = config.GroupInviteOnly == nil || *config.GroupInviteOnly
+	if !globals.groupInviteOnly {
+		logs.Info.Println("Groups are OPEN: anyone allowed by a group's default access can join it")
+	}
+
 	if len(globals.registrationCodes) > 0 {
 		logs.Info.Printf("Registration is invite-only: %d code(s) accepted", len(globals.registrationCodes))
 		if len(globals.registrationCodeExempt) > 0 {

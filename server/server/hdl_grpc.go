@@ -11,6 +11,7 @@ package main
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"io"
 	"time"
 
@@ -58,9 +59,13 @@ func (*grpcNodeServer) MessageLoop(stream pbx.Node_MessageLoopServer) error {
 			logs.Err.Println("grpc: recv", sess.sid, err)
 			return err
 		}
-		logs.Info.Println("grpc in:", truncateStringIfTooLong(in.String()), sess.sid)
+		msg := pbCliDeserialize(in)
+		// Same redaction as websocket frames: in.String() would print secrets and content.
+		if raw, err := json.Marshal(msg); err == nil {
+			logs.Info.Println("grpc in:", frameForLog(raw), sess.sid)
+		}
 		statsInc("IncomingMessagesGrpcTotal", 1)
-		sess.dispatch(pbCliDeserialize(in))
+		sess.dispatch(msg)
 
 		sess.lock.Lock()
 		if sess.grpcnode == nil {

@@ -268,7 +268,8 @@ func (v *validator) send(to, body string) error {
 			logs.Warn.Println("Twilio SMS error", to, err)
 		}
 	} else {
-		logs.Info.Println("Send SMS, To:", to, "\nText:", body)
+		// No SMS gateway. Don't print the text: it carries a confirmation or password reset code.
+		logs.Info.Println("Send SMS: no gateway configured, not sent; to:", to, "length:", len(body))
 	}
 	return nil
 }

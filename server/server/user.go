@@ -72,8 +72,8 @@ func replyCreateUser(s *Session, msg *ClientComMessage, rec *auth.Rec) {
 
 	// Find authenticator for the requested scheme.
 	authhdl := store.Store.GetLogicalAuthHandler(msg.Acc.Scheme)
-	if authhdl == nil {
-		// New accounts must have an authentication scheme
+	if authhdl == nil || !authhdl.IsInitialized() {
+		// New accounts must have an authentication scheme which is configured on this server.
 		s.queueOut(ErrMalformed(msg.Id, "", msg.Timestamp))
 		logs.Warn.Println("create user: unknown auth handler, sid=", s.sid)
 		return
