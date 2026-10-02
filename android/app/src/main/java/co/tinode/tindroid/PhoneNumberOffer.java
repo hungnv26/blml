@@ -70,9 +70,10 @@ class PhoneNumberOffer {
                 .setPositiveButton(R.string.save, null)
                 .show();
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-            String e164 = FederatedSignIn.toE164(input.getText().toString().trim());
+            String e164 = FederatedSignIn.toE164(activity, input.getText().toString().trim());
             if (e164 == null) {
-                Toast.makeText(activity, R.string.phone_number_required, Toast.LENGTH_SHORT).show();
+                // Shown on the field, so the dialog stays open and the input can be fixed.
+                input.setError(activity.getString(R.string.phone_number_invalid));
                 return;
             }
             dialog.dismiss();

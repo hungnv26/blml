@@ -2,4 +2,6 @@
 <paths>
     <external-files-path name="camera_pics" path="Pictures" />
     <external-path name="downloads" path="Download" />
+    <!-- Received images/videos written out for the Share button of the media viewer. -->
+    <cache-path name="shared" path="shared/" />
 </paths>

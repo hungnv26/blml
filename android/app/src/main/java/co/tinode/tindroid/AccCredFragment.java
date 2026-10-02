@@ -23,6 +23,7 @@ import co.tinode.tinodesdk.PromisedReply;
 import co.tinode.tinodesdk.model.ServerMessage;
 import co.tinode.tinodesdk.ServerResponseException;
 import co.tinode.tinodesdk.model.Credential;
+import co.tinode.tinodesdk.model.MsgGetMeta;
 import co.tinode.tinodesdk.model.MsgSetMeta;
 
 /**
@@ -150,12 +151,12 @@ public class AccCredFragment extends Fragment implements ChatsActivity.FormUpdat
             }
         } else if (mMethod.equals("tel")) {
             PhoneEdit editor = activity.findViewById(R.id.phone);
-            String raw = editor.getPhoneNumberE164();
-            cred = UiUtils.parseCredential(raw);
-            if (cred == null) {
-                editor.setError(activity.getString(R.string.phone_number_required));
+            String e164 = editor.getPhoneNumberE164();
+            if (e164.isEmpty()) {
+                editor.setError(activity.getString(R.string.phone_number_invalid));
                 return;
             }
+            cred = new Credential(Credential.METH_PHONE, e164);
         } else {
             Log.w(TAG, "Unknown cred method" + mMethod);
             return;
@@ -176,6 +177,11 @@ public class AccCredFragment extends Fragment implements ChatsActivity.FormUpdat
                             if (mOldValue != null && !mOldValue.equals(cred.val)) {
                                 me.delCredential(mMethod, mOldValue);
                             }
+                            // The local copy still has the new value as unconfirmed: reload the
+                            // credentials so Account settings shows it as the current number.
+                            MsgGetMeta credQuery = new MsgGetMeta();
+                            credQuery.setCred();
+                            me.getMeta(credQuery);
                             activity.runOnUiThread(() -> {
                                 Toast.makeText(activity, R.string.credential_saved, Toast.LENGTH_SHORT).show();
                                 activity.getSupportFragmentManager().popBackStack();
@@ -197,6 +203,17 @@ public class AccCredFragment extends Fragment implements ChatsActivity.FormUpdat
                             button.setEnabled(true);
                             boolean taken = err instanceof ServerResponseException &&
                                     ((ServerResponseException) err).getCode() == 409;
+                            // 400: the server didn't take the number as a phone number.
+                            boolean malformed = "tel".equals(mMethod) &&
+                                    err instanceof ServerResponseException &&
+                                    ((ServerResponseException) err).getCode() == 400;
+                            if (malformed) {
+                                PhoneEdit editor = activity.findViewById(R.id.phone);
+                                if (editor != null) {
+                                    editor.setError(activity.getString(R.string.phone_number_invalid));
+                                    return;
+                                }
+                            }
                             int takenMsg = "email".equals(mMethod) ?
                                     R.string.email_address_taken : R.string.phone_number_taken;
                             Toast.makeText(activity, taken ? takenMsg : R.string.action_failed,

@@ -94,6 +94,20 @@ public class ImageViewFragment extends Fragment implements MenuProvider {
     // State of the remote image.
     private RemoteState mRemoteState;
 
+    // Full-screen viewer of a received image (as opposed to a preview before sending or an
+    // avatar crop): black, no app bar or system bars, overlay with Back / Share / Save.
+    private boolean mViewerMode;
+    private View mViewerBar;
+    // Double-tap zoom factor relative to "fit to screen".
+    private static final float DOUBLE_TAP_ZOOM = 2.5f;
+    // Minimum fling speed (dp/s) to dismiss the viewer with a vertical swipe.
+    private static final float DISMISS_FLING_DP = 1000f;
+    // Dragging a not-zoomed image this share of the screen height up or down closes the viewer.
+    private static final float DISMISS_DRAG_FRACTION = 0.15f;
+    // Vertical drag of a not-zoomed image in progress (swipe to dismiss), in pixels.
+    private float mDismissDrag = 0f;
+    private boolean mDismissDragging = false;
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -111,6 +125,17 @@ public class ImageViewFragment extends Fragment implements MenuProvider {
                     return false;
                 }
 
+                if (mViewerMode && !isZoomed() && e2.getPointerCount() == 1 &&
+                        (mDismissDragging || Math.abs(dY) > Math.abs(dX))) {
+                    // Swipe to dismiss: the image follows the finger up or down.
+                    mDismissDragging = true;
+                    mDismissDrag -= dY;
+                    mWorkingMatrix.postTranslate(0, -dY);
+                    mMatrix.set(mWorkingMatrix);
+                    mImageView.setImageMatrix(mMatrix);
+                    return true;
+                }
+
                 mWorkingMatrix.postTranslate(-dX, -dY);
                 mWorkingMatrix.mapRect(mWorkingRect, mInitialRect);
 
@@ -123,6 +148,53 @@ public class ImageViewFragment extends Fragment implements MenuProvider {
                 mMatrix.set(mWorkingMatrix);
                 mImageView.setImageMatrix(mMatrix);
                 return true;
+            }
+
+            @Override
+            public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
+                if (mViewerMode && mViewerBar != null) {
+                    // Tap shows/hides the overlay.
+                    mViewerBar.setVisibility(mViewerBar.getVisibility() == View.VISIBLE ?
+                            View.GONE : View.VISIBLE);
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onDoubleTap(@NonNull MotionEvent e) {
+                if (!mViewerMode || mWorkingRect == null || mInitialRect == null) {
+                    return false;
+                }
+                if (isZoomed()) {
+                    fitToScreen();
+                } else {
+                    mWorkingMatrix.postScale(DOUBLE_TAP_ZOOM, DOUBLE_TAP_ZOOM, e.getX(), e.getY());
+                    mWorkingMatrix.mapRect(mWorkingRect, mInitialRect);
+                    if (mWorkingRect.width() * mWorkingRect.height() > MAX_SCALED_PIXELS) {
+                        mWorkingMatrix.set(mMatrix);
+                        return true;
+                    }
+                    mWorkingMatrix.postTranslate(translateToBoundsX(mScreenRect), translateToBoundsY(mScreenRect));
+                    mMatrix.set(mWorkingMatrix);
+                    mImageView.setImageMatrix(mMatrix);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, @NonNull MotionEvent e2, float vX, float vY) {
+                // Swipe up or down on an image that isn't zoomed in closes the viewer.
+                float density = getResources().getDisplayMetrics().density;
+                if (mViewerMode && !isZoomed() && Math.abs(vY) > DISMISS_FLING_DP * density &&
+                        mDismissDragging &&
+                        Math.abs(vY) > Math.abs(vX) * 1.5f) {
+                    mDismissDragging = false;
+                    mDismissDrag = 0f;
+                    dismissViewer();
+                    return true;
+                }
+                return false;
             }
         };
         mGestureDetector = new GestureDetector(view.getContext(), listener);
@@ -171,13 +243,51 @@ public class ImageViewFragment extends Fragment implements MenuProvider {
 
         view.setOnTouchListener((v, event) -> {
             if (mWorkingMatrix == null) {
-                // The image is invalid. Disable scrolling/panning.
+                // The image is invalid. Disable scrolling/panning, but a tap still toggles
+                // the viewer overlay so Back stays reachable.
+                if (mViewerMode) {
+                    mGestureDetector.onTouchEvent(event);
+                    return true;
+                }
                 return false;
             }
 
             mGestureDetector.onTouchEvent(event);
             mScaleGestureDetector.onTouchEvent(event);
+            int action = event.getActionMasked();
+            if (mDismissDragging && (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL)) {
+                boolean far = mScreenRect != null &&
+                        Math.abs(mDismissDrag) > mScreenRect.height() * DISMISS_DRAG_FRACTION;
+                mDismissDragging = false;
+                mDismissDrag = 0f;
+                if (far && action == MotionEvent.ACTION_UP) {
+                    dismissViewer();
+                } else {
+                    // Not far enough: back to the middle.
+                    fitToScreen();
+                }
+            }
             return true;
+        });
+
+        mViewerBar = view.findViewById(R.id.viewerBar);
+        view.findViewById(R.id.viewerBack).setOnClickListener(v -> dismissViewer());
+        view.findViewById(R.id.viewerShare).setOnClickListener(v -> shareImage());
+        view.findViewById(R.id.viewerSave).setOnClickListener(v -> saveImage());
+
+        // The viewer hides the app bar and system bars after the first layout: re-fit the image
+        // to the new size instead of leaving it where the smaller frame put it.
+        mImageView.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+            if ((r - l) == (or - ol) && (b - t) == (ob - ot)) {
+                return;
+            }
+            if (mScreenRect == null || mAvatarUpload) {
+                return;
+            }
+            mScreenRect = new RectF(0, 0, r - l, b - t);
+            if (mInitialRect != null && mWorkingMatrix != null) {
+                fitToScreen();
+            }
         });
 
         // Send message on button click.
@@ -204,14 +314,34 @@ public class ImageViewFragment extends Fragment implements MenuProvider {
             return;
         }
 
-        Toolbar toolbar = activity.findViewById(R.id.toolbar);
-        if (toolbar != null) {
-            toolbar.setTitle(R.string.image_preview);
-            toolbar.setSubtitle(null);
-            toolbar.setLogo(null);
+        mAvatarUpload = args.getBoolean(AttachmentHandler.ARG_AVATAR);
+        // A received image (remote or inline), not a local one being previewed before sending.
+        mViewerMode = !mAvatarUpload && args.getParcelable(AttachmentHandler.ARG_LOCAL_URI) == null &&
+                args.getParcelable(AttachmentHandler.ARG_SRC_BITMAP) == null;
+
+        View root = getView();
+        if (mViewerMode) {
+            MediaViewer.enter(activity);
+            if (root != null) {
+                root.setBackgroundColor(0xFF000000);
+            }
+            if (mViewerBar != null) {
+                mViewerBar.setVisibility(View.VISIBLE);
+                MediaViewer.avoidCutout(mViewerBar);
+            }
+            activity.removeMenuProvider(this);
+        } else {
+            Toolbar toolbar = activity.findViewById(R.id.toolbar);
+            if (toolbar != null) {
+                toolbar.setTitle(R.string.image_preview);
+                toolbar.setSubtitle(null);
+                toolbar.setLogo(null);
+            }
+            if (mViewerBar != null) {
+                mViewerBar.setVisibility(View.GONE);
+            }
         }
 
-        mAvatarUpload = args.getBoolean(AttachmentHandler.ARG_AVATAR);
         mRemoteState = RemoteState.NONE;
 
         mMatrix.reset();
@@ -240,6 +370,72 @@ public class ImageViewFragment extends Fragment implements MenuProvider {
                 loadImage(activity, args);
             }
         });
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Leaving the viewer restores the bars. Covered by the share sheet or backgrounded,
+        // it stays full screen (onResume re-applies it anyway).
+        FragmentActivity activity = getActivity();
+        if (mViewerMode && activity != null && (isRemoving() || activity.isFinishing())) {
+            MediaViewer.exit(activity);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        FragmentActivity activity = getActivity();
+        if (mViewerMode && activity != null) {
+            MediaViewer.exit(activity);
+        }
+        super.onDestroyView();
+    }
+
+    private boolean isZoomed() {
+        if (mWorkingRect == null || mInitialRect == null || mScreenRect == null) {
+            return false;
+        }
+        RectF fit = new RectF();
+        Matrix m = new Matrix();
+        m.setRectToRect(mInitialRect, mScreenRect, Matrix.ScaleToFit.CENTER);
+        m.mapRect(fit, mInitialRect);
+        RectF now = new RectF();
+        mMatrix.mapRect(now, mInitialRect);
+        return now.width() > fit.width() * 1.05f;
+    }
+
+    private void fitToScreen() {
+        if (mInitialRect == null || mScreenRect == null) {
+            return;
+        }
+        mMatrix.setRectToRect(mInitialRect, mScreenRect, Matrix.ScaleToFit.CENTER);
+        if (mWorkingMatrix == null) {
+            mWorkingMatrix = new Matrix(mMatrix);
+        } else {
+            mWorkingMatrix.set(mMatrix);
+        }
+        mWorkingRect = new RectF();
+        mMatrix.mapRect(mWorkingRect, mInitialRect);
+        mImageView.setImageMatrix(mMatrix);
+    }
+
+    private void dismissViewer() {
+        FragmentActivity activity = getActivity();
+        if (activity != null && !activity.isFinishing() && isAdded() && !isRemoving()) {
+            activity.getSupportFragmentManager().popBackStack();
+        }
+    }
+
+    private void shareImage() {
+        FragmentActivity activity = getActivity();
+        if (activity == null || !(mImageView.getDrawable() instanceof BitmapDrawable)) {
+            return;
+        }
+        Bundle args = getArguments();
+        MediaViewer.shareBitmap(activity, ((BitmapDrawable) mImageView.getDrawable()).getBitmap(),
+                args != null ? args.getString(AttachmentHandler.ARG_MIME_TYPE) : null,
+                args != null ? args.getString(AttachmentHandler.ARG_FILE_NAME) : null);
     }
 
     private void loadImage(final FragmentActivity activity, final Bundle args) {
@@ -425,32 +621,17 @@ public class ImageViewFragment extends Fragment implements MenuProvider {
             view.findViewById(R.id.acceptAvatar).setVisibility(View.GONE);
             view.findViewById(R.id.sendImagePanel).setVisibility(View.VISIBLE);
         }
-        view.findViewById(R.id.annotation).setVisibility(View.GONE);
         activity.removeMenuProvider(this);
     }
 
-    // Setup fields for viewing downloaded image
+    // Viewing a received image: nothing but the image and the viewer overlay.
     private void setupImagePostview(final FragmentActivity activity, Bundle args, long length) {
         View view = getView();
         if (view == null) {
             return;
         }
-
-        String fileName = args.getString(AttachmentHandler.ARG_FILE_NAME);
-        if (TextUtils.isEmpty(fileName)) {
-            fileName = getResources().getString(R.string.tinode_image);
-        }
-
-        // The received image is viewed.
-        String size = ((int) mInitialRect.width()) + " × " + ((int) mInitialRect.height()) + "; ";
-        view.findViewById(R.id.sendImagePanel).setVisibility(View.GONE);
-        view.findViewById(R.id.annotation).setVisibility(View.VISIBLE);
-        ((TextView) view.findViewById(R.id.content_type)).setText(args.getString("mime"));
-        ((TextView) view.findViewById(R.id.file_name)).setText(fileName);
-        ((TextView) view.findViewById(R.id.image_size))
-                .setText(String.format("%s%s", size, UtilsString.bytesToHumanSize(length)));
-        activity.addMenuProvider(this, getViewLifecycleOwner(),
-                Lifecycle.State.RESUMED);
+        view.findViewById(R.id.metaPanel).setVisibility(View.GONE);
+        activity.removeMenuProvider(this);
     }
 
     @Override
@@ -467,6 +648,19 @@ public class ImageViewFragment extends Fragment implements MenuProvider {
         }
 
         if (item.getItemId() == R.id.action_download) {
+            saveImage();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void saveImage() {
+        final FragmentActivity activity = getActivity();
+        if (activity == null || !(mImageView.getDrawable() instanceof BitmapDrawable)) {
+            return;
+        }
+        {
             // Save image to Gallery.
             Bundle args = getArguments();
             String filename = null;
@@ -482,11 +676,7 @@ public class ImageViewFragment extends Fragment implements MenuProvider {
                     filename, null);
             Toast.makeText(activity, savedAt != null ? R.string.image_download_success :
                     R.string.failed_to_save_download, Toast.LENGTH_LONG).show();
-
-            return true;
         }
-
-        return false;
     }
 
     private void sendImage() {

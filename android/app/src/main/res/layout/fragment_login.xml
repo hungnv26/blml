@@ -95,32 +95,9 @@
         android:layout_centerHorizontal="true"
         android:visibility="gone" />
 
-    <LinearLayout
-        android:id="@+id/brandingSetup"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:gravity="center_horizontal"
-        android:visibility="gone"
-        android:clickable="true"
-        android:focusable="true">
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@drawable/ic_qr_code"
-            android:contentDescription="@string/configure_connection"
-            app:tint="@color/colorAccent" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/configure_connection"
-            android:textSize="@dimen/button_text"
-            android:enabled="true" />
-    </LinearLayout>
+    <!-- "Configure Connection" (server address by QR). Debug builds only: release builds
+         override this layout with an empty view (src/release/res/layout). -->
+    <include layout="@layout/login_branding_setup" />
 
     <LinearLayout
         android:id="@+id/byTinode"

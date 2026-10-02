@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Release builds have no "Configure Connection": BLML only talks to chat.blml.app.
+     Same id as the debug layout so the login screen code stays the same. -->
+<View
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/brandingSetup"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:visibility="gone" />

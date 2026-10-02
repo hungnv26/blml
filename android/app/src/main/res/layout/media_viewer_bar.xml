@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Minimal overlay of the full-screen image/video viewer: Back, Share, Save. No titles,
+     no file name/type/size. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/viewerBar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/media_viewer_bar_bkg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingBottom="16dp"
+    android:visibility="gone">
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/viewerBack"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/action_back"
+        app:srcCompat="@drawable/ic_arrow_back"
+        app:tint="#FFFFFFFF" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/viewerShare"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/action_share"
+        app:srcCompat="@drawable/ic_share"
+        app:tint="#FFFFFFFF" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/viewerSave"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/action_save"
+        app:srcCompat="@drawable/ic_download"
+        app:tint="#FFFFFFFF" />
+</LinearLayout>

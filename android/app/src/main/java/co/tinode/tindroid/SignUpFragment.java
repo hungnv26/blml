@@ -250,7 +250,8 @@ public class SignUpFragment extends Fragment
         final PhoneEdit phone = parent.findViewById(R.id.phone);
         if (Arrays.asList(mCredMethods).contains("tel")) {
             if (!phone.isNumberValid()) {
-                phone.setError(getText(R.string.phone_number_required));
+                phone.setError(getText(phone.getRawInput().trim().isEmpty() ?
+                        R.string.phone_number_required : R.string.phone_number_invalid));
                 return;
             } else {
                 credentials.add(new Credential("tel", phone.getPhoneNumberE164()));
@@ -259,7 +260,7 @@ public class SignUpFragment extends Fragment
             // Optional number: the server confirms it on entry and it becomes the
             // "tel:" tag other people's address books match against.
             if (!phone.isNumberValid()) {
-                phone.setError(getText(R.string.phone_number_required));
+                phone.setError(getText(R.string.phone_number_invalid));
                 return;
             }
             credentials.add(new Credential("tel", phone.getPhoneNumberE164()));
@@ -361,10 +362,19 @@ public class SignUpFragment extends Fragment
                                 }
                                 final String cause = err instanceof ServerResponseException ?
                                         ((ServerResponseException) err).getReason() : null;
-                                final boolean fieldError = "auth".equals(cause) || "email".equals(cause);
+                                final int code = err instanceof ServerResponseException ?
+                                        ((ServerResponseException) err).getCode() : 0;
+                                final boolean fieldError = "auth".equals(cause) || "email".equals(cause) ||
+                                        "tel".equals(cause);
                                 parent.runOnUiThread(() -> {
                                     signUp.setEnabled(true);
-                                    if ("auth".equals(cause)) {
+                                    if ("tel".equals(cause)) {
+                                        // 409: the number belongs to another account; 400: the server
+                                        // didn't take it as a phone number.
+                                        ((PhoneEdit) parent.findViewById(R.id.phone)).setError(getText(
+                                                code == 409 ? R.string.phone_number_taken :
+                                                        R.string.phone_number_invalid));
+                                    } else if ("auth".equals(cause)) {
                                         // Invalid login
                                         ((EditText) parent.findViewById(R.id.newLogin))
                                                 .setError(getText(R.string.login_rejected));

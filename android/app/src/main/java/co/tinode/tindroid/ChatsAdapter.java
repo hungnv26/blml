@@ -12,6 +12,9 @@ import java.util.Date;
 import androidx.core.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -463,7 +466,20 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                 name.setTypeface(null, Typeface.ITALIC);
             }
             Drafty content = (msg != null && !msg.isDeleted()) ? msg.getContent() : null;
-            if (content != null) {
+            boolean requestIncoming = topic.isChatRequestIncoming();
+            if (requestIncoming || topic.isChatRequestOutgoing()) {
+                // 1:1 chat request: say so instead of a (non-existent) last message.
+                messageStatus.setVisibility(View.GONE);
+                SpannableString label = new SpannableString(context.getString(requestIncoming ?
+                        R.string.chat_request_label : R.string.chat_request_sent_label));
+                if (requestIncoming) {
+                    label.setSpan(new StyleSpan(Typeface.BOLD), 0, label.length(), 0);
+                    label.setSpan(new ForegroundColorSpan(0xFF25D366), 0, label.length(), 0);
+                } else {
+                    label.setSpan(new StyleSpan(Typeface.ITALIC), 0, label.length(), 0);
+                }
+                priv.setText(label);
+            } else if (content != null) {
                 if (msg.isMine()) {
                     messageStatus.setVisibility(View.VISIBLE);
                     UiUtils.setMessageStatusIcon(messageStatus, msg.getStatus(),
@@ -539,7 +555,9 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             if (topic.isSlfType()) {
                 muted.setVisibility(View.GONE);
             } else {
-                muted.setVisibility(topic.isMuted() ? View.VISIBLE : View.GONE);
+                // A chat request has no P yet; that isn't the user muting it.
+                muted.setVisibility(topic.isMuted() && !topic.isChatRequestIncoming() &&
+                        !topic.isChatRequestOutgoing() ? View.VISIBLE : View.GONE);
             }
             archived.setVisibility(topic.isArchived() ? View.VISIBLE : View.GONE);
             blocked.setVisibility(!topic.isJoiner() ? View.VISIBLE : View.GONE);

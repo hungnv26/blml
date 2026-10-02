@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Replaces the composer while a chat request is waiting for the other person:
+     "Request sent — you can chat once <name> accepts." -->
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/textPrimary"
+    android:id="@+id/requestSentPanel"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="48dp"
+    android:gravity="center"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:text="@string/chat_request_sent"
+    android:visibility="gone" />

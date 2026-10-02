@@ -33,11 +33,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
 
-import java.util.Locale;
 
 import co.tinode.tindroid.account.Utils;
 import co.tinode.tindroid.media.VxCard;
@@ -237,9 +233,9 @@ class FederatedSignIn {
                 Credential[] creds = null;
                 String rawPhone = phoneInput.getText().toString().trim();
                 if (!rawPhone.isEmpty()) {
-                    String e164 = toE164(rawPhone);
+                    String e164 = toE164(mActivity, rawPhone);
                     if (e164 == null) {
-                        phoneInput.setError(mActivity.getString(R.string.phone_number_required));
+                        phoneInput.setError(mActivity.getString(R.string.phone_number_invalid));
                         return;
                     }
                     creds = new Credential[]{new Credential("tel", e164)};
@@ -279,18 +275,12 @@ class FederatedSignIn {
                 });
     }
 
-    /** Numbers typed without a country code are read in the device's region. */
-    static String toE164(String raw) {
-        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
-        try {
-            Phonenumber.PhoneNumber number = util.parse(raw, Locale.getDefault().getCountry());
-            if (!util.isValidNumber(number)) {
-                return null;
-            }
-            return util.format(number, PhoneNumberUtil.PhoneNumberFormat.E164);
-        } catch (NumberParseException e) {
-            return null;
-        }
+    /**
+     * Numbers typed without a country code are read in the device's region, then in the region
+     * of the user's own number. Separators and "possible but not known valid" numbers are fine.
+     */
+    static String toE164(Context context, String raw) {
+        return PhoneNumbers.toE164ForUser(context, raw);
     }
 
     /** Signs out of Firebase and forgets the Google choice on this device. */

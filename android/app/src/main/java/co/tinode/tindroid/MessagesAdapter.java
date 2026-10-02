@@ -42,7 +42,14 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.text.Layout;
+
+import androidx.annotation.OptIn;
+import androidx.media3.common.Player;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.ui.PlayerView;
 import android.widget.Toast;
 
 import java.net.MalformedURLException;
@@ -138,6 +145,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
     private static final float[] EMOJI_SCALING = new float[]{1.26f, 1.55f, 1.93f, 2.40f, 3.00f};
 
     private final MessageActivity mActivity;
+
+    // One video at a time plays in place inside its bubble.
+    private ExoPlayer mInlinePlayer;
+    private PlayerView mInlineView;
+    private int mInlineSeq = -1;
     private final ActionMode.Callback mSelectionModeCallback;
     private final SwipeRefreshLayout mRefresher;
     private final MessageLoaderCallbacks mMessageLoaderCallback;
@@ -722,6 +734,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             return;
         }
 
+        if (mInlineView != null && mInlineView.getParent() == holder.mMediaFrame && m.seq != mInlineSeq) {
+            stopInlineVideo();
+        }
         holder.seqId = m.seq;
 
         if (mCursor == null) {
@@ -959,6 +974,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
 
     @Override
     public void onViewRecycled(final @NonNull ViewHolder vh) {
+        // The bubble playing a video scrolled away: stop it.
+        if (mInlineView != null && mInlineView.getParent() == vh.mMediaFrame) {
+            stopInlineVideo();
+        }
         // Stop playing audio and release mAudioPlayer.
         if (vh.seqId > 0) {
             mMediaControl.releasePlayer(vh.seqId);
@@ -1508,6 +1527,104 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
 
     void releaseAudio() {
         mMediaControl.releasePlayer(0);
+        stopInlineVideo();
+    }
+
+    /** Stop and remove the video playing inside a bubble, if any. */
+    void stopInlineVideo() {
+        if (mInlinePlayer != null) {
+            mInlinePlayer.stop();
+            mInlinePlayer.release();
+            mInlinePlayer = null;
+        }
+        if (mInlineView != null) {
+            mInlineView.setPlayer(null);
+            if (mInlineView.getParent() instanceof ViewGroup) {
+                ((ViewGroup) mInlineView.getParent()).removeView(mInlineView);
+            }
+            mInlineView = null;
+        }
+        mInlineSeq = -1;
+    }
+
+    /**
+     * Play a received video in place, on top of its poster. The player's controls have play/pause,
+     * a seek bar and a full-screen button.
+     *
+     * @return false if it can't play here (the caller opens the full-screen player instead).
+     */
+    @OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)
+    private boolean playInline(final int seq, final Bundle args, FullFormatter.MediaTarget target) {
+        if (target == null || !(target.widget instanceof TextView tv) || target.width <= 0 || target.height <= 0) {
+            return false;
+        }
+        RecyclerView.ViewHolder rvh = mRecyclerView.findContainingViewHolder(tv);
+        if (!(rvh instanceof ViewHolder holder) || holder.mMediaFrame == null) {
+            return false;
+        }
+        Layout layout = tv.getLayout();
+        if (layout == null || !(tv.getText() instanceof Spanned text)) {
+            return false;
+        }
+        int start = text.getSpanStart(target.span);
+        if (start < 0) {
+            return false;
+        }
+
+        stopInlineVideo();
+
+        ExoPlayer player = new ExoPlayer.Builder(mActivity).build();
+        if (!VideoViewFragment.setReceivedSource(mActivity, player, args)) {
+            player.release();
+            return false;
+        }
+
+        int line = layout.getLineForOffset(start);
+        int x = (int) layout.getPrimaryHorizontal(start) + tv.getTotalPaddingLeft();
+        // Image spans are drawn bottom-aligned on their line.
+        int y = layout.getLineTop(line + 1) - target.height + tv.getTotalPaddingTop();
+
+        PlayerView view = (PlayerView) LayoutInflater.from(mActivity)
+                .inflate(R.layout.inline_video_player, holder.mMediaFrame, false);
+        view.setShowNextButton(false);
+        view.setShowPreviousButton(false);
+        view.setShowFastForwardButton(false);
+        view.setShowRewindButton(false);
+        view.setControllerShowTimeoutMs(2000);
+        view.setFullscreenButtonState(false);
+        view.setFullscreenButtonClickListener(isFullScreen -> openFullScreenVideo(args));
+        view.setPlayer(player);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(target.width, target.height);
+        lp.leftMargin = Math.max(0, x);
+        lp.topMargin = Math.max(0, y);
+        holder.mMediaFrame.addView(view, lp);
+
+        player.addListener(new Player.Listener() {
+            @Override
+            public void onPlayerError(@NonNull androidx.media3.common.PlaybackException error) {
+                Log.w(TAG, "Inline playback failed", error);
+                Toast.makeText(mActivity, R.string.unable_to_play_video, Toast.LENGTH_SHORT).show();
+                stopInlineVideo();
+            }
+        });
+
+        mInlinePlayer = player;
+        mInlineView = view;
+        mInlineSeq = seq;
+        player.prepare();
+        player.setPlayWhenReady(true);
+        return true;
+    }
+
+    private void openFullScreenVideo(Bundle args) {
+        if (mInlinePlayer != null) {
+            // Continue where the bubble was; from the start if it had played to the end.
+            args.putLong(VideoViewFragment.ARG_START_POSITION,
+                    mInlinePlayer.getPlaybackState() == Player.STATE_ENDED ? 0 :
+                            mInlinePlayer.getCurrentPosition());
+        }
+        stopInlineVideo();
+        mActivity.showFragment(MessageActivity.FRAGMENT_VIEW_VIDEO, args, true);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -1529,6 +1646,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         final TextView mProgressResult;
         final GestureDetector mGestureDetector;
         final TextView mReactionsPill;
+        // Holds mText; an inline video player is added on top of the poster.
+        final FrameLayout mMediaFrame;
         int seqId = 0;
 
         ViewHolder(View itemView, int viewType) {
@@ -1570,6 +1689,18 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             mDeliveredIcon = itemView.findViewById(R.id.messageViewedIcon);
             mDateDivider = itemView.findViewById(R.id.dateDivider);
             mText = itemView.findViewById(R.id.messageText);
+            if (mText != null && mText.getParent() instanceof ViewGroup textParent) {
+                int index = textParent.indexOfChild(mText);
+                ViewGroup.LayoutParams textLp = mText.getLayoutParams();
+                textParent.removeViewAt(index);
+                FrameLayout textFrame = new FrameLayout(itemView.getContext());
+                textFrame.addView(mText, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                textParent.addView(textFrame, index, textLp);
+                mMediaFrame = textFrame;
+            } else {
+                mMediaFrame = null;
+            }
             mMeta = itemView.findViewById(R.id.messageMeta);
             mEdited = itemView.findViewById(R.id.messageEdited);
             mUserName = itemView.findViewById(R.id.userName);
@@ -1688,8 +1819,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                     // Button
                         clickButton(data);
                 case "VD" ->
-                    // Pay video.
-                        clickVideo(data);
+                    // Play video in the bubble; full screen from its controls.
+                        clickVideo(data, params);
                 default -> false;
             };
         }
@@ -1875,7 +2006,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             return true;
         }
 
-        private boolean clickVideo(Map<String, Object> data) {
+        private boolean clickVideo(Map<String, Object> data, Object params) {
             Bundle args = mediaClick(data);
 
             if (args == null) {
@@ -1901,6 +2032,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             }
             args.putString(AttachmentHandler.ARG_PRE_MIME_TYPE, UiUtils.getStringVal("premime", data, null));
 
+            if (playInline(mSeqId, args, params instanceof FullFormatter.MediaTarget ?
+                    (FullFormatter.MediaTarget) params : null)) {
+                return true;
+            }
             mActivity.showFragment(MessageActivity.FRAGMENT_VIEW_VIDEO, args, true);
 
             return true;

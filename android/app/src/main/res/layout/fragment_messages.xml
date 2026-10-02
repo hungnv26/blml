@@ -90,6 +90,10 @@
 
             <include layout="@layout/fragment_blocked_by_me" />
 
+            <include layout="@layout/fragment_request_sent" />
+
+            <include layout="@layout/fragment_request_incoming" />
+
             <include layout="@layout/fragment_forward_message" />
 
             <include layout="@layout/fragment_record_audio" />

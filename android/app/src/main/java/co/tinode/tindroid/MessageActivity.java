@@ -808,7 +808,26 @@ public class MessageActivity extends BaseActivity
                             return null;
                         }
                     })
-                    .thenCatch(new UiUtils.ToastFailureListener(this))
+                    .thenCatch(new PromisedReply.FailureListener<>() {
+                        @Override
+                        public PromisedReply<ServerMessage> onFailure(Exception err) {
+                            if (err instanceof ServerResponseException sre &&
+                                    sre.getCode() == ServerMessage.STATUS_FORBIDDEN &&
+                                    Topic.NOT_ACCEPTED.equals(sre.getReason())) {
+                                // Chat request not accepted yet: say so, refresh the panel.
+                                runOnUiThread(() -> {
+                                    VxCard pub = mTopic.getPub();
+                                    String name = pub != null && !TextUtils.isEmpty(pub.fn) ? pub.fn :
+                                            getString(R.string.sender_unknown);
+                                    Toast.makeText(MessageActivity.this,
+                                            getString(R.string.chat_request_not_accepted, name),
+                                            Toast.LENGTH_LONG).show();
+                                });
+                                return null;
+                            }
+                            return new UiUtils.ToastFailureListener(MessageActivity.this).onFailure(err);
+                        }
+                    })
                     .thenFinally(new PromisedReply.FinalListener() {
                         @Override
                         public void onFinally() {

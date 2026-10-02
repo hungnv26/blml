@@ -167,7 +167,7 @@ public class PasswordResetFragment extends Fragment implements MenuProvider {
         if ("tel".equals(method)) {
             final PhoneEdit phone = parent.findViewById(R.id.phone);
             if (!phone.isNumberValid()) {
-                phone.setError(getText(R.string.phone_number_required));
+                phone.setError(getText(R.string.phone_number_invalid));
             } else {
                 value = phone.getPhoneNumberE164();
             }

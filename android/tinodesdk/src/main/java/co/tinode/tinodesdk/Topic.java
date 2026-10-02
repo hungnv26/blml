@@ -903,6 +903,8 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
 
     /** Reason ('what') of a 403 to joining a group without an invitation. */
     public static final String INVITE_ONLY = "invite-only";
+    /** Reason ('what') of a 403 to publishing in a 1:1 chat request that isn't accepted yet. */
+    public static final String NOT_ACCEPTED = "not-accepted";
 
     /**
      * Check if the current user has blocked this topic: J is missing on the 'want' side.
@@ -910,6 +912,22 @@ public class Topic<DP, DR, SP, SR> implements LocalData, Comparable<Topic> {
      */
     public boolean isBlockedByMe() {
         return mDesc.acs != null && mDesc.acs.isWantDefined() && !mDesc.acs.isJoiner(Acs.Side.WANT);
+    }
+
+    /**
+     * A 1:1 chat someone else started that this user hasn't accepted yet (BLML chat requests).
+     * Show Accept / Decline / Block instead of the composer.
+     */
+    public boolean isChatRequestIncoming() {
+        return isP2PType() && mDesc.acs != null && mDesc.acs.isChatRequestIncoming();
+    }
+
+    /**
+     * A 1:1 chat this user started that the other person hasn't accepted yet: "Request sent".
+     * Nothing can be sent until they accept (the server answers 403 "not-accepted").
+     */
+    public boolean isChatRequestOutgoing() {
+        return isP2PType() && mDesc.acs != null && mDesc.acs.isChatRequestOutgoing();
     }
 
     /**

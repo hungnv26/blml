@@ -77,8 +77,6 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
     private static final int MAX_VIDEO_BYTES = 1024 * 4; // 4K.
 
     private ExoPlayer mExoPlayer;
-    // Media source factory for remote videos from Tinode server.
-    private MediaSource.Factory mTinodeHttpMediaSourceFactory;
 
     private ImageView mPosterView;
     private ProgressBar mProgressView;
@@ -89,6 +87,14 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
 
     private MenuItem mDownloadMenuItem;
 
+    // Start playback at this position (ms): set when going full screen from the inline player.
+    static final String ARG_START_POSITION = "startPositionMs";
+
+    // Full-screen viewer of a received video: black, no app bar or system bars, an overlay with
+    // Back / Share / Save that comes and goes with the player controls. No file details.
+    private boolean mViewerMode;
+    private View mViewerBar;
+
     @OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -97,14 +103,6 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
 
         View view = inflater.inflate(R.layout.fragment_view_video, container, false);
 
-        DefaultHttpDataSource.Factory httpDataSourceFactory =
-                new DefaultHttpDataSource.Factory()
-                        .setAllowCrossProtocolRedirects(true)
-                        .setDefaultRequestProperties(Cache.getTinode().getRequestHeaders());
-        mTinodeHttpMediaSourceFactory =
-                new DefaultMediaSourceFactory(new CacheDataSource.Factory()
-                        .setCache(TindroidApp.getVideoCache())
-                        .setUpstreamDataSourceFactory(httpDataSourceFactory));
         // Construct ExoPlayer instance.
         mExoPlayer = new ExoPlayer.Builder(activity).build();
 
@@ -161,6 +159,20 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
         mVideoView = view.findViewById(R.id.video);
         mVideoView.setPlayer(mExoPlayer);
 
+        mViewerBar = view.findViewById(R.id.viewerBar);
+        view.findViewById(R.id.viewerBack).setOnClickListener(v -> {
+            if (isAdded()) {
+                requireActivity().getSupportFragmentManager().popBackStack();
+            }
+        });
+        view.findViewById(R.id.viewerShare).setOnClickListener(v -> {
+            Bundle args = getArguments();
+            if (args != null) {
+                MediaViewer.shareAttachment(requireActivity(), args, "video/mp4");
+            }
+        });
+        view.findViewById(R.id.viewerSave).setOnClickListener(v -> saveVideo());
+
         // Send message on button click.
         view.findViewById(R.id.chatSendButton).setOnClickListener(v -> sendVideo());
         // Send message on Enter.
@@ -176,7 +188,11 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        Bundle args = getArguments();
+        if (args != null && args.getParcelable(AttachmentHandler.ARG_LOCAL_URI) != null) {
+            // The download menu is for the outgoing preview only; the viewer has its own overlay.
+            requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        }
     }
 
     @Override
@@ -190,15 +206,29 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
             return;
         }
 
-        Toolbar toolbar = activity.findViewById(R.id.toolbar);
-        if (toolbar != null) {
-            toolbar.setTitle(R.string.video_preview);
-            toolbar.setSubtitle(null);
-            toolbar.setLogo(null);
-        }
-
         boolean initialized = false;
         final Uri localUri = args.getParcelable(AttachmentHandler.ARG_LOCAL_URI);
+        mViewerMode = localUri == null;
+        if (mViewerMode) {
+            MediaViewer.enter(activity);
+            mViewerBar.setVisibility(View.VISIBLE);
+            MediaViewer.avoidCutout(mViewerBar);
+            // The overlay shows and hides together with the player controls.
+            mVideoView.setControllerVisibilityListener(
+                    (PlayerView.ControllerVisibilityListener) visibility -> {
+                        if (mViewerBar != null) {
+                            mViewerBar.setVisibility(visibility);
+                        }
+                    });
+        } else {
+            Toolbar toolbar = activity.findViewById(R.id.toolbar);
+            if (toolbar != null) {
+                toolbar.setTitle(R.string.video_preview);
+                toolbar.setSubtitle(null);
+                toolbar.setLogo(null);
+            }
+            mViewerBar.setVisibility(View.GONE);
+        }
         if (localUri != null) {
             // Outgoing video preview.
             activity.findViewById(R.id.metaPanel).setVisibility(View.VISIBLE);
@@ -211,62 +241,15 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
         } else {
             // Viewing received video.
             activity.findViewById(R.id.metaPanel).setVisibility(View.GONE);
-            Uri ref = args.getParcelable(AttachmentHandler.ARG_REMOTE_URI);
-            if (ref != null) {
-                // Remote URL. Check if URL is trusted.
-                Tinode tinode = Cache.getTinode();
-                boolean trusted = false;
-                if (ref.isAbsolute()) {
-                    try {
-                        trusted = tinode.isTrustedURL(new URL(ref.toString()));
-                    } catch (MalformedURLException ignored) {
-                        Log.w(TAG, "Invalid video URL: '" + ref + "'");
-                    }
-                } else {
-                    URL url = tinode.toAbsoluteURL(ref.toString());
-                    if (url != null) {
-                        ref = Uri.parse(url.toString());
-                        trusted = true;
-                    } else {
-                        Log.w(TAG, "Invalid relative video URL: '" + ref + "'");
-                    }
+            mVideoView.setControllerAutoShow(false);
+            initialized = setReceivedSource(activity, mExoPlayer, args);
+            if (initialized) {
+                long startAt = args.getLong(ARG_START_POSITION, 0);
+                if (startAt > 0) {
+                    mExoPlayer.seekTo(startAt);
                 }
-
-                if (trusted) {
-                    MediaSource mediaSource =
-                            mTinodeHttpMediaSourceFactory.createMediaSource(
-                                    new MediaItem.Builder().setUri(ref).build());
-                    mExoPlayer.setMediaSource(mediaSource);
-                } else {
-                    MediaItem mediaItem = MediaItem.fromUri(ref);
-                    mExoPlayer.setMediaItem(mediaItem);
-                }
-                mVideoView.setControllerAutoShow(false);
                 mExoPlayer.prepare();
                 mExoPlayer.setPlayWhenReady(true);
-                initialized = true;
-            } else {
-                Bundle cached = Cache.getDataBundle(args.getString("cache_id"), false);
-                Bundle source = cached != null ? cached : args;
-                final byte[] bits = source.getByteArray(AttachmentHandler.ARG_SRC_BYTES);
-                if (bits != null) {
-                    try {
-                        File temp = File.createTempFile("VID_" + System.currentTimeMillis(),
-                                ".video", activity.getCacheDir());
-                        temp.deleteOnExit();
-                        try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(temp.toPath()))) {
-                            out.write(bits);
-                        }
-                        mVideoView.setControllerAutoShow(false);
-                        MediaItem mediaItem = MediaItem.fromUri(Uri.fromFile(temp));
-                        mExoPlayer.setMediaItem(mediaItem);
-                        mExoPlayer.prepare();
-                        mExoPlayer.setPlayWhenReady(true);
-                        initialized = true;
-                    } catch (IOException ex) {
-                        Log.w(TAG, "Failed to save video to temp file", ex);
-                    }
-                }
             }
         }
 
@@ -298,6 +281,20 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
         }
 
         if (item.getItemId() == R.id.action_download) {
+            saveVideo();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void saveVideo() {
+        final AppCompatActivity activity = (AppCompatActivity) getActivity();
+        final Bundle args = getArguments();
+        if (activity == null || args == null) {
+            return;
+        }
+        {
             String filename = args.getString(AttachmentHandler.ARG_FILE_NAME);
             String mime = args.getString(AttachmentHandler.ARG_MIME_TYPE);
 
@@ -315,9 +312,72 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
             byte[] bits = source.getByteArray(AttachmentHandler.ARG_SRC_BYTES);
             AttachmentHandler.enqueueDownloadAttachment(activity, ref != null ? ref.toString() : null,
                     bits, filename, mime);
+        }
+    }
+
+    /**
+     * Point the player at a received video: an out-of-band file on the BLML server (fetched with
+     * auth headers and cached), an external URL, or inline bytes. Used by the full-screen viewer
+     * and by the inline player in the chat bubble.
+     *
+     * @return true if a source was set; the caller prepares the player.
+     */
+    @OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)
+    static boolean setReceivedSource(Context context, ExoPlayer player, Bundle args) {
+        Uri ref = args.getParcelable(AttachmentHandler.ARG_REMOTE_URI);
+        if (ref != null) {
+            // Remote URL. Check if URL is trusted.
+            Tinode tinode = Cache.getTinode();
+            boolean trusted = false;
+            if (ref.isAbsolute()) {
+                try {
+                    trusted = tinode.isTrustedURL(new URL(ref.toString()));
+                } catch (MalformedURLException ignored) {
+                    Log.w(TAG, "Invalid video URL: '" + ref + "'");
+                }
+            } else {
+                URL url = tinode.toAbsoluteURL(ref.toString());
+                if (url != null) {
+                    ref = Uri.parse(url.toString());
+                    trusted = true;
+                } else {
+                    Log.w(TAG, "Invalid relative video URL: '" + ref + "'");
+                }
+            }
+
+            if (trusted) {
+                DefaultHttpDataSource.Factory httpDataSourceFactory =
+                        new DefaultHttpDataSource.Factory()
+                                .setAllowCrossProtocolRedirects(true)
+                                .setDefaultRequestProperties(tinode.getRequestHeaders());
+                MediaSource.Factory factory =
+                        new DefaultMediaSourceFactory(new CacheDataSource.Factory()
+                                .setCache(TindroidApp.getVideoCache())
+                                .setUpstreamDataSourceFactory(httpDataSourceFactory));
+                player.setMediaSource(factory.createMediaSource(new MediaItem.Builder().setUri(ref).build()));
+            } else {
+                player.setMediaItem(MediaItem.fromUri(ref));
+            }
             return true;
         }
 
+        Bundle cached = Cache.getDataBundle(args.getString("cache_id"), false);
+        Bundle source = cached != null ? cached : args;
+        final byte[] bits = source.getByteArray(AttachmentHandler.ARG_SRC_BYTES);
+        if (bits != null) {
+            try {
+                File temp = File.createTempFile("VID_" + System.currentTimeMillis(),
+                        ".video", context.getCacheDir());
+                temp.deleteOnExit();
+                try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(temp.toPath()))) {
+                    out.write(bits);
+                }
+                player.setMediaItem(MediaItem.fromUri(Uri.fromFile(temp)));
+                return true;
+            } catch (IOException ex) {
+                Log.w(TAG, "Failed to save video to temp file", ex);
+            }
+        }
         return false;
     }
 
@@ -360,11 +420,23 @@ public class VideoViewFragment extends Fragment implements MenuProvider {
     @Override
     public void onPause() {
         super.onPause();
+        Bundle args = getArguments();
+        if (mViewerMode && args != null) {
+            // Coming back (e.g. from the share sheet) continues where playback was.
+            args.putLong(ARG_START_POSITION, mExoPlayer.getPlaybackState() == Player.STATE_ENDED ? 0 :
+                    mExoPlayer.getCurrentPosition());
+        }
         mExoPlayer.stop();
+        if (mViewerMode && getActivity() != null && (isRemoving() || getActivity().isFinishing())) {
+            MediaViewer.exit(getActivity());
+        }
     }
 
     @Override
     public void onDestroyView() {
+        if (mViewerMode && getActivity() != null) {
+            MediaViewer.exit(getActivity());
+        }
         super.onDestroyView();
         mVideoView.setPlayer(null);
         mExoPlayer.release();

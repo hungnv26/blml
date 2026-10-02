@@ -575,6 +575,11 @@ public class MessagesFragment extends Fragment implements MenuProvider {
         view.findViewById(R.id.unblockButton).setOnClickListener(v ->
                 ((MessageActivity) activity).unblockTopic());
 
+        // Chat request someone sent to this user.
+        view.findViewById(R.id.requestAccept).setOnClickListener(v -> acceptChatRequest(v));
+        view.findViewById(R.id.requestDecline).setOnClickListener(v -> declineChatRequest(v));
+        view.findViewById(R.id.requestBlock).setOnClickListener(v -> blockChatRequest(v));
+
         view.findViewById(R.id.enablePeerButton).setOnClickListener(view1 -> {
             // Enable peer.
             Acs am = new Acs(mTopic.getAccessMode());
@@ -1007,7 +1012,9 @@ public class MessagesFragment extends Fragment implements MenuProvider {
         }
 
         activity.findViewById(R.id.replyPreviewWrapper).setVisibility(View.GONE);
-        if (mTopic.isReader()) {
+        boolean requestIncoming = mTopic.isChatRequestIncoming() && !mTopic.isBlockedByMe();
+        if (mTopic.isReader() || requestIncoming) {
+            // A chat request has no messages yet; the request panel says what's going on.
             activity.findViewById(R.id.notReadable).setVisibility(View.GONE);
         } else {
             activity.findViewById(R.id.notReadable).setVisibility(View.VISIBLE);
@@ -1018,6 +1025,21 @@ public class MessagesFragment extends Fragment implements MenuProvider {
         if (mTopic.isP2PType() && mTopic.isBlockedByMe()) {
             // "You blocked this contact. UNBLOCK" instead of the composer.
             setSendPanelVisible(activity, R.id.blockedByMePanel);
+        } else if (requestIncoming) {
+            // "<name> wants to chat with you" + Block / Decline / Accept.
+            String name = peerName();
+            ((TextView) activity.findViewById(R.id.requestIncomingText)).setText(name != null ?
+                    getString(R.string.chat_request_incoming, name) :
+                    getString(R.string.chat_request_incoming_unnamed));
+            setRequestButtonsEnabled(activity, true);
+            setSendPanelVisible(activity, R.id.requestIncomingPanel);
+        } else if (mTopic.isChatRequestOutgoing()) {
+            // "Request sent — you can chat once <name> accepts."
+            String name = peerName();
+            ((TextView) activity.findViewById(R.id.requestSentPanel)).setText(name != null ?
+                    getString(R.string.chat_request_sent, name) :
+                    getString(R.string.chat_request_sent_unnamed));
+            setSendPanelVisible(activity, R.id.requestSentPanel);
         } else if (!mTopic.isWriter() || mTopic.isBlocked() || mTopic.isDeleted()) {
             setSendPanelVisible(activity, R.id.sendMessageDisabled);
         } else if (mContentToForward != null) {
@@ -1041,8 +1063,12 @@ public class MessagesFragment extends Fragment implements MenuProvider {
             }
         }
 
-        if (acs.isJoiner(Acs.Side.GIVEN) && acs.getExcessive().toString().contains("RW") &&
-                !mTopic.isBlockedByMe()) {
+        // Call buttons depend on the request state.
+        activity.invalidateOptionsMenu();
+
+        // Group invitations still use the sheet; 1:1 requests have the inline panel above.
+        if (!mTopic.isP2PType() && acs.isJoiner(Acs.Side.GIVEN) &&
+                acs.getExcessive().toString().contains("RW") && !mTopic.isBlockedByMe()) {
             showChatInvitationDialog();
         }
     }
@@ -1061,6 +1087,10 @@ public class MessagesFragment extends Fragment implements MenuProvider {
         super.onPause();
 
         releaseAudio(false);
+        // A video playing inside a bubble stops when the chat is left or covered.
+        if (mMessagesAdapter != null) {
+            mMessagesAdapter.stopInlineVideo();
+        }
 
         final MessageActivity activity = (MessageActivity) requireActivity();
 
@@ -1117,8 +1147,12 @@ public class MessagesFragment extends Fragment implements MenuProvider {
                 menu.findItem(R.id.action_archive).setVisible(!mTopic.isArchived());
                 menu.findItem(R.id.action_unarchive).setVisible(mTopic.isArchived());
 
+                // No calls until a chat request is accepted (or while blocked): the server
+                // would refuse them anyway.
                 boolean callsEnabled = mTopic.isP2PType() &&
-                        Cache.getTinode().getServerParam("iceServers") != null;
+                        Cache.getTinode().getServerParam("iceServers") != null &&
+                        !mTopic.isChatRequestIncoming() && !mTopic.isChatRequestOutgoing() &&
+                        !mTopic.isBlockedByMe();
                 menu.findItem(R.id.action_video_call).setVisible(callsEnabled);
                 menu.findItem(R.id.action_audio_call).setVisible(callsEnabled);
             }
@@ -1314,6 +1348,113 @@ public class MessagesFragment extends Fragment implements MenuProvider {
                     }
                 }, mFailureListener));
         confirmBuilder.show();
+    }
+
+    /** The other person's name in a 1:1 chat, or null if unknown. */
+    @Nullable
+    private String peerName() {
+        if (mTopic == null) {
+            return null;
+        }
+        VxCard pub = mTopic.getPub();
+        String name = pub != null ? pub.fn : null;
+        return TextUtils.isEmpty(name) ? null : name.trim();
+    }
+
+    private void setRequestButtonsEnabled(Activity activity, boolean enabled) {
+        activity.findViewById(R.id.requestAccept).setEnabled(enabled);
+        activity.findViewById(R.id.requestDecline).setEnabled(enabled);
+        activity.findViewById(R.id.requestBlock).setEnabled(enabled);
+    }
+
+    /**
+     * Accept: set own want to the mode given (it has W). The server grants the requester W+P in
+     * the same step, so no second frame is needed.
+     */
+    private void acceptChatRequest(View button) {
+        final Activity activity = requireActivity();
+        if (mTopic == null) {
+            return;
+        }
+        String given = mTopic.getAccessMode().getGiven();
+        if (TextUtils.isEmpty(given) || !given.contains("W")) {
+            given = "JRWPA";
+        }
+        setRequestButtonsEnabled(activity, false);
+        mTopic.setMeta(new MsgSetMeta.Builder<VxCard, PrivateType>().with(new MetaSetSub(given)).build())
+                .thenApply(new PromisedReply.SuccessListener<>() {
+                    @Override
+                    public PromisedReply<ServerMessage> onSuccess(ServerMessage result) {
+                        activity.runOnUiThread(() -> {
+                            if (isAdded()) {
+                                updateFormValues();
+                                ((MessageActivity) activity).runMessagesLoader();
+                            }
+                        });
+                        return null;
+                    }
+                })
+                .thenCatch(new PromisedReply.FailureListener<>() {
+                    @Override
+                    public PromisedReply<ServerMessage> onFailure(Exception err) {
+                        activity.runOnUiThread(() -> setRequestButtonsEnabled(activity, true));
+                        new UiUtils.ToastFailureListener(activity).onFailure(err);
+                        return null;
+                    }
+                });
+    }
+
+    /** Decline: delete this user's side of the chat. The requester isn't told. */
+    private void declineChatRequest(View button) {
+        final Activity activity = requireActivity();
+        if (mTopic == null) {
+            return;
+        }
+        setRequestButtonsEnabled(activity, false);
+        mTopic.delete(true).thenApply(new PromisedReply.SuccessListener<>() {
+            @Override
+            public PromisedReply<ServerMessage> onSuccess(ServerMessage result) {
+                backToChatList(activity);
+                return null;
+            }
+        }).thenCatch(new PromisedReply.FailureListener<>() {
+            @Override
+            public PromisedReply<ServerMessage> onFailure(Exception err) {
+                activity.runOnUiThread(() -> setRequestButtonsEnabled(activity, true));
+                new UiUtils.ToastFailureListener(activity).onFailure(err);
+                return null;
+            }
+        });
+    }
+
+    /** Block: want - "JP", same as Block everywhere else. The chat moves to Blocked contacts. */
+    private void blockChatRequest(View button) {
+        final Activity activity = requireActivity();
+        if (mTopic == null) {
+            return;
+        }
+        setRequestButtonsEnabled(activity, false);
+        mTopic.updateMode(null, "-JP").thenApply(new PromisedReply.SuccessListener<>() {
+            @Override
+            public PromisedReply<ServerMessage> onSuccess(ServerMessage result) {
+                backToChatList(activity);
+                return null;
+            }
+        }).thenCatch(new PromisedReply.FailureListener<>() {
+            @Override
+            public PromisedReply<ServerMessage> onFailure(Exception err) {
+                activity.runOnUiThread(() -> setRequestButtonsEnabled(activity, true));
+                new UiUtils.ToastFailureListener(activity).onFailure(err);
+                return null;
+            }
+        });
+    }
+
+    private void backToChatList(Activity activity) {
+        Intent intent = new Intent(activity, ChatsActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
+        activity.finish();
     }
 
     private void showChatInvitationDialog() {

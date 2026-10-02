@@ -69,7 +69,6 @@ import java.util.concurrent.Executors;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
@@ -484,23 +483,15 @@ public class UiUtils {
     /**
      * Convert a phone number in local or international format to E.164.
      *
-     * @return the number in E.164 format or null if it is not a valid number in the region.
+     * @return the number in E.164 format or null if it is not a phone number.
      */
     @Nullable
     public static String toE164(String raw, String region) {
         if (TextUtils.isEmpty(raw)) {
             return null;
         }
-        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
-        try {
-            Phonenumber.PhoneNumber number = util.parse(raw, region);
-            if (!util.isValidNumber(number)) {
-                return null;
-            }
-            return util.format(number, PhoneNumberUtil.PhoneNumberFormat.E164);
-        } catch (NumberParseException e) {
-            return null;
-        }
+        // Lenient: spaces/brackets/dashes, and numbers that are possible but not known valid.
+        return PhoneNumbers.toE164(raw, region);
     }
 
     static boolean isPermissionGranted(Context context, String permission) {

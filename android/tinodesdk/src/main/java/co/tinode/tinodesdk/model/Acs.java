@@ -255,6 +255,38 @@ public class Acs implements Serializable {
     }
 
     /**
+     * Check if Writer (W) flag is set for the given side.
+     * @return true if flag is set.
+     */
+    public boolean isWriter(Side s) {
+        return switch (s) {
+            case MODE -> mode != null && mode.isWriter();
+            case WANT -> want != null && want.isWriter();
+            case GIVEN -> given != null && given.isWriter();
+        };
+    }
+
+    /**
+     * BLML chat request, recipient's side: the other person asked to chat and this user hasn't
+     * accepted yet. The server sets the recipient's want to "JA": J but neither R nor W, while
+     * given has J (contract-friend-requests.md, section 2).
+     */
+    @JsonIgnore
+    public boolean isChatRequestIncoming() {
+        return want != null && given != null && want.isJoiner() && !want.isReader() && !want.isWriter() &&
+                given.isJoiner();
+    }
+
+    /**
+     * BLML chat request, requester's side: this user asked to chat and the other person hasn't
+     * accepted yet. The requester wants W but isn't given it (the server gives "JRA").
+     */
+    @JsonIgnore
+    public boolean isChatRequestOutgoing() {
+        return want != null && given != null && want.isWriter() && given.isJoiner() && !given.isWriter();
+    }
+
+    /**
      * Check if Presence (P) flag is NOT set.
      * @return true if flag is NOT set.
      */

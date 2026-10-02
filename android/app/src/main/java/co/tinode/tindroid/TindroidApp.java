@@ -128,13 +128,14 @@ public class TindroidApp extends Application implements DefaultLifecycleObserver
     private static final String PREFS_HOST_SEED_VERSION = "pref_hostSeedVersion";
 
     public static String getDefaultHostName() {
-        return sContext.getResources().getString(isEmulator() ?
+        // Release builds always use the bundled host, even on an emulator.
+        return sContext.getResources().getString(BuildConfig.SERVER_CONFIG && isEmulator() ?
                 R.string.emulator_host_name :
                 R.string.default_host_name);
     }
 
     public static boolean getDefaultTLS() {
-        return !isEmulator();
+        return !BuildConfig.SERVER_CONFIG || !isEmulator();
     }
 
     public static void retainCache(Cache cache) {
@@ -264,7 +265,12 @@ public class TindroidApp extends Application implements DefaultLifecycleObserver
         // install stops pointing at whatever address it first saw.
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
         if (TextUtils.isEmpty(pref.getString(Utils.PREFS_HOST_NAME, null))
-                || pref.getInt(PREFS_HOST_SEED_VERSION, 0) < HOST_SEED_VERSION) {
+                || pref.getInt(PREFS_HOST_SEED_VERSION, 0) < HOST_SEED_VERSION
+                // Release builds have no server settings: whatever an older build or a
+                // branding config stored, they go back to the bundled host over TLS.
+                || (!BuildConfig.SERVER_CONFIG &&
+                    (!getDefaultHostName().equals(pref.getString(Utils.PREFS_HOST_NAME, null))
+                        || !pref.getBoolean(Utils.PREFS_USE_TLS, false)))) {
             SharedPreferences.Editor editor = pref.edit();
             editor.putString(Utils.PREFS_HOST_NAME, getDefaultHostName());
             editor.putBoolean(Utils.PREFS_USE_TLS, getDefaultTLS());
@@ -368,7 +374,8 @@ public class TindroidApp extends Application implements DefaultLifecycleObserver
     public void onStart(@NonNull LifecycleOwner owner) {
         // Check if the app was installed from a URL with attributed installation source.
         // If yes, get the config from hosts.tinode.co.
-        if (UiUtils.isAppFirstRun(sContext)) {
+        // Release builds never take a server address from a referrer config.
+        if (BuildConfig.SERVER_CONFIG && UiUtils.isAppFirstRun(sContext)) {
             Executors.newSingleThreadExecutor().execute(() ->
                     BrandingConfig.getInstallReferrerFromClient(sContext,
                             InstallReferrerClient.newBuilder(this).build()));

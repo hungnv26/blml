@@ -347,7 +347,26 @@
     <string name="tinode_audio_call">BLML Call</string>
     <string name="unable_to_place_call">Unable to make this call</string>
     <string name="phone_sms_explained">We will send an SMS with confirmation code to the number above.</string>
-    <string name="phone_number_required">Valid phone number required</string>
+    <string name="phone_number_required">Phone number required</string>
+    <string name="action_share">Share</string>
+    <!-- 1:1 chat requests (qa/runs/2026-10-02/contract-friend-requests.md) -->
+    <string name="chat_request_sent">Request sent — you can chat once %1$s accepts.</string>
+    <string name="chat_request_sent_unnamed">Request sent — you can chat once they accept.</string>
+    <string name="chat_request_incoming">%1$s wants to chat with you</string>
+    <string name="chat_request_incoming_unnamed">Someone wants to chat with you</string>
+    <string name="chat_request_incoming_note">They can\'t message you until you accept. Declining doesn\'t tell them.</string>
+    <string name="chat_request_accept">Accept</string>
+    <string name="chat_request_decline">Decline</string>
+    <string name="chat_request_label">Chat request</string>
+    <string name="chat_request_sent_label">Request sent</string>
+    <string name="chat_request_not_accepted">%1$s hasn\'t accepted your chat request yet.</string>
+    <string name="notification_chat_request_title">Chat request</string>
+    <string name="notification_chat_request_body">%1$s wants to chat with you</string>
+    <string name="notification_chat_request_body_unnamed">Someone wants to chat with you</string>
+    <string name="action_back">Back</string>
+    <string name="action_full_screen">Full screen</string>
+    <string name="preparing_to_share">Preparing to share…</string>
+    <string name="phone_number_invalid">That doesn\'t look like a phone number. Check the digits, or start with + and the country code.</string>
     <string name="phone_number_hint">Mobile phone number</string>
     <string name="unable_to_use_service">Service unavailable at this time. Please try again later.</string>
     <string name="email_colon">Email:</string>

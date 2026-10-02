@@ -43,6 +43,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
+import co.tinode.tindroid.PhoneNumbers;
 import co.tinode.tindroid.R;
 
 /**
@@ -140,9 +141,17 @@ public class PhoneEdit extends FrameLayout {
         }
 
         if (countryList != null) {
-            mAdapter = new PhoneNumberAdapter(context, locale.getCountry(), countryList);
+            // Default country: the device's (SIM, network, locale), else the user's own number's.
+            String region = PhoneNumbers.deviceRegion(context);
+            if (TextUtils.isEmpty(region)) {
+                region = PhoneNumbers.ownRegion();
+            }
+            if (TextUtils.isEmpty(region)) {
+                region = locale.getCountry();
+            }
+            mAdapter = new PhoneNumberAdapter(context, region, countryList);
             mSpinner.setAdapter(mAdapter);
-            setCountry(locale.getCountry());
+            setCountry(region);
         }
     }
 
@@ -191,44 +200,42 @@ public class PhoneEdit extends FrameLayout {
         return countryList;
     }
 
+    /**
+     * True if the input reads as a phone number: international or local format, any separators,
+     * and numbers that are only "possible" (not in libphonenumber's list of valid ranges) too.
+     */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isNumberValid() {
-        if (mSelected == null) {
-            return false;
-        }
-        Phonenumber.PhoneNumber number;
-        try {
-            number = mPhoneNumberUtil.parse(getPhoneNumberE164(), mSelected.isoCode);
-        } catch (NumberParseException ignored) {
-            return false;
-        }
-        PhoneNumberUtil.PhoneNumberType type = mPhoneNumberUtil.getNumberType(number);
-        return mPhoneNumberUtil.isValidNumber(number) &&
-                (type == PhoneNumberUtil.PhoneNumberType.MOBILE ||
-                        type == PhoneNumberUtil.PhoneNumberType.FIXED_LINE_OR_MOBILE);
+        return !getPhoneNumberE164().isEmpty();
     }
 
     public @NonNull String getRawInput() {
         Editable editable = mTextEdit.getText();
-        String text = editable != null ? editable.toString() : null;
+        String text = editable != null ? editable.toString().trim() : null;
         if (TextUtils.isEmpty(text)) {
             return "";
         }
-        return mSelected != null ? mSelected.prefix + text : text;
+        // A number typed with its own country code ("+61 ..." or "0061 ...") keeps it.
+        if (mSelected == null || text.startsWith("+") || text.startsWith("00")) {
+            return text;
+        }
+        return mSelected.prefix + text;
     }
 
+    /**
+     * The number in E.164, or an empty string if the input isn't a phone number. A number without
+     * a country code is read in the selected country, then the device region, then the region of
+     * the user's own number.
+     */
     public @NonNull String getPhoneNumberE164() {
-        String text = getRawInput();
-        if (TextUtils.isEmpty(text) || mSelected == null) {
-            return mSelected == null ? "" : text;
-        }
-
-        try {
-            Phonenumber.PhoneNumber number = mPhoneNumberUtil.parse(text, mSelected.isoCode);
-            return mPhoneNumberUtil.format(number, PhoneNumberUtil.PhoneNumberFormat.E164);
-        } catch (NumberParseException ex) {
+        Editable editable = mTextEdit.getText();
+        String text = editable != null ? editable.toString().trim() : "";
+        if (TextUtils.isEmpty(text)) {
             return "";
         }
+        String e164 = PhoneNumbers.toE164(text, mSelected != null ? mSelected.isoCode : null,
+                PhoneNumbers.deviceRegion(getContext()), PhoneNumbers.ownRegion());
+        return e164 != null ? e164 : "";
     }
 
     public void setText(CharSequence text) {
@@ -238,7 +245,7 @@ public class PhoneEdit extends FrameLayout {
         }
         try {
             Phonenumber.PhoneNumber number = mPhoneNumberUtil.parse(text, mSelected.isoCode);
-            if (mPhoneNumberUtil.isValidNumber(number)) {
+            if (mPhoneNumberUtil.isPossibleNumber(number)) {
                 setCountry(mPhoneNumberUtil.getRegionCodeForNumber(number));
                 mTextEdit.setText(
                         formatLocalPart(
@@ -303,7 +310,7 @@ public class PhoneEdit extends FrameLayout {
         try {
             PhoneNumberUtil pnu = PhoneNumberUtil.getInstance();
             Phonenumber.PhoneNumber number = pnu.parse(text, "");
-            if (pnu.isValidNumber(number)) {
+            if (pnu.isPossibleNumber(number)) {
                 text = pnu.format(number, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
             }
         } catch (NumberParseException ignored) {

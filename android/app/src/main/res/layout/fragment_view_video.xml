@@ -41,6 +41,12 @@
             android:layout_height="wrap_content"
             android:indeterminateTint="@color/colorChipBackground"
             android:layout_centerInParent="true" />
+
+        <include
+            layout="@layout/media_viewer_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true" />
     </RelativeLayout>
 
     <androidx.cardview.widget.CardView

@@ -92,7 +92,8 @@ public class LoginFragment extends Fragment implements MenuProvider, View.OnClic
             if (loginView != null) {
                 loginView.setText(login);
             }
-        } else if (UiUtils.isAppFirstRun(activity)) {
+        } else if (BuildConfig.SERVER_CONFIG && UiUtils.isAppFirstRun(activity)) {
+            // "Configure Connection" exists in debug builds only (QA's local server).
             View branding = view.findViewById(R.id.brandingSetup);
             branding.setVisibility(View.VISIBLE);
             branding.setOnClickListener(v ->
@@ -205,6 +206,10 @@ public class LoginFragment extends Fragment implements MenuProvider, View.OnClic
     @Override
     public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.menu_login, menu);
+        if (!BuildConfig.SERVER_CONFIG) {
+            // Server settings: debug builds only. BLML talks to chat.blml.app.
+            menu.removeItem(R.id.action_settings);
+        }
     }
 
     @Override

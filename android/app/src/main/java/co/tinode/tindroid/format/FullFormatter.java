@@ -582,10 +582,13 @@ public class FullFormatter extends AbstractDraftyFormatter<SpannableStringBuilde
             // Make image clickable by wrapping ImageSpan into a ClickableSpan.
             result = assignStyle(span, content);
             if (result != null) {
+                final int posterWidth = dim.scaledWidth;
+                final int posterHeight = dim.scaledHeight;
                 result.setSpan(new ClickableSpan() {
                     @Override
                     public void onClick(@NonNull View widget) {
-                        mClicker.onClick("VD", data, null);
+                        // Where the poster is drawn, so the video can play right there.
+                        mClicker.onClick("VD", data, new MediaTarget(widget, this, posterWidth, posterHeight));
                     }
                 }, 0, result.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
             }
@@ -881,6 +884,21 @@ public class FullFormatter extends AbstractDraftyFormatter<SpannableStringBuilde
 
     public interface ClickListener {
         boolean onClick(String type, Map<String, Object> data, Object params);
+    }
+
+    /** The view and span a media attachment was drawn into, and its size in pixels. */
+    public static class MediaTarget {
+        public final View widget;
+        public final Object span;
+        public final int width;
+        public final int height;
+
+        MediaTarget(View widget, Object span, int width, int height) {
+            this.widget = widget;
+            this.span = span;
+            this.width = width;
+            this.height = height;
+        }
     }
 
     public interface AudioControlCallback {

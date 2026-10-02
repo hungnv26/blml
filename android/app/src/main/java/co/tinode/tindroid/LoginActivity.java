@@ -151,7 +151,7 @@ public class LoginActivity extends BaseActivity
         // as you specify a parent activity in AndroidManifest.xml.
 
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_settings && BuildConfig.SERVER_CONFIG) {
             showFragment(FRAGMENT_SETTINGS, null);
             return true;
         } else if (id == R.id.action_signup) {
@@ -182,6 +182,9 @@ public class LoginActivity extends BaseActivity
                     fragment = new LoginFragment();
                     break;
                 case FRAGMENT_SETTINGS:
+                    if (!BuildConfig.SERVER_CONFIG) {
+                        return;
+                    }
                     fragment = new LoginSettingsFragment();
                     break;
                 case FRAGMENT_SIGNUP:
@@ -201,6 +204,9 @@ public class LoginActivity extends BaseActivity
                     args.putBoolean(AttachmentHandler.ARG_AVATAR, true);
                     break;
                 case FRAGMENT_BRANDING:
+                    if (!BuildConfig.SERVER_CONFIG) {
+                        return;
+                    }
                     fragment = new BrandingFragment();
                     break;
                 default:

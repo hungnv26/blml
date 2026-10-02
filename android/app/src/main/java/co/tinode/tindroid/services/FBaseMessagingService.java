@@ -254,21 +254,42 @@ public class FBaseMessagingService extends FirebaseMessagingService {
             } else if ("sub".equals(what)) {
                 // New subscription notification.
 
+                // A new 1:1 chat is a request the user has to accept: the server sets the
+                // recipient's want to "JA" (no R, no W). It sends this push only once per pair.
+                String modeWant = data.get("modeWant");
+                boolean chatRequest = tp == Topic.TopicType.P2P && modeWant != null &&
+                        !modeWant.contains("W") && !modeWant.contains("R");
+
                 // Check if this is a known topic.
                 ComTopic<VxCard> topic = (ComTopic<VxCard>) tinode.getTopic(topicName);
-                if (topic != null) {
+                if (topic != null && !(chatRequest && topic.isChatRequestIncoming())) {
+                    // A request the app already shows in the list (it got the 'acs' pres while
+                    // connected) still deserves a notification; anything else is a duplicate.
                     Log.d(TAG, "Duplicate invitation ignored: " + topicName);
                     return;
                 }
 
-                // Legitimate subscription to a new topic.
-                title = getResources().getString(R.string.new_chat);
-                if (tp == Topic.TopicType.P2P) {
+                if (chatRequest) {
+                    // "Chat request" / "<name> wants to chat with you".
+                    String name = senderName;
+                    if (getResources().getString(R.string.sender_unknown).equals(name) && topic != null &&
+                            topic.getPub() != null && !TextUtils.isEmpty(topic.getPub().fn)) {
+                        name = topic.getPub().fn;
+                    }
+                    title = getResources().getString(R.string.notification_chat_request_title);
+                    body = getResources().getString(R.string.sender_unknown).equals(name) ?
+                            getResources().getString(R.string.notification_chat_request_body_unnamed) :
+                            getResources().getString(R.string.notification_chat_request_body, name);
+                    avatar = senderIcon;
+                } else if (tp == Topic.TopicType.P2P) {
+                    // Legitimate subscription to a new topic.
+                    title = getResources().getString(R.string.new_chat);
                     // P2P message
                     body = senderName;
                     avatar = senderIcon;
 
                 } else {
+                    title = getResources().getString(R.string.new_chat);
                     // Group message
                     topic = (ComTopic<VxCard>) tinode.getTopic(topicName);
                     if (topic == null) {

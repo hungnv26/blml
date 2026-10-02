@@ -48,9 +48,15 @@ android {
             // build has no business talking to it, and these are the builds that
             // actually end up on family phones.
             resValue "string", "default_host_name", '"chat.blml.app"'
+            // Debug builds keep "Configure Connection" (server address / QR):
+            // QA's emulator builds talk to a local server at 10.0.2.2:6060.
+            buildConfigField 'boolean', 'SERVER_CONFIG', 'true'
         }
         release {
             resValue "string", "default_host_name", '"chat.blml.app"'
+            // BLML has one server. Release builds have no server settings, ignore
+            // any stored or branded host, and always use chat.blml.app over TLS.
+            buildConfigField 'boolean', 'SERVER_CONFIG', 'false'
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

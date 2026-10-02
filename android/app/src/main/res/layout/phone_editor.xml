@@ -32,9 +32,9 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="2"
-            android:digits="0123456789.-() "
+            android:digits="0123456789+.-()/ "
             android:inputType="phone"
-            android:maxLength="16"
+            android:maxLength="24"
             android:maxLines="1"
             app:errorEnabled="true"
             tools:text="000 000 0000" />

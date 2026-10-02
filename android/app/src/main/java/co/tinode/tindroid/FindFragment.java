@@ -344,7 +344,9 @@ public class FindFragment extends Fragment implements UiUtils.ProgressIndicator,
 
     private static final Pattern sSingleTagTest = Pattern.compile("[\\s,:]");
     // Digits with optional leading '+' and the usual separators: looks like a phone number.
-    private static final Pattern sPhoneLikeTest = Pattern.compile("^\\+?[0-9][0-9 ().-]{5,}$");
+    // "(0491) 570-150" starts with a bracket; unicode dashes and slashes are separators too.
+    private static final Pattern sPhoneLikeTest =
+            Pattern.compile("^\\+?[0-9(][0-9 ()./\\-\\u00A0\\u2010-\\u2015\\u2212]{5,}$");
     private String doSearch(String query) {
         query = query.trim();
         query = !TextUtils.isEmpty(query) ? query : null;
@@ -367,7 +369,7 @@ public class FindFragment extends Fragment implements UiUtils.ProgressIndicator,
         }
 
         String phone = sPhoneLikeTest.matcher(query).matches() ?
-                UiUtils.toE164(query, UiUtils.phoneRegion(requireContext())) : null;
+                PhoneNumbers.toE164ForUser(requireContext(), query) : null;
         if (TextUtils.isEmpty(query)) {
             query = Tinode.NULL_VALUE;
         } else if (phone != null) {
