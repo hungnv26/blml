@@ -18,6 +18,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    override init() {
+        // Before the storyboard or anything else touches settings, keychain or the database.
+        SharedUtils.migrateToAppGroupIfNeeded()
+        super.init()
+    }
+
     /// True while the passcode screen is up. Background/foreground churn can
     /// fire the lifecycle hooks repeatedly, and without this each pass would
     /// stack another lock screen on the last.
@@ -94,7 +100,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if SharedUtils.isFirstLaunch {
             Cache.log.info("First time launch. Setting up...")
             SharedUtils.isFirstLaunch = false
-            SharedUtils.identifyAndConfigureBranding()
         }
         SharedUtils.registerUserDefaults()
 
@@ -287,7 +292,10 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         // Only handling "msg" notifications. New subscriptions ("sub" notifications) in the foreground
         // will be handled automatically by Tinode SDK.
         guard let topicName = userInfo["topic"] as? String, !topicName.isEmpty,
-            what == nil || what == "msg", let seq = Int(userInfo["seq"] as? String ?? "") else { return }
+            what == nil || what == "msg", let seq = Int(userInfo["seq"] as? String ?? "") else {
+            completionHandler([])
+            return
+        }
 
         if let messageVC = UiUtils.topViewController(rootViewController: (UIApplication.shared.delegate as! AppDelegate).window?.rootViewController) as? MessageViewController, messageVC.topicName == topicName {
             // We are already in the correct topic. Do not present the notification.

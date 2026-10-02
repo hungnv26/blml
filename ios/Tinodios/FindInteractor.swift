@@ -51,8 +51,20 @@ class FindInteractor: FindBusinessLogic {
     func setup() {
         fndListener = FindInteractor.FndListener()
         fndListener?.interactor = self
+        // Phonebook matches are saved by ContactsSynchronizer in the background, usually after
+        // this screen has already loaded its (then empty) list: reload when they arrive.
+        NotificationCenter.default.removeObserver(self, name: ContactsSynchronizer.kContactsSyncedNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(contactsSynced),
+                                               name: ContactsSynchronizer.kContactsSyncedNotification, object: nil)
+    }
+    @objc private func contactsSynced() {
+        queue.async {
+            self.localContacts = nil
+            self.loadAndPresentContacts(searchQuery: self.searchQuery)
+        }
     }
     func cleanup() {
+        NotificationCenter.default.removeObserver(self, name: ContactsSynchronizer.kContactsSyncedNotification, object: nil)
         fndTopic?.listener = nil
         if fndTopic?.attached ?? false {
             fndTopic?.leave()
@@ -72,16 +84,18 @@ class FindInteractor: FindBusinessLogic {
 
     }
     func updateAndPresentRemoteContacts() {
-        if let subs = fndTopic?.getSubscriptions(), !(searchQuery?.isEmpty ?? true) {
-            self.remoteContacts = subs.map { sub in
-                let contact = RemoteContactHolder(pub: sub.pub, uniqueId: sub.uniqueId, subtitle: sub.priv?.joined(separator: ", "))
-                contact.sub = sub
-                return contact
+        queue.async {
+            if let subs = self.fndTopic?.getSubscriptions(), !(self.searchQuery?.isEmpty ?? true) {
+                self.remoteContacts = subs.map { sub in
+                    let contact = RemoteContactHolder(pub: sub.pub, uniqueId: sub.uniqueId, subtitle: sub.priv?.joined(separator: ", "))
+                    contact.sub = sub
+                    return contact
+                }
+            } else {
+                self.remoteContacts?.removeAll()
             }
-        } else {
-            self.remoteContacts?.removeAll()
+            self.presenter?.presentRemoteContacts(contacts: self.remoteContacts ?? [])
         }
-        self.presenter?.presentRemoteContacts(contacts: self.remoteContacts ?? [])
     }
 
     func fetchLocalContacts() -> [ContactHolder] {
@@ -101,17 +115,21 @@ class FindInteractor: FindBusinessLogic {
             }
 
             let contacts: [ContactHolder] =
-                self.searchQuery != nil ?
+                searchQuery != nil ?
                     self.localContacts!.filter { u in
                         guard let displayName = u.pub?.fn else { return false }
-                        guard let r = displayName.range(of: self.searchQuery!, options: .caseInsensitive) else {return false}
+                        guard let r = displayName.range(of: searchQuery!, options: .caseInsensitive) else {return false}
                         return r.contains(displayName.startIndex)
                     } :
                     self.localContacts!
             if changed {
                 var searchStr: String? = searchQuery
                 if let query = searchQuery, !query.isEmpty {
-                    if FindInteractor.kSingleTagTest.firstMatch(in: query, range: NSRange(location: 0, length: query.count)) == nil {
+                    if let tel = Utils.asPhone(query) {
+                        // Phone numbers first: "0491 570 104" contains spaces, which would otherwise
+                        // make it look like several tags. Sent in E.164 using the device region.
+                        searchStr = "\(Tinode.kTagPhone)\(tel)"
+                    } else if FindInteractor.kSingleTagTest.firstMatch(in: query, range: NSRange(location: 0, length: query.count)) == nil {
                         // No colons, spaces or commas. Try as email, phone, or alias.
                         if let email = Utils.asEmail(query) {
                             searchStr = "\(Tinode.kTagEmail)\(email)"

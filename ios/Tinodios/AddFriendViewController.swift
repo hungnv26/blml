@@ -89,17 +89,15 @@ class AddFriendViewController: UITableViewController {
         view.endEditing(true)
 
         let listener = SearchListener()
-        listener.onResults = { [weak self] in
+        listener.onResults = { [weak self, weak listener] in
             guard let self = self else { return }
+            listener?.onResults = nil
             let subs = Cache.tinode.getOrCreateFndTopic().getSubscriptions() ?? []
             guard let first = subs.first, let uid = first.uniqueId else {
                 UiUtils.showToast(message: NSLocalizedString("No member found with that phone number or email", comment: "Toast"))
                 return
             }
-            if let pub = first.pub {
-                ContactsManager.default.processSubscription(sub: first)
-                _ = pub // keep the card; processSubscription stores it for the chat title
-            }
+            ContactsManager.default.processSubscription(sub: first)
             self.presentChatReplacingCurrentVC(with: uid)
         }
         fndListener = listener

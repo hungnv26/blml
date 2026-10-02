@@ -123,4 +123,21 @@ class MessageActionsSheet: UIViewController {
     @objc private func dismissSheet() {
         dismiss(animated: true)
     }
+
+    // The chat's composer is the presenting screen's inputAccessoryView, which is drawn above
+    // any presented view and covered the last action (Delete for me / Recall for everyone).
+    // Taking first responder hides it while the sheet is up; onDismiss gives it back.
+    var onDismiss: (() -> Void)?
+    override var canBecomeFirstResponder: Bool { return true }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        becomeFirstResponder()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        resignFirstResponder()
+        onDismiss?()
+    }
 }

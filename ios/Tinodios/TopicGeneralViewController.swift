@@ -153,7 +153,7 @@ class TopicGeneralViewController: UITableViewController {
             }
         }
         var priv: PrivateType? = nil
-        if let comment = topicPrivateTextField.text, self.topic.comment! != comment {
+        if let comment = topicPrivateTextField.text, (self.topic.comment ?? "") != comment {
             priv = PrivateType()
             priv!.comment = comment.isEmpty ? Tinode.kNullValue : comment
         }
@@ -173,7 +173,7 @@ class TopicGeneralViewController: UITableViewController {
             return
         }
 
-        self.topic.setMeta(meta: MsgSetMeta(desc: pub != nil || priv != nil ? MetaSetDesc(pub: pub, priv: nil) : nil, tags: tags))
+        self.topic.setMeta(meta: MsgSetMeta(desc: pub != nil || priv != nil ? MetaSetDesc(pub: pub, priv: priv) : nil, tags: tags))
             .then(onSuccess: { _ in
                 DispatchQueue.main.async {
                     _ = self.navigationController?.popViewController(animated: true)

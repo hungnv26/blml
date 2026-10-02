@@ -249,7 +249,11 @@ class VideoPreviewController: UIViewController {
 
         let downloadBtn = sender as! UIBarButtonItem
         let picturesUrl: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let destinationURL = picturesUrl.appendingPathComponent(content.fileName ?? Utils.uniqueFilename(forMime: content.contentType))
+        var fileName = ((content.fileName ?? "") as NSString).lastPathComponent
+        if fileName.isEmpty || fileName == "." || fileName == ".." {
+            fileName = Utils.uniqueFilename(forMime: content.contentType)
+        }
+        let destinationURL = picturesUrl.appendingPathComponent(fileName)
 
         if let ref = ref, let url = URL(string: ref, relativeTo: Cache.tinode.baseURL(useWebsocketProtocol: false)) {
             downloadBtn.isEnabled = false

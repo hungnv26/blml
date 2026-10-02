@@ -194,19 +194,24 @@ public class Tinode {
             timer!.invalidate()
         }
         @objc private func expireFutures() {
-            futuresQueue.sync {
-                let expirationThreshold = Date().addingTimeInterval(TimeInterval(-ConcurrentFuturesMap.kFutureTimeout))
-                let error = TinodeError.serverResponseError(ServerMessage.kStatusGatewayTimeout, "timeout", nil)
+            let expirationThreshold = Date().addingTimeInterval(TimeInterval(-ConcurrentFuturesMap.kFutureTimeout))
+            let error = TinodeError.serverResponseError(ServerMessage.kStatusGatewayTimeout, "timeout", nil)
+            let expired: [PromisedReply<ServerMessage>] = futuresQueue.sync {
                 var expiredKeys = [String]()
+                var expiredFutures = [PromisedReply<ServerMessage>]()
                 for (id, f) in futuresDict {
                     if f.creationTimestamp < expirationThreshold {
-                        try? f.reject(error: error)
+                        expiredFutures.append(f)
                         expiredKeys.append(id)
                     }
                 }
                 for id in expiredKeys {
                     futuresDict.removeValue(forKey: id)
                 }
+                return expiredFutures
+            }
+            for f in expired {
+                try? f.reject(error: error)
             }
         }
         subscript(key: String) -> PromisedReply<ServerMessage>? {
@@ -217,11 +222,13 @@ public class Tinode {
             return futuresQueue.sync { return futuresDict.removeValue(forKey: key) }
         }
         func rejectAndPurgeAll(withError e: Error) {
-            futuresQueue.sync {
-                for f in futuresDict.values {
-                    try? f.reject(error: e)
-                }
+            let pending: [PromisedReply<ServerMessage>] = futuresQueue.sync {
+                let all = Array(futuresDict.values)
                 futuresDict.removeAll()
+                return all
+            }
+            for f in pending {
+                try? f.reject(error: e)
             }
         }
     }
@@ -509,7 +516,7 @@ public class Tinode {
     }
 
     public func isTrustedURL(_ url: URL) -> Bool {
-        let base = baseURL(useWebsocketProtocol: false)!
+        guard let base = baseURL(useWebsocketProtocol: false) else { return false }
         return url.scheme == base.scheme && url.host == base.host && url.port == base.port
     }
 
@@ -593,7 +600,7 @@ public class Tinode {
                 }
             }
         } else if let meta = serverMsg.meta {
-            if let t = getTopic(topicName: meta.topic!) ?? maybeCreateTopic(meta: meta) {
+            if let topicName = meta.topic, let t = getTopic(topicName: topicName) ?? maybeCreateTopic(meta: meta) {
                 t.routeMeta(meta: meta)
 
                 if let updated = t.updated, t.topicType != .fnd, t.topicType != .me {
@@ -606,7 +613,7 @@ public class Tinode {
             listenerNotifier.onMetaMessage(meta: meta)
             try resolveWithPacket(id: meta.id, pkt: serverMsg)
         } else if let data = serverMsg.data {
-            if let t = getTopic(topicName: data.topic!) {
+            if let topicName = data.topic, let t = getTopic(topicName: topicName) {
                 t.routeData(data: data)
             }
             listenerNotifier.onDataMessage(data: data)
@@ -674,9 +681,10 @@ public class Tinode {
     private func sendWithPromise<DP: Codable, DR: Codable>(payload msg: ClientMessage<DP, DR>, with id: String) -> PromisedReply<ServerMessage> {
         let future = PromisedReply<ServerMessage>()
         do {
-            try send(payload: msg)
             futures[id] = future
+            try send(payload: msg)
         } catch {
+            _ = futures.removeValue(forKey: id)
             do {
                 try future.reject(error: error)
             } catch {
@@ -754,17 +762,17 @@ public class Tinode {
         return Tinode.newTopic(withTinode: self, forTopic: name)
     }
     public func maybeCreateTopic(meta: MsgServerMeta) -> TopicProto? {
-        if meta.desc == nil {
+        guard let metaTopic = meta.topic, let desc = meta.desc as? DefaultDescription else {
             return nil
         }
 
         var topic: TopicProto?
-        if meta.topic == Tinode.kTopicMe {
-            topic = DefaultMeTopic(tinode: self, desc: meta.desc! as! DefaultDescription)
-        } else if meta.topic == Tinode.kTopicFnd {
+        if metaTopic == Tinode.kTopicMe {
+            topic = DefaultMeTopic(tinode: self, desc: desc)
+        } else if metaTopic == Tinode.kTopicFnd {
             topic = DefaultFndTopic(tinode: self)
         } else {
-            topic = DefaultComTopic(tinode: self, name: meta.topic!, desc: (meta.desc! as! DefaultDescription))
+            topic = DefaultComTopic(tinode: self, name: metaTopic, desc: desc)
         }
 
         return topic

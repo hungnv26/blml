@@ -19,33 +19,18 @@ find_array_entry() {
       continue
     fi
     if [[ $key == "$1" ]]; then
-      return $i
+      echo $i
+      return 0
     fi
   done
-  return -1
+  return 1
 }
 
-# Find key for the host name
-find_array_entry "host_name_preference"
-hn_index=$?
-if [ "$hn_index" -eq -1 ]; then
-  echo "Entry host_name_preference not found"
-  exit 1
-fi
-# Find key for TLS use
-find_array_entry "use_tls_preference"
-tls_index=$?
-if [ "$tls_index" -eq -1 ]; then
-  echo "Entry use_tls_preference not found"
-  exit 1
-fi
-# Find key for bundle version
-find_array_entry "bundle_version"
-bv_index=$?
-if [ "$bv_index" -eq -1 ]; then
-  echo "Entry bundle_version not found"
-  exit 1
-fi
+# Find the entries. BLML's Settings.bundle dropped the host name and TLS
+# entries (the server is fixed), so a missing entry is skipped, not an error.
+hn_index=$(find_array_entry "host_name_preference") || hn_index=""
+tls_index=$(find_array_entry "use_tls_preference") || tls_index=""
+bv_index=$(find_array_entry "bundle_version") || bv_index=""
 
 # Read values from Info.plist
 host_name=$(/usr/libexec/PlistBuddy -c "Print :HOST_NAME" "$info_plist" 2>/dev/null)
@@ -58,9 +43,12 @@ fi
 
 # Assign values as appropriate
 echo "Modifying preference entries in '$prefs_file'"
-/usr/libexec/PlistBuddy -c "Set PreferenceSpecifiers:${hn_index}:DefaultValue $host_name" "$prefs_file"
-echo "Assigned '$host_name' to PreferenceSpecifiers:${hn_index}:DefaultValue"
-/usr/libexec/PlistBuddy -c "Set PreferenceSpecifiers:${tls_index}:DefaultValue $use_tls" "$prefs_file"
-echo "Assigned '$use_tls' to PreferenceSpecifiers:${tls_index}:DefaultValue"
-/usr/libexec/PlistBuddy -c "Set PreferenceSpecifiers:${bv_index}:DefaultValue $bundle_version" "$prefs_file"
-echo "Assigned '$bundle_version' to PreferenceSpecifiers:${bv_index}:DefaultValue"
+assign() {
+  if [ -n "$1" ]; then
+    /usr/libexec/PlistBuddy -c "Set PreferenceSpecifiers:$1:DefaultValue $2" "$prefs_file"
+    echo "Assigned '$2' to PreferenceSpecifiers:$1:DefaultValue"
+  fi
+}
+assign "$hn_index" "$host_name"
+assign "$tls_index" "$use_tls"
+assign "$bv_index" "$bundle_version"

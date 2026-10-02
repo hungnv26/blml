@@ -208,6 +208,6 @@ public class Acs: Codable, CustomStringConvertible, Equatable {
         return Acs(given: parts[2], want: parts[1], mode: parts[0])
     }
     public static func == (lhs: Acs, rhs: Acs) -> Bool {
-        return lhs.mode == rhs.mode && lhs.want == rhs.want && lhs.given == rhs.mode
+        return lhs.mode == rhs.mode && lhs.want == rhs.want && lhs.given == rhs.given
     }
 }

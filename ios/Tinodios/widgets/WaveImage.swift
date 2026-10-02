@@ -121,6 +121,10 @@ public class WaveImage {
         self.calcMaxBars()
     }
 
+    deinit {
+        self.animationTimer?.invalidate()
+    }
+
     // MARK: - Public methods
 
     /// Update image with optionally recalculating the visualization from the original dataset.
@@ -148,7 +152,9 @@ public class WaveImage {
 
         self.timerStartedAt = Date()
         self.positionStartedAt = self.seekPosition
-        self.animationTimer = Timer.scheduledTimer(timeInterval: Double(frameDuration) * 0.001, target: self, selector: #selector(animateFrame), userInfo: nil, repeats: true)
+        self.animationTimer = Timer.scheduledTimer(withTimeInterval: Double(frameDuration) * 0.001, repeats: true) { [weak self] timer in
+            self?.animateFrame(timer: timer)
+        }
     }
 
     /// Pause playback animation.
@@ -190,8 +196,8 @@ public class WaveImage {
         if buffer.count < maxBars {
             buffer.append(CGFloat(amplitude))
         } else {
-            index = (index + 1) % buffer.count
             buffer[index] = CGFloat(amplitude)
+            index = (index + 1) % buffer.count
         }
         update(recalc: true)
     }

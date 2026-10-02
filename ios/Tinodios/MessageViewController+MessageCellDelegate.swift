@@ -66,7 +66,12 @@ extension MessageViewController: MessageCellDelegate {
             actions.append(.init(NSLocalizedString("Delete for me", comment: "Menu item"), "trash", destructive: true) { [weak self] in
                 self?.deleteMessageSoft(sender: mc)
             })
-            if topic.isDeleter {
+            // Recall (delete for everyone): only your own messages, or any message in a group
+            // where you hold the D permission (the owner, admins given D). Deleting the other
+            // person's words in a 1:1 chat is not allowed. Matches the server's rule.
+            let isOwn = messageSeqIdIndex[cell.seqId].map { isFromCurrentSender(message: messages[$0]) } ?? false
+            let isGroupManager = topic.isGrpType && topic.isDeleter
+            if isOwn || isGroupManager {
                 let maxDelAge = Cache.tinode.getServerLimit(for: Tinode.kMessageDeleteAge, withDefault: 0)
                 let canDelete = topic.isOwner || maxDelAge == 0 || (maxDelAge > 0 && (cell.timeStamp?.timeIntervalSince1970 ?? -1) > (Date().timeIntervalSince1970 - Double(maxDelAge)))
                 if canDelete {
@@ -81,6 +86,10 @@ extension MessageViewController: MessageCellDelegate {
         let seq = cell.seqId
         let sheet = MessageActionsSheet(actions: actions) { [weak self] emoji in
             self?.toggleReaction(emoji, for: seq)
+        }
+        sheet.onDismiss = { [weak self] in
+            // Bring the composer back.
+            _ = self?.becomeFirstResponder()
         }
         present(sheet, animated: true)
     }
@@ -201,7 +210,12 @@ extension MessageViewController: MessageCellDelegate {
             // Non-channel can delete at least for self.
             menuItems.append(MessageMenuItem(title: NSLocalizedString("Delete for me", comment: "Menu item"), action: #selector(deleteMessageSoft(sender:)), seqId: cell.seqId))
 
-            if topic.isDeleter {
+            // Recall (delete for everyone): only your own messages, or any message in a group
+            // where you hold the D permission (the owner, admins given D). Deleting the other
+            // person's words in a 1:1 chat is not allowed. Matches the server's rule.
+            let isOwn = messageSeqIdIndex[cell.seqId].map { isFromCurrentSender(message: messages[$0]) } ?? false
+            let isGroupManager = topic.isGrpType && topic.isDeleter
+            if isOwn || isGroupManager {
                 let maxDelAge = Cache.tinode.getServerLimit(for: Tinode.kMessageDeleteAge, withDefault: 0)
                 let canDelete = topic.isOwner || maxDelAge == 0 || (maxDelAge > 0 && (cell.timeStamp?.timeIntervalSince1970 ?? -1) > (Date().timeIntervalSince1970 - Double(maxDelAge)))
                 if canDelete {
@@ -449,7 +463,11 @@ extension MessageViewController: MessageCellDelegate {
         guard let data = MessageViewController.extractAttachment(from: cell), !data.isEmpty else { return }
         let d = data[0]
         // FIXME: use actual mime instead of nil when generating file name.
-        let filename = url.extractQueryParam(named: "filename") ?? Utils.uniqueFilename(forMime: nil)
+        let rawName = url.extractQueryParam(named: "filename") ?? ""
+        var filename = URL(fileURLWithPath: rawName).lastPathComponent
+        if filename.isEmpty || filename == "." || filename == ".." || filename == "/" {
+            filename = Utils.uniqueFilename(forMime: nil)
+        }
         let documentsUrl: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let destinationURL = documentsUrl.appendingPathComponent(filename)
         do {

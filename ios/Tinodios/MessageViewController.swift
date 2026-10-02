@@ -882,7 +882,7 @@ extension MessageViewController: UICollectionViewDataSource {
                 cell.content.textColor = Constants.kOutgoingTextColorDark
             } else {
                 cell.containerView.backgroundColor = Constants.kOutgoingBubbleColorLight
-                cell.content.textColor = Constants.kOutgoingTextColorDark
+                cell.content.textColor = Constants.kOutgoingTextColorLight
             }
         } else {
             if traitCollection.userInterfaceStyle == .dark {

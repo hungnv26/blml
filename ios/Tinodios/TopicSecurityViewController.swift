@@ -143,6 +143,7 @@ class TopicSecurityViewController: UITableViewController {
     }
 
     private func reloadData() {
+        guard let topic = self.topic else { return }
         let acs = topic.accessMode
 
         if self.topic.isGrpType {
@@ -191,11 +192,25 @@ class TopicSecurityViewController: UITableViewController {
         }
     }
 
+    /// Go back to the chat list once the chat is gone (deleted, left, blocked).
+    /// It used to push a second chat list on top of the stack, so Back led to the
+    /// stale chat and info screens of the contact that had just been blocked.
+    private func returnToChatList() {
+        let tabs = self.tabBarController
+        let chatsNav = UiUtils.mainNavVC()
+        if let nav = self.navigationController, nav !== chatsNav {
+            // Opened from another tab (e.g. Contacts): reset that tab too.
+            nav.popToRootViewController(animated: false)
+        }
+        tabs?.selectedIndex = 0
+        chatsNav?.popToRootViewController(animated: true)
+    }
+
     private func deleteTopic() {
         topic.delete(hard: true).then(
             onSuccess: { _ in
                 DispatchQueue.main.async {
-                    self.performSegue(withIdentifier: "TopicSecurity2Chats", sender: nil)
+                    self.returnToChatList()
                 }
                 return nil
             },
@@ -206,7 +221,7 @@ class TopicSecurityViewController: UITableViewController {
         topic.updateMode(uid: nil, update: "-JP").then(
             onSuccess: { _ in
                 DispatchQueue.main.async {
-                    self.performSegue(withIdentifier: "TopicSecurity2Chats", sender: nil)
+                    self.returnToChatList()
                 }
                 return nil
             },
@@ -243,13 +258,16 @@ class TopicSecurityViewController: UITableViewController {
 
         let alert = UIAlertController(title: NSLocalizedString("Clear all messages?", comment: "Alert title"), message: nil, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "Alert action"), style: .cancel, handler: nil))
-        if topic.isDeleter {
+        // "For all" deletes everyone's messages: only group members with the D permission may do
+        // that. In a 1:1 chat it would include the other person's messages and the server refuses.
+        let canClearForAll = topic.isGrpType && topic.isDeleter
+        if canClearForAll {
             alert.addAction(UIAlertAction(
                 title: NSLocalizedString("For all", comment: "Alert action qualifier as in 'Delete for all'"), style: .destructive,
                 handler: { _ in handler(true) }))
         }
         alert.addAction(UIAlertAction(
-            title: topic.isDeleter ? NSLocalizedString("For me", comment: "Alert action 'Delete for me'") : NSLocalizedString("OK", comment: "Alert action"), style: .destructive,
+            title: canClearForAll ? NSLocalizedString("For me", comment: "Alert action 'Delete for me'") : NSLocalizedString("OK", comment: "Alert action"), style: .destructive,
             handler: { _ in handler(false) }))
         present(alert, animated: true)
     }

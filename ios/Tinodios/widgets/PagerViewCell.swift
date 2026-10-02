@@ -23,6 +23,8 @@ public class PagerViewCell: UICollectionViewCell {
     // MARK: - UI Properties
     public var view: UIView? {
         didSet {
+            if oldValue === view { return }
+            oldValue?.removeFromSuperview()
             self.setup()
         }
     }

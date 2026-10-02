@@ -30,6 +30,7 @@ protocol SendMessageBarDelegate: AnyObject {
     func sendMessageBar(attachment: AttachmentKind)
     func sendMessageBar(textChangedTo text: String)
     func sendMessageBar(enablePeersMessaging: Bool)
+    func sendMessageBarUnblock()
     func sendMessageBar(recordAudio: AudioBarAction)
 }
 
@@ -475,6 +476,63 @@ class SendMessageBar: UIView {
     public func toggleNotAvailableOverlay(visible: Bool) {
         allDisabledView.isHidden = !visible
         isUserInteractionEnabled = !visible
+    }
+
+    // Replaces the input field when the user has blocked the peer: "You blocked this contact. [Unblock]".
+    private lazy var blockedView: UIView = {
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.backgroundColor = self.backgroundColor ?? .systemBackground
+
+        let label = UILabel()
+        label.text = NSLocalizedString("You blocked this contact.", comment: "Shown instead of the message input field in a blocked chat")
+        label.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        label.textColor = .secondaryLabel
+        label.adjustsFontForContentSizeCategory = true
+        label.numberOfLines = 2
+
+        let button = UIButton(type: .system)
+        button.setTitle(NSLocalizedString("Unblock", comment: "Button: unblock a blocked contact"), for: .normal)
+        button.titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
+        // The app's accent: the bar's own tint is grey.
+        button.tintColor = UIColor(fromHexCode: 0xff00a884)
+        button.addTarget(self, action: #selector(unblockClicked), for: .touchUpInside)
+
+        let stack = UIStackView(arrangedSubviews: [label, button])
+        stack.axis = .horizontal
+        stack.spacing = 12
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            stack.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -16),
+            stack.centerYAnchor.constraint(equalTo: container.topAnchor, constant: 30),
+        ])
+        return container
+    }()
+
+    @objc private func unblockClicked() {
+        self.delegate?.sendMessageBarUnblock()
+    }
+
+    public func toggleBlockedOverlay(visible: Bool) {
+        if visible && blockedView.superview == nil {
+            addSubview(blockedView)
+            NSLayoutConstraint.activate([
+                blockedView.topAnchor.constraint(equalTo: topAnchor),
+                blockedView.bottomAnchor.constraint(equalTo: bottomAnchor),
+                blockedView.leadingAnchor.constraint(equalTo: leadingAnchor),
+                blockedView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            ])
+        }
+        guard blockedView.superview != nil else { return }
+        if visible {
+            bringSubviewToFront(blockedView)
+            inputField.resignFirstResponder()
+        }
+        blockedView.isHidden = !visible
     }
 
     public func togglePeerMessagingDisabled(visible: Bool) {

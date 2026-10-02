@@ -291,6 +291,7 @@ public class ServerMessage: Codable {
     public static let kStatusResetContent        = 205 // 6.3.6
     public static let kStatusMultipleChoices     = 300 // 6.4.1
     public static let kStatusSeeOther            = 303 // 6.4.4
+    public static let kStatusNotModified         = 304 // 4.1
     public static let kStatusBadRequest          = 400 // 6.5.1
     public static let kStatusUnauthorized        = 401 // 3.1
     public static let kStatusInternalServerError = 500 // 6.6.1

@@ -53,10 +53,10 @@ class SettingsHelpViewController: UITableViewController {
         let versionCode = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
         self.appVersion.text = "\(version) (\(versionCode))"
 
-        // No fallback to tinode.co: BLML has no public terms/privacy pages, and
-        // pointing users at the upstream project's site would be misleading.
-        self.tosUrl = SharedUtils.tosUrl.flatMap { URL(string: $0) }
-        self.privacyUrl = SharedUtils.privacyUrl.flatMap { URL(string: $0) }
+        // BLML's own Terms of Use and Privacy Policy. Never the values fetched from
+        // hosts.tinode.co, which would point users at the upstream project's site.
+        self.tosUrl = URL(string: SharedUtils.kTermsOfUseUrl)
+        self.privacyUrl = URL(string: SharedUtils.kPrivacyPolicyUrl)
 
         // Logo.
         if let logo = SharedUtils.largeIcon {

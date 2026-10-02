@@ -840,14 +840,14 @@ open class Drafty: Codable, CustomStringConvertible, Equatable {
     ///
     /// - Returns: 'self' Drafty object.
     internal func insertButton(at: Int, len: Int, name: String?, actionType: String, actionValue: String?, refUrl: URL?) throws -> Drafty {
-        prepareForEntity(at: at, len: len)
-
         guard actionType == "url" || actionType == "pub" else {
             throw DraftyError.illegalArgument("Unknown action type \(actionType)")
         }
-        guard actionType == "url" && refUrl != nil else {
+        guard actionType != "url" || refUrl != nil else {
             throw DraftyError.illegalArgument("URL required for URL buttons")
         }
+
+        prepareForEntity(at: at, len: len)
 
         var data: [String: JSONValue] = [:]
         data["act"] = JSONValue.string(actionType)
@@ -1775,7 +1775,7 @@ public class Style: Codable, CustomStringConvertible, Equatable {
     /// Styles are the same if they are the same type, start at the same location,
     /// have the same length and key
     public static func == (lhs: Style, rhs: Style) -> Bool {
-        return lhs.tp == rhs.tp && lhs.at == rhs.at && lhs.at == rhs.at && lhs.key == rhs.key
+        return lhs.tp == rhs.tp && lhs.at == rhs.at && lhs.len == rhs.len && lhs.key == rhs.key
     }
 
     /// Represents Style as JSON-like string.

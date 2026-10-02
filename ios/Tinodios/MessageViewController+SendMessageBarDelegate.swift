@@ -31,23 +31,7 @@ extension MessageViewController: SendMessageBarDelegate {
             self.interactor?.sendMessage(content: content)
         }
 
-        // A message with a bare link gets the page title appended, so the
-        // family sees "— Video Title" instead of guessing at a naked URL. The
-        // lookup goes through our own server (which enforces the SSRF policy);
-        // on any failure or after 3s the message just sends as typed.
-        if let url = MessageViewController.firstBareLink(in: sendText) {
-            MessageViewController.fetchLinkTitle(for: url) { title in
-                DispatchQueue.main.async {
-                    if let title = title, !sendText.contains(title) {
-                        sendNow(sendText + "\n— " + title)
-                    } else {
-                        sendNow(sendText)
-                    }
-                }
-            }
-        } else {
-            sendNow(sendText)
-        }
+        sendNow(sendText)
     }
 
     /// First http(s) URL in the text, if any.
@@ -266,6 +250,10 @@ extension MessageViewController: SendMessageBarDelegate {
         if enablePeersMessaging {
             interactor?.enablePeersMessaging()
         }
+    }
+
+    func sendMessageBarUnblock() {
+        interactor?.unblockTopic()
     }
 
     func sendMessageBar(recordAudio action: AudioBarAction) {

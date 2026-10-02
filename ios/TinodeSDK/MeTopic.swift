@@ -91,7 +91,7 @@ open class MeTopic<DP: Codable & Mergeable>: Topic<DP, PrivateType, DP, PrivateT
                     me.store?.topicUpdate(topic: me)
 
                     // Notify listeners
-                    (me.listener as! Listener).onCredUpdated(cred: me.creds)
+                    (me.listener as? Listener)?.onCredUpdated(cred: me.creds)
                 }
                 return nil
             }

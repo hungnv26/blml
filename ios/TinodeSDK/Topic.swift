@@ -417,6 +417,13 @@ open class Topic<DP: Codable & Mergeable, DR: Codable & Mergeable, SP: Codable, 
     public var isBlocked: Bool {
         return !(description.acs?.isJoiner(for: Acs.Side.given) ?? false)
     }
+    /// The current user has blocked this topic: 'J' is missing from the user's own 'want'.
+    /// Such a topic must not be subscribed to with a plain {sub}: that would ask the server
+    /// to restore the default access and silently undo the block.
+    public var isBlockedByMe: Bool {
+        guard let want = description.acs?.want, want.isDefined else { return false }
+        return !want.isJoiner
+    }
     public var isDeleter: Bool {
         return description.acs?.isDeleter ?? false
     }
@@ -1542,14 +1549,60 @@ open class Topic<DP: Codable & Mergeable, DR: Codable & Mergeable, SP: Codable, 
 
     public func setSeqAndFetch(newSeq: Int?) {
         guard let newSeq = newSeq, newSeq > description.getSeq else { return }
-        let limit = newSeq - description.getSeq
         self.setSeq(seq: newSeq)
-        if !self.attached {
-            self.subscribe(set: nil, get: self.metaGetBuilder().withLaterData(limit: limit).build()).thenApply({ _ in
-                self.leave()
+        fetchLaterDataInBackground()
+    }
+
+    // Background fetches of messages which arrived while the topic was not attached.
+    // They must not overlap: a burst of {pres} used to start one {sub}+{leave} pair per
+    // message, the pairs collided on the server ('304 already subscribed', '304 not
+    // joined') and the colliding requests returned no data, so the cache was left with
+    // holes that were never filled.
+    private let bkgFetchLock = NSLock()
+    private var bkgFetchInFlight = false
+    private var bkgFetchAgain = false
+
+    private func fetchLaterDataInBackground() {
+        // An attached topic receives {data} directly.
+        // A blocked topic must not be subscribed to (see isBlockedByMe).
+        guard !self.attached, !self.isBlockedByMe else { return }
+        bkgFetchLock.lock()
+        if bkgFetchInFlight {
+            // Fetch again once the current fetch is done.
+            bkgFetchAgain = true
+            bkgFetchLock.unlock()
+            return
+        }
+        bkgFetchInFlight = true
+        bkgFetchAgain = false
+        bkgFetchLock.unlock()
+
+        let finish: () -> Void = { [weak self] in
+            guard let self = self else { return }
+            self.bkgFetchLock.lock()
+            let again = self.bkgFetchAgain
+            self.bkgFetchInFlight = false
+            self.bkgFetchLock.unlock()
+            if again {
+                self.fetchLaterDataInBackground()
+            }
+        }
+        // No limit: fetch everything after the newest cached message (the server caps the page).
+        self.subscribe(set: nil, get: self.metaGetBuilder().withLaterData().build()).then(
+            onSuccess: { [weak self] _ in
+                // Stay attached if a screen started showing the topic in the meantime:
+                // leaving now would detach the open chat.
+                guard let self = self, self.listener == nil else {
+                    finish()
+                    return nil
+                }
+                self.leave().thenFinally { finish() }
+                return nil
+            },
+            onFailure: { _ in
+                finish()
                 return nil
             })
-        }
     }
 
     public func getMessage(byEffectiveSeq seqId: Int) -> Message? {

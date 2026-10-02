@@ -60,7 +60,6 @@ class CameraManager: NSObject {
             videoDataOutput.connection(with: .video)?.isVideoMirrored = true
         } else {
             Cache.log.error("CallVC - Could not add video data output to the session")
-            captureSession.commitConfiguration()
         }
     }
 
@@ -197,21 +196,17 @@ class WebRTCClient: NSObject {
 
     // Adds all locally cached remote ICE candidates to the peer connection.
     func drainIceCandidatesCache() {
-        Cache.log.info("Draining iceCandidateCache: %d items", self.remoteIceCandidatesCache.count)
-        var success = true
         self.remoteIceCandidatesCacheQueue.sync {
+            Cache.log.info("Draining iceCandidateCache: %d items", self.remoteIceCandidatesCache.count)
             self.remoteIceCandidatesCache.forEach { candidate in
                 self.localPeer?.add(candidate) { err in
                     if let err = err {
                         Cache.log.error("WebRTCClient.drainIceCandidatesCache - could not add ICE candidate: %@", err.localizedDescription)
-                        success = false
+                        self.delegate?.closeCall()
                     }
                 }
             }
             self.remoteIceCandidatesCache.removeAll()
-        }
-        if !success {
-            self.delegate?.closeCall()
         }
     }
 
@@ -1030,7 +1025,9 @@ extension CallViewController: WebRTCClientDelegate {
     }
 
     func closeCall() {
-        self.handleCallClose()
+        DispatchQueue.main.async {
+            self.handleCallClose()
+        }
     }
 
     func handleRemoteStream(_ client: WebRTCClient, receivedStream stream: RTCMediaStream) {
@@ -1050,8 +1047,10 @@ extension CallViewController: WebRTCClientDelegate {
     }
 
     func markConnectionSetupComplete() {
-        self.callInitialSetupComplete = true
-        self.webRTCClient.drainIceCandidatesCache()
+        DispatchQueue.main.async {
+            self.callInitialSetupComplete = true
+            self.webRTCClient.drainIceCandidatesCache()
+        }
     }
 
     func toggleRemoteVideo(remoteLive: Bool) {

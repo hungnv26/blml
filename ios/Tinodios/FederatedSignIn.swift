@@ -27,7 +27,7 @@ import UIKit
 /// offered (guideline 4.8), so both buttons always go together on iOS.
 final class FederatedSignIn: NSObject {
     static let kScheme = "firebase"
-    static let kTermsURL = URL(string: "https://hungngo.net/blml/terms")!
+    static let kTermsURL = URL(string: SharedUtils.kTermsOfUseUrl)!
 
     /// Firebase is otherwise started only after login (push setup), but the
     /// sign-in buttons live on the login screen.

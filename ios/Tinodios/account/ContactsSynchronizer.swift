@@ -45,16 +45,19 @@ class ContactsSynchronizer {
             }
         }
     }
-    private static let kTinodeServerSyncMarker = "tinodeServerSyncMarker"
+    /// Posted after phonebook matches have been saved, so open contact lists can reload.
+    public static let kContactsSyncedNotification = Notification.Name("ContactsSynchronizer.contactsSynced")
+    // The marker is cleared together with the local database (BaseDb.clearDb). It used to
+    // survive sign-out, so after signing in again or to another (e.g. new) account the server
+    // was asked only for matches newer than the previous sync, and the fresh database never
+    // got the phonebook matches.
     private var serverSyncMarker: Date? {
         get {
-            return SharedUtils.kAppDefaults.object(
-                forKey: ContactsSynchronizer.kTinodeServerSyncMarker) as? Date
+            return SharedUtils.kAppDefaults.object(forKey: SharedUtils.kPrefContactsSyncMarker) as? Date
         }
         set {
             if let v = newValue {
-                SharedUtils.kAppDefaults.set(
-                    v, forKey: ContactsSynchronizer.kTinodeServerSyncMarker)
+                SharedUtils.kAppDefaults.set(v, forKey: SharedUtils.kPrefContactsSyncMarker)
             }
         }
     }
@@ -168,6 +171,11 @@ class ContactsSynchronizer {
                 if try future.waitResult() {
                     let pkt = try! future.getResult()
                     guard let subs = pkt?.meta?.sub else { return }
+                    defer {
+                        if !subs.isEmpty {
+                            NotificationCenter.default.post(name: ContactsSynchronizer.kContactsSyncedNotification, object: nil)
+                        }
+                    }
                     for sub in subs {
                         if Tinode.topicTypeByName(name: sub.user) == .p2p {
                             if (lastSyncMarker ?? Date.distantPast) < (sub.updated ?? Date.distantPast) {

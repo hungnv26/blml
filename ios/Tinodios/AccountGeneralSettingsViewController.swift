@@ -343,7 +343,7 @@ extension AccountGeneralSettingsViewController {
             self.me.delCredential(cred).then(
                 onSuccess: { [weak self] _ in
                     DispatchQueue.main.async {
-                        tableView.deleteRows(at: [indexPath], with: .fade)
+                        self?.reloadData()
                     }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                         // Update tags

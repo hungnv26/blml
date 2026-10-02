@@ -104,6 +104,7 @@ class CallManager {
         guard self.callInProgress == nil else {
             if seq == self.callInProgress!.seq && self.callInProgress!.topic == topicName {
                 // FIXME: this should not really happen. Find the source of duplicates and fix it.
+                completion?(CallError.busy("Duplicate call notification"))
                 return
             }
             Cache.log.info("Hanging up: another call in progress")

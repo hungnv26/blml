@@ -97,7 +97,7 @@ public class Defacs: Codable, Equatable {
             if self.anon == nil {
                 self.anon = AcsHelper(a: AcsHelper.kModeNone)
             }
-            changed = changed || self.anon!.update(from: anon)
+            changed = self.anon!.update(from: anon) || changed
         }
         return changed
     }

@@ -53,6 +53,7 @@ class PinnedMessagesView: UICollectionReusableView {
     }
 
     @IBAction func unpinMessageClick(_ sender: Any) {
+        guard selectedPage < pins.count else { return }
         delegate?.didTapCancel(seq: pins[selectedPage])
     }
 
@@ -69,6 +70,10 @@ class PinnedMessagesView: UICollectionReusableView {
     public var pins: [Int] = [] {
         didSet {
             dotSelectorView.dotCount = pins.count
+            if selectedPage >= pins.count {
+                selectedPage = max(0, pins.count - 1)
+            }
+            dotSelectorView.selected = selectedPage
             var pages: [UIView] = []
             if !pins.isEmpty {
                 guard let topicName = topicName, let topic = Cache.tinode.getTopic(topicName: topicName) else { return }
@@ -158,7 +163,9 @@ extension PinnedMessagesView: UITextViewDelegate {
             textView.backgroundColor = .systemBackground
         })
 
-        delegate?.didTapMessage(seq: pins[selectedPage])
+        if selectedPage < pins.count {
+            delegate?.didTapMessage(seq: pins[selectedPage])
+        }
         return false
     }
 }

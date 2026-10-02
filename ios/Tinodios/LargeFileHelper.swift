@@ -282,7 +282,9 @@ extension LargeFileHelper: URLSessionDownloadDelegate {
         }
 
         guard let url = downloadTask.originalRequest?.url else { return }
-        let fn = url.extractQueryParam(named: "origfn") ?? url.lastPathComponent
+        let rawName = url.extractQueryParam(named: "origfn") ?? url.lastPathComponent
+        let fn = (rawName as NSString).lastPathComponent
+        guard !fn.isEmpty, fn != ".", fn != ".." else { return }
 
         let documentsUrl: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let destinationURL = documentsUrl.appendingPathComponent(fn)

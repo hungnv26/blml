@@ -19,11 +19,13 @@ class BrandingViewController: UIViewController {
     @IBOutlet weak var cameraPreviewView: UIView!
 
     override func viewDidLoad() {
+        super.viewDidLoad()
         self.configurationCodeField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: UIControl.Event.editingChanged)
         self.qrScanner = QRScanner(embedIn: self.cameraPreviewView, expectedCodePrefix: BrandingViewController.kTinodeHostUriPrefix, delegate: self)
     }
 
     override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         self.qrScanner.start()
     }
 

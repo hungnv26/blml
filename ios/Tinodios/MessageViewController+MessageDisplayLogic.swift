@@ -236,9 +236,14 @@ extension MessageViewController: MessageDisplayLogic {
             self.collectionView.removeNoAccessOverlay()
         }
 
-        let publishingForbidden = !(self.topic?.isWriter ?? false) || err != nil
+        // The user has blocked this contact: replace the input field with "You blocked this contact. Unblock".
+        let blockedByMe = (self.topic?.isP2PType ?? false) && (self.topic?.isBlockedByMe ?? false)
+        self.sendMessageBar.toggleBlockedOverlay(visible: blockedByMe)
+
+        let publishingForbidden = !(self.topic?.isWriter ?? false) || err != nil || blockedByMe
         // No "W" permission. Replace input field with a message "Not available".
-        self.sendMessageBar.toggleNotAvailableOverlay(visible: publishingForbidden)
+        // The blocked overlay must stay tappable, so it replaces this one.
+        self.sendMessageBar.toggleNotAvailableOverlay(visible: publishingForbidden && !blockedByMe)
         if publishingForbidden {
             // Dismiss all pending messages.
             self.togglePreviewBar(with: nil)

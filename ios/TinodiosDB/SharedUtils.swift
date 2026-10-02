@@ -21,6 +21,10 @@ public class SharedUtils {
     static public let kTinodePrefTypingNotifications = "tinodePrefTypingNoficications"
     static public let kTinodePrefAppLaunchedBefore = "tinodePrefAppLaunchedBefore"
 
+    // BLML's own legal pages. Shown in Settings › Help and About and at sign-up.
+    static public let kTermsOfUseUrl = "https://hungngo.net/blml/terms"
+    static public let kPrivacyPolicyUrl = "https://chat.blml.app/privacy"
+
     static public let kTinodePrefTosUrl = "tinodePrefTosUrl"
     static public let kTinodePrefServiceName = "tinodePrefServiceName"
     static public let kTinodePrefPrivacyUrl = "tinodePrefPrivacyUrl"
@@ -34,6 +38,8 @@ public class SharedUtils {
     // friend" can pass it on: the server is invite-only, and nobody remembers a
     // code they typed once at signup.
     static public let kPrefInviteCode = "invite_code_preference"
+    // Time of the newest phonebook match received by ContactsSynchronizer.
+    static public let kPrefContactsSyncMarker = "tinodeServerSyncMarker"
 
     // App Tinode api key.
     private static let kApiKey = "AQAAAAABAAC-d-KsShjNeHzNi7myV36_"
@@ -70,6 +76,52 @@ public class SharedUtils {
     // stack, override the host in iOS Settings rather than changing this.
     public static let kDefaultHostName = "chat.blml.app"
     public static let kDefaultUseTLS = true
+
+    /// One-time move of the app's data into the App Group container.
+    ///
+    /// Builds signed without the App Group entitlement (everything up to 1.2) kept the
+    /// database, the settings and the login token in app-private storage. Once the
+    /// entitlement is back, the same code looks in the group container instead and would
+    /// find nothing: everyone would be signed out after the update. Main app only, and
+    /// before anything reads SharedUtils.kAppDefaults or BaseDb.sharedInstance.
+    public static func migrateToAppGroupIfNeeded() {
+        guard BaseDb.kAppGroupAvailable, let groupDefaults = UserDefaults(suiteName: BaseDb.kAppGroupId) else { return }
+        let kMigratedKey = "appGroupMigrated"
+        guard !groupDefaults.bool(forKey: kMigratedKey) else { return }
+        defer { groupDefaults.set(true, forKey: kMigratedKey) }
+
+        // Settings: copy what the group does not have yet.
+        if let bundleId = Bundle.main.bundleIdentifier,
+           let old = UserDefaults.standard.persistentDomain(forName: bundleId) {
+            for (key, value) in old where groupDefaults.object(forKey: key) == nil {
+                groupDefaults.set(value, forKey: key)
+            }
+        }
+        // Login token.
+        let oldKeychain = KeychainWrapper(serviceName: "co.tinode.tinodios")
+        let groupKeychain = KeychainWrapper(serviceName: "co.tinode.tinodios", accessGroup: BaseDb.kAppGroupId)
+        for key in [kTokenKey, kTokenExpiryKey] {
+            if groupKeychain.string(forKey: key, withAccessibility: .afterFirstUnlock) == nil,
+               let value = oldKeychain.string(forKey: key, withAccessibility: .afterFirstUnlock) {
+                groupKeychain.set(value, forKey: key, withAccessibility: .afterFirstUnlock)
+            }
+        }
+        // Database.
+        let fm = FileManager.default
+        if let group = fm.containerURL(forSecurityApplicationGroupIdentifier: BaseDb.kAppGroupId),
+           let docs = fm.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let name = "database.sqlite"
+            if !fm.fileExists(atPath: group.appendingPathComponent(name).path) {
+                for suffix in ["", "-wal", "-shm", "-journal"] {
+                    let src = docs.appendingPathComponent(name + suffix)
+                    if fm.fileExists(atPath: src.path) {
+                        try? fm.moveItem(at: src, to: group.appendingPathComponent(name + suffix))
+                    }
+                }
+            }
+        }
+        BaseDb.log.info("Moved app data into the App Group container")
+    }
 
     // Returns true if the app is being launched for the first time.
     public static var isFirstLaunch: Bool {
@@ -489,9 +541,9 @@ public class SharedUtils {
                 if let privacyUrl  = URL(string: responseJSON["privacy_url"] as? String ?? "") {
                     SharedUtils.privacyUrl = privacyUrl.absoluteString
                 }
-                if let apiUrl = URL(string: responseJSON["api_url"] as? String ?? "") {
-                    let useTLS = ["https", "ws"].contains(apiUrl.scheme) ? "true" : "false"
-                    setConnectionSettings(apiUrl.host!, useTLS)
+                if let apiUrl = URL(string: responseJSON["api_url"] as? String ?? ""), let host = apiUrl.host {
+                    let useTLS = ["https", "wss"].contains(apiUrl.scheme) ? "true" : "false"
+                    setConnectionSettings(host, useTLS)
                 }
                 if let id = responseJSON["id"] as? String {
                     SharedUtils.appId = id

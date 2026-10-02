@@ -571,7 +571,7 @@ class UiUtils {
             onSuccess: { msg in
                 if let ctrl = msg?.ctrl, ctrl.code >= 300 {
                     DispatchQueue.main.async {
-                        UiUtils.showToast(message: String(format: NSLocalizedString("Permissions not modified: %d (%s)", comment: "Toast notification"), ctrl.code, ctrl.text), level: .warning)
+                        UiUtils.showToast(message: String(format: NSLocalizedString("Permissions not modified: %d (%@)", comment: "Toast notification"), ctrl.code, ctrl.text), level: .warning)
                     }
                 }
                 return nil

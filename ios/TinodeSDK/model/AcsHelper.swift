@@ -89,8 +89,8 @@ public class AcsHelper: Codable, CustomStringConvertible, Equatable {
         self.a = a
     }
     public func hasPermissions(forMode mode: Int) -> Bool {
-        guard !isInvalid else { return false }
-        return (a! & mode) != 0
+        guard let a = a, a != AcsHelper.kModeInvalid else { return false }
+        return (a & mode) != 0
     }
     private static func decode(from modeStr: String?) -> Int {
         guard let mode = modeStr, mode.count > 0 else {
@@ -201,8 +201,8 @@ public class AcsHelper: Codable, CustomStringConvertible, Equatable {
     }
     // Bitwise & operator.
     public static func and(a1: AcsHelper?, a2: AcsHelper?) -> AcsHelper? {
-        guard let ah1 = a1, let ah2 = a2, !ah1.isInvalid, !ah2.isInvalid else { return nil }
-        return AcsHelper(a: ah1.a! & ah2.a!)
+        guard let a1a = a1?.a, let a2a = a2?.a, a1a != AcsHelper.kModeInvalid, a2a != AcsHelper.kModeInvalid else { return nil }
+        return AcsHelper(a: a1a & a2a)
     }
     // Bits present in a1 but missing in a2.
     public static func diff(a1: AcsHelper?, a2: AcsHelper?) -> AcsHelper? {

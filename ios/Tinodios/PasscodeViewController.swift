@@ -41,6 +41,7 @@ class PasscodeViewController: UIViewController {
     private var stage: Stage
     /// The first of the two matching entries during setup.
     private var firstEntry: String?
+    private var isProcessing = false
     private var entry: String = "" {
         didSet { refreshDots() }
     }
@@ -269,20 +270,22 @@ class PasscodeViewController: UIViewController {
     // MARK: - Input
 
     @objc private func digitTapped(_ sender: UIButton) {
-        guard entry.count < Passcode.kLength, let digit = sender.title(for: .normal) else { return }
+        guard !isProcessing, entry.count < Passcode.kLength, let digit = sender.title(for: .normal) else { return }
         errorLabel.text = " "
         entry.append(digit)
         if entry.count == Passcode.kLength {
             // Let the last dot paint before the screen changes under it.
             let complete = entry
+            isProcessing = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in
+                self?.isProcessing = false
                 self?.process(complete)
             }
         }
     }
 
     @objc private func backspaceTapped() {
-        guard !entry.isEmpty else { return }
+        guard !isProcessing, !entry.isEmpty else { return }
         entry.removeLast()
     }
 

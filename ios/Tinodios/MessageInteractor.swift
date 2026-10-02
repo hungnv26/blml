@@ -18,6 +18,13 @@ public enum PendingMessage {
     case edit(message: Drafty, markdown: String, seqId: Int)
 }
 
+/// The server refused to let the user join a group they were not invited to (403, what="invite-only").
+struct InviteOnlyGroupError: LocalizedError {
+    var errorDescription: String? {
+        return NSLocalizedString("This group is invite-only. Ask a member to add you.", comment: "Error: joining a group by ID or QR code without an invitation")
+    }
+}
+
 protocol MessageBusinessLogic: AnyObject {
     @discardableResult
     func setup(topicName: String?, sendReadReceipts: Bool) -> Bool
@@ -33,6 +40,7 @@ protocol MessageBusinessLogic: AnyObject {
     func acceptInvitation()
     func ignoreInvitation()
     func blockTopic()
+    func unblockTopic()
 
     func uploadAudio(_ def: UploadDef)
     func uploadFile(_ def: UploadDef)
@@ -190,8 +198,38 @@ class MessageInteractor: DefaultComTopic.Listener, MessageBusinessLogic, Message
         }
     }
     func attachToTopic(interactively: Bool) -> Bool {
+        return attachToTopic(interactively: interactively, unblock: false)
+    }
+
+    /// Lift the user's own block of a p2p topic and attach to it.
+    func unblockTopic() {
+        guard let topic = self.topic, topic.isBlockedByMe else { return }
+        if topic.attached {
+            topic.updateMode(uid: nil, update: "+JP").then(
+                onSuccess: { [weak self] _ in
+                    self?.presenter?.applyTopicPermissions(withError: nil)
+                    return nil
+                },
+                onFailure: UiUtils.ToastFailureHandler)
+            return
+        }
+        _ = attachToTopic(interactively: true, unblock: true)
+    }
+
+    private func attachToTopic(interactively: Bool, unblock: Bool) -> Bool {
+        if let topic = self.topic, topic.isBlockedByMe, !unblock {
+            // The user has blocked this contact. Do not subscribe: a plain {sub} asks the server
+            // to restore the default access, i.e. it would silently lift the block. Show what
+            // is cached and offer to unblock instead.
+            self.presenter?.applyTopicPermissions(withError: nil)
+            return false
+        }
         guard let topic = self.topic, !topic.attached else {
             self.presenter?.applyTopicPermissions(withError: nil)
+            if self.topic != nil {
+                // Attached elsewhere (e.g. by a background fetch): still repair holes in the cache.
+                self.messageInteractorQueue.async { self.fetchMissingMessages() }
+            }
             return true
         }
         let tinode = Cache.tinode
@@ -210,7 +248,15 @@ class MessageInteractor: DefaultComTopic.Listener, MessageBusinessLogic, Message
         if topic.isOwner {
             builder = builder.withTags()
         }
-        topic.subscribe(set: nil, get: builder.build()).then(
+        let query = builder.build()
+        var setMsg: MsgSetMeta<TheCard, PrivateType>? = nil
+        if unblock {
+            // Ask for 'J' and 'P' back explicitly.
+            let want = AcsHelper(ah: topic.accessMode?.want)
+            _ = want.update(from: "+JP")
+            setMsg = MsgSetMeta(desc: nil, sub: MetaSetSub(user: nil, mode: want.description), tags: nil, cred: nil)
+        }
+        topic.subscribe(set: setMsg, get: query).then(
                 onSuccess: { [weak self] msg in
                     // Check for topic redirects.
                     if let ctrl = msg?.ctrl, ctrl.code == ServerMessage.kStatusSeeOther {
@@ -222,7 +268,13 @@ class MessageInteractor: DefaultComTopic.Listener, MessageBusinessLogic, Message
                         }
                         return nil
                     }
+                    if let ctrl = msg?.ctrl, ctrl.code == ServerMessage.kStatusNotModified {
+                        // A background fetch (Topic.setSeqAndFetch) had already attached the topic,
+                        // so the server ignored this {sub} together with its {get}. Ask again.
+                        topic.getMeta(query: query)
+                    }
                     self?.messageInteractorQueue.async {
+                        self?.fetchMissingMessages()
                         self?.topic?.syncAll().then(
                             onSuccess: { [weak self] _ in
                                 self?.loadMessagesFromCache()
@@ -242,6 +294,23 @@ class MessageInteractor: DefaultComTopic.Listener, MessageBusinessLogic, Message
                     return nil
                 },
                 onFailure: { [weak self] err in
+                    if case TinodeError.serverResponseError(let code, _, let what) = err,
+                       code == 403, what == "invite-only" {
+                        // Groups are invite-only: a stranger with the group's ID or QR code, or a
+                        // removed member, cannot join on their own.
+                        let inviteOnly = InviteOnlyGroupError()
+                        DispatchQueue.main.async {
+                            UiUtils.showToast(message: inviteOnly.localizedDescription)
+                        }
+                        self?.presenter?.applyTopicPermissions(withError: inviteOnly)
+                        if let t = self?.topic, (t.cachedMessageRange?.upper ?? 0) <= 1 {
+                            // Never a member (opened by ID or QR code): don't leave an empty,
+                            // unjoinable group behind in the chat list.
+                            Cache.tinode.stopTrackingTopic(topicName: t.name)
+                            t.expunge(hard: true)
+                        }
+                        return nil
+                    }
                     let tinode = Cache.tinode
                     let errorMsg = String(format: NSLocalizedString("Failed to subscribe to topic: %@", comment: "Error message"), err.localizedDescription)
                     if tinode.isConnected {
@@ -391,7 +460,9 @@ class MessageInteractor: DefaultComTopic.Listener, MessageBusinessLogic, Message
                 // Currently, no notifications are scheduled.
                 doScheduleNotification = true
             }
-            let es = explicitSeq ?? 0
+            // nil means "everything up to the latest message". Keep it as the maximum so that
+            // older messages arriving in the same window (e.g. backfilled gaps) don't lower it.
+            let es = explicitSeq ?? Int.max
             if es > self.maxReadNoteSeqIdInFlight {
                 self.maxReadNoteSeqIdInFlight = es
             }
@@ -399,7 +470,7 @@ class MessageInteractor: DefaultComTopic.Listener, MessageBusinessLogic, Message
         guard doScheduleNotification else { return }
         messageInteractorQueue.asyncAfter(deadline: deadline) { [weak self] in
             guard let explicitSeq = self?.maxReadNoteSeqIdInFlight else { return }
-            self?.topic?.noteRead(explicitSeq: explicitSeq > 0 ? explicitSeq : nil)
+            self?.topic?.noteRead(explicitSeq: explicitSeq > 0 && explicitSeq < Int.max ? explicitSeq : nil)
             self?.maxReadNoteSeqIdInFlight = -1
         }
     }
@@ -419,6 +490,29 @@ class MessageInteractor: DefaultComTopic.Listener, MessageBusinessLogic, Message
                 self.presenter?.presentMessages(messages: self.messages, scrollToMostRecentMessage)
             }
         }
+    }
+
+    /// Fetch messages missing from the cached copy of the most recent pages: messages that
+    /// arrived while the chat was not open and never made it to the cache. Without this the
+    /// holes stay forever, because opening the chat only asks for messages newer than the
+    /// newest cached one and scrolling back only looks below the oldest one shown.
+    private func fetchMissingMessages() {
+        guard let t = self.topic, t.attached, let cached = t.cachedMessageRange, cached.upper > 1 else { return }
+        let pageSize = self.pagesToLoad * MessageInteractor.kMessagesPerPage
+        // startFrom is exclusive and compares the end of each cached range, hence hi + 1.
+        guard let missing = t.missingMessageRanges(startFrom: cached.upper + 1, pageSize: pageSize, newer: false),
+              !missing.isEmpty else { return }
+        Cache.log.info("MessageInteractor - fetching %d missing message range(s) in %@", missing.count, t.name)
+        t.getMeta(query: t.metaGetBuilder().withData(ranges: missing, limit: nil).build())
+            .then(
+                onSuccess: { [weak self] _ in
+                    self?.loadMessagesFromCache(scrollToMostRecentMessage: false)
+                    return nil
+                },
+                onFailure: { err in
+                    Cache.log.error("MessageInteractor - failed to fetch missing messages: %@", err.localizedDescription)
+                    return nil
+                })
     }
 
     // Browsing backwards: load page from cache and maybe from server.
@@ -492,8 +586,33 @@ class MessageInteractor: DefaultComTopic.Listener, MessageBusinessLogic, Message
                 self?.loadMessagesFromCache()
                 return nil
             },
-            onFailure: UiUtils.ToastFailureHandler)
+            onFailure: { [weak self] err in
+                guard hard, let e = err as? TinodeError, case TinodeError.serverResponseError(let code, _, _) = e,
+                      ServerMessage.kStatusBadRequest <= code && code < ServerMessage.kStatusInternalServerError else {
+                    return UiUtils.ToastFailureHandler(err: err)
+                }
+                // The server refused to delete for everyone (e.g. someone else's message).
+                // The message is already gone from the cache, replaced by a pending-delete marker
+                // which would be retried forever: drop the marker and fetch the message back.
+                self?.undoRefusedDelete(seqIds: seqIds)
+                DispatchQueue.main.async {
+                    UiUtils.showToast(message: NSLocalizedString("This message can't be recalled for everyone. You can delete it for yourself.", comment: "Toast notification: the server refused to delete a message for everyone"))
+                }
+                return nil
+            })
         self.loadMessagesFromCache()
+    }
+
+    private func undoRefusedDelete(seqIds: [Int]) {
+        guard let topic = self.topic, let store = topic.store, let ranges = MsgRange.toRanges(seqIds) else { return }
+        for r in ranges {
+            // The pending-delete marker starts at the first seq of the range.
+            _ = store.msgDiscard(topic: topic, seqId: r.lower)
+        }
+        topic.getMeta(query: topic.metaGetBuilder().withData(ranges: ranges, limit: nil).build())
+            .thenFinally { [weak self] in
+                self?.loadMessagesFromCache(scrollToMostRecentMessage: false)
+            }
     }
 
     func deleteFailedMessages() {
@@ -726,7 +845,7 @@ class MessageInteractor: DefaultComTopic.Listener, MessageBusinessLogic, Message
                 var draft: Drafty?
                 switch type {
                 case .audio:
-                    draft = MessageInteractor.draftyAudio(refurl: ref, mimeType: mimeType, data: nil, duration: def.duration!, preview: def.preview!, size: def.data.count)
+                    draft = MessageInteractor.draftyAudio(refurl: srvUrl, mimeType: mimeType, data: nil, duration: def.duration!, preview: def.preview!, size: def.data.count)
                 case .file:
                     draft = try? Drafty().attachFile(mime: mimeType, fname: filename, refurl: srvUrl, size: def.data.count)
                 case .image:

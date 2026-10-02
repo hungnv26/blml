@@ -97,7 +97,7 @@ class FilePreviewController: UIViewController, UIScrollViewDelegate {
 
         // Full not found, try major part, e.g. "text/plain" -> "text".
         let parts = mime.split(separator: "/")
-        if let icon = FilePreviewController.kMimeToIcon[String(parts[0])] {
+        if let major = parts.first, let icon = FilePreviewController.kMimeToIcon[String(major)] {
             return icon
         }
 

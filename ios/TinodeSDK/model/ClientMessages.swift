@@ -243,6 +243,9 @@ public class MsgGetMeta: CustomStringConvertible, Codable {
         if cred {
             self.set |= MsgGetMeta.kCredSet
         }
+        if aux {
+            self.set |= MsgGetMeta.kAuxSet
+        }
         buildWhat()
     }
     private func buildWhat() {

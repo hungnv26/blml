@@ -41,6 +41,8 @@ class NotificationService: UNNotificationServiceExtension {
 
         if let bestAttemptContent = bestAttemptContent {
             let payload = bestAttemptContent.userInfo
+            defer { self.contentHandler!(bestAttemptContent) }
+
             guard let topicName = payload["topic"] as? String, !topicName.isEmpty, let from = payload["xfrom"] as? String, !from.isEmpty else { return }
 
             let action = payload["what"] as? String ?? "msg"
@@ -49,8 +51,6 @@ class NotificationService: UNNotificationServiceExtension {
                 // Not handling it here.
                 return
             }
-
-            defer { self.contentHandler!(bestAttemptContent) }
 
             let store = BaseDb.sharedInstance.sqlStore!
             let topicType = Tinode.topicTypeByName(name: topicName)
@@ -71,7 +71,10 @@ class NotificationService: UNNotificationServiceExtension {
                     }
                     tinode.disconnect()
                 }
-                senderName = user?.pub?.fn ?? NSLocalizedString("Unknown", comment: "Placeholder for missing user name")
+                // In a p2p chat the topic is named after the peer, so a cached topic carries the name too
+                // (the user row may be missing while the topic is known, and then nothing is fetched).
+                let topic = user == nil ? store.topicGet(from: nil, withName: topicName) as? DefaultComTopic : nil
+                senderName = user?.pub?.fn ?? topic?.pub?.fn ?? NSLocalizedString("Unknown", comment: "Placeholder for missing user name")
                 break
             case .grp:
                 let topic = store.topicGet(from: nil, withName: topicName) as? DefaultComTopic

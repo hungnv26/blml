@@ -94,6 +94,53 @@ class SignupViewController: UITableViewController {
         telTextField.withDefaultPickerUI = true
         passwordTextField.showSecureEntrySwitch()
         UiUtils.dismissKeyboardForTaps(onView: self.view)
+        setupTermsFooter()
+    }
+
+    /// "By signing up you agree to the Terms of Use and the Privacy Policy" with tappable links,
+    /// below the Sign up button (App Review 1.2: users must accept the terms before posting).
+    private func setupTermsFooter() {
+        let terms = NSLocalizedString("Terms of Use", comment: "Link to the Terms of Use")
+        let privacy = NSLocalizedString("Privacy Policy", comment: "Link to the Privacy Policy")
+        let text = String(format: NSLocalizedString("By signing up you agree to the %1$@ and the %2$@. No objectionable content, no abusive behaviour.", comment: "Sign-up: terms acceptance. %1$@ is 'Terms of Use', %2$@ is 'Privacy Policy'"), terms, privacy)
+
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .center
+        let attributed = NSMutableAttributedString(string: text, attributes: [
+            .font: UIFont.preferredFont(forTextStyle: .footnote),
+            .foregroundColor: UIColor.secondaryLabel,
+            .paragraphStyle: paragraph
+        ])
+        let nsText = text as NSString
+        if let url = URL(string: SharedUtils.kTermsOfUseUrl) {
+            attributed.addAttribute(.link, value: url, range: nsText.range(of: terms))
+        }
+        if let url = URL(string: SharedUtils.kPrivacyPolicyUrl) {
+            attributed.addAttribute(.link, value: url, range: nsText.range(of: privacy))
+        }
+
+        let textView = UITextView()
+        textView.attributedText = attributed
+        textView.isEditable = false
+        textView.isScrollEnabled = false
+        textView.backgroundColor = .clear
+        textView.textContainerInset = UIEdgeInsets(top: 12, left: 16, bottom: 24, right: 16)
+        textView.accessibilityIdentifier = "signupTerms"
+        termsFooter = textView
+        tableView.tableFooterView = textView
+    }
+    private var termsFooter: UITextView?
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // Size the terms footer to its text.
+        guard let footer = termsFooter else { return }
+        let width = tableView.bounds.width
+        let height = ceil(footer.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height)
+        if footer.frame.width != width || footer.frame.height != height {
+            footer.frame = CGRect(x: 0, y: 0, width: width, height: height)
+            tableView.tableFooterView = footer
+        }
     }
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -193,7 +240,8 @@ class SignupViewController: UITableViewController {
                         SharedUtils.saveAuthToken(for: login, token: tinode.authToken, expires: tinode.authTokenExpires)
                         if let ctrl = msg?.ctrl, ctrl.code >= 300, ctrl.text.contains("validate credentials") {
                             DispatchQueue.main.async {
-                                UiUtils.routeToCredentialsVC(in: self!.navigationController, verifying: ctrl.getStringArray(for: "cred")?.first)
+                                guard let signupVC = self else { return }
+                                UiUtils.routeToCredentialsVC(in: signupVC.navigationController, verifying: ctrl.getStringArray(for: "cred")?.first)
                             }
                         } else {
                             if let token = Cache.tinode.authToken {
@@ -255,6 +303,9 @@ class SignupViewController: UITableViewController {
                         return
                     }
                     UiUtils.ToastFailureHandler(err: error)
+                    DispatchQueue.main.async {
+                        self.signUpButton.isUserInteractionEnabled = true
+                    }
                 })
                 return
             }

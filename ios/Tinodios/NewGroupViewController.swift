@@ -228,8 +228,9 @@ extension NewGroupViewController: EditMembersDelegate {
     }
 
     func editMembersDidEndEditing(_: UIView, added: [String], removed: [String]) {
-        selectedUids.formUnion(added)
-        selectedUids.subtract(removed)
+        var newUids = selectedUids
+        newUids.formUnion(added)
+        newUids.subtract(removed)
         var success = true
         // A simple tableView.reloadData() results in a crash. Thus doing this crazy stuff.
         let removedPaths = removed.map({(rem: String) -> IndexPath in
@@ -242,7 +243,7 @@ extension NewGroupViewController: EditMembersDelegate {
             }
         })
         guard success else { return }
-        let newSelection = ContactsManager.default.fetchContacts(withUids: selectedMembers) ?? []
+        let newSelection = ContactsManager.default.fetchContacts(withUids: newUids.map { $0 }) ?? []
         let addedPaths = added.map({(add: String) -> IndexPath in
             if let row = newSelection.firstIndex(where: { h in h.uniqueId == add }) {
                 return IndexPath(row: row + 1, section: 1)
@@ -251,12 +252,13 @@ extension NewGroupViewController: EditMembersDelegate {
                 return IndexPath(row: -1, section: 1)
             }
         })
-        guard success && selectedUids.count == newSelection.count else {
+        guard success && newUids.count == newSelection.count else {
             UiUtils.showToast(message: "Invalid member selection. Try again.")
             return
         }
 
         tableView.beginUpdates()
+        selectedUids = newUids
         selectedContacts = newSelection
         self.tableView.deleteRows(at: removedPaths, with: .automatic)
         self.tableView.insertRows(at: addedPaths, with: .automatic)

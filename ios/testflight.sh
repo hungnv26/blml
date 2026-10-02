@@ -78,9 +78,6 @@ xcodebuild -exportArchive -archivePath "$BUILD_DIR/BLML.xcarchive" \
 IPA=$(find "$BUILD_DIR/export" -name '*.ipa' | head -1)
 [ -n "$IPA" ] || die "no .ipa produced"
 
-# Catch the common signing mistakes here rather than after a 95 MB upload and a
-# rejection email.
-ENT=$(codesign -d --entitlements :- "$BUILD_DIR/export"/*.ipa 2>/dev/null || true)
 log "Validating before upload"
 xcrun altool --validate-app -f "$IPA" -t ios \
   --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID" 2>&1 | tail -5

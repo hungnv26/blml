@@ -59,8 +59,22 @@ class BlockedContactsTableViewController: UITableViewController {
     }
 
     private func unblockTopic(topic: DefaultComTopic) {
-        topic.subscribe().then(
+        // Ask for 'J' and 'P' back explicitly: a plain {sub} is not supposed to lift a block.
+        let want = AcsHelper(ah: topic.accessMode?.want)
+        _ = want.update(from: "+JP")
+        let response: PromisedReply<ServerMessage>
+        if topic.attached {
+            response = topic.setMeta(sub: MetaSetSub(user: nil, mode: want.description))
+        } else {
+            response = topic.subscribe(set: MsgSetMeta(desc: nil, sub: MetaSetSub(user: nil, mode: want.description), tags: nil, cred: nil), get: nil)
+        }
+        response.then(
             onSuccess: { [weak self] _ in
+                // Leave only after the subscription is confirmed, otherwise {leave} overtakes {sub}.
+                // Stay attached if the chat is open.
+                if topic.listener == nil {
+                    topic.leave()
+                }
                 if let vc = self {
                     vc.handleSuccess(vc)
                 }
@@ -68,7 +82,6 @@ class BlockedContactsTableViewController: UITableViewController {
             },
             onFailure: UiUtils.ToastFailureHandler
         )
-        topic.leave()
     }
 
     private func deleteTopic(_ name: String) {

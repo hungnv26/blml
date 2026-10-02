@@ -152,6 +152,9 @@ public class BaseDb {
             self.accountDb?.truncateTable()
             self.clearSequences()
         }
+        // Phonebook matches live in the users table just cleared: make the next contacts sync
+        // ask the server for all of them again, not only those newer than the last sync.
+        SharedUtils.kAppDefaults.removeObject(forKey: SharedUtils.kPrefContactsSyncMarker)
     }
 
     private func dropDb() {

@@ -334,7 +334,7 @@ Placeholder for missing user self-description */
 "Password updated" = "密碼更新";
 
 /* Toast notification */
-"Permissions not modified: %d (%s)" = "未修改權限：%1$d (%2$s)";
+"Permissions not modified: %d (%@)" = "未修改權限：%1$d (%2$@)";
 
 /* Label shown next to an inline image */
 "Picture" = "圖片";

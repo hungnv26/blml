@@ -67,6 +67,8 @@ public class RoundImageView: UIImageView {
 
     private var radius: CGFloat?
 
+    private var avatarURL: URL?
+
     // MARK: - Overridden Properties
     override public var frame: CGRect {
         didSet {
@@ -101,6 +103,7 @@ public class RoundImageView: UIImageView {
     }
 
     public func set(pub: TheCard?, id: String?, deleted: Bool) {
+        self.avatarURL = nil
         if let icon = pub?.photo?.image {
             // Use thumbnail, if present.
             // Clean up.
@@ -136,7 +139,10 @@ public class RoundImageView: UIImageView {
                 return request
             }
 
-            KingfisherManager.shared.retrieveImage(with: url.downloadURL, options: [.requestModifier(modifier)], completionHandler: { result in
+            let downloadURL = url.downloadURL
+            self.avatarURL = downloadURL
+            KingfisherManager.shared.retrieveImage(with: downloadURL, options: [.requestModifier(modifier)], completionHandler: { [weak self] result in
+                guard let self = self, self.avatarURL == downloadURL else { return }
                 if case .success(let value) = result {
                     self.initials = nil
                     self.backgroundColor = nil

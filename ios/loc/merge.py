@@ -45,11 +45,13 @@ def patch_xliff_file(source_file_path, dest_file_path):
     # 1. Collect all trans-units from the source file into a dictionary by ID
     source_trans_units = {}
     # Search for trans-unit elements anywhere under the root, respecting the namespace
-    for trans_unit_element in source_root.findall('.//xliff:trans-unit', NS_MAP):
-        unit_id = trans_unit_element.get('id')
-        if unit_id:
-            source_trans_units[unit_id] = trans_unit_element
-            # print(f"Source: Found <trans-unit id='{unit_id}'>") # Optional: for debugging
+    for file_element in source_root.findall('.//xliff:file', NS_MAP):
+        file_original = file_element.get('original')
+        for trans_unit_element in file_element.findall('.//xliff:trans-unit', NS_MAP):
+            unit_id = trans_unit_element.get('id')
+            if unit_id:
+                source_trans_units[(file_original, unit_id)] = trans_unit_element
+                # print(f"Source: Found <trans-unit id='{unit_id}'>") # Optional: for debugging
 
     if not source_trans_units:
         print("Warning: No <trans-unit> elements with IDs found in the source file.")
@@ -65,13 +67,17 @@ def patch_xliff_file(source_file_path, dest_file_path):
     # 3. Iterate through trans-units in the destination file and replace if a match is found in source.
     # We need to iterate carefully if modifying the tree.
     # Finding all relevant units first, then processing them is safer.
-    dest_units_to_process = list(dest_root.findall('.//xliff:trans-unit', NS_MAP))
+    dest_units_to_process = [
+        (file_element.get('original'), trans_unit_element)
+        for file_element in dest_root.findall('.//xliff:file', NS_MAP)
+        for trans_unit_element in file_element.findall('.//xliff:trans-unit', NS_MAP)
+    ]
 
-    for dest_trans_unit in dest_units_to_process:
+    for dest_file_original, dest_trans_unit in dest_units_to_process:
         dest_unit_id = dest_trans_unit.get('id')
 
-        if dest_unit_id and dest_unit_id in source_trans_units:
-            source_unit_to_insert = source_trans_units[dest_unit_id]
+        if dest_unit_id and (dest_file_original, dest_unit_id) in source_trans_units:
+            source_unit_to_insert = source_trans_units[(dest_file_original, dest_unit_id)]
             parent = parent_map.get(dest_trans_unit)
 
             if parent is not None:

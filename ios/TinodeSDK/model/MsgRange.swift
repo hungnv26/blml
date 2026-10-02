@@ -162,7 +162,7 @@ public class MsgRange: Codable, Comparable {
     ///  - clip range to subtract.
     /// - Returns array with 0, 1 or 2 elements.
     public static func clip(src: MsgRange, clip: MsgRange) -> [MsgRange] {
-        guard clip.upper >= src.lower && clip.lower < src.upper else {
+        guard clip.upper > src.lower && clip.lower < src.upper else {
             // Clip is completely outside of src, no intersection.
             return [src]
         }
@@ -173,7 +173,7 @@ public class MsgRange: Codable, Comparable {
                 return []
             }
             // Partial clipping at the top.
-            return [MsgRange(low: src.lower, hi: clip.upper)]
+            return [MsgRange(low: clip.upper, hi: src.upper)]
         }
 
         // Range on the lower end.

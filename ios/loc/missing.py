@@ -121,8 +121,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "output_file",
+        nargs="?",
         default="",
-        help="Path to the output file (e.g., es.xml)"
+        help="Path to the output file (default: missing-<input name> next to the input)"
     )
     args = parser.parse_args()
 

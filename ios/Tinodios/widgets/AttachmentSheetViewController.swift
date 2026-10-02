@@ -47,6 +47,7 @@ public class AttachmentSheetViewController: UIViewController {
 
     private let panel = UIView()
     private let dimmer = UIView()
+    private var panelOffscreen: NSLayoutConstraint!
     private var panelBottom: NSLayoutConstraint!
 
     /// Called with the chosen kind after the sheet has dismissed itself.
@@ -88,7 +89,9 @@ public class AttachmentSheetViewController: UIViewController {
             row.addArrangedSubview(makeButton(for: item, tag: index))
         }
 
-        panelBottom = panel.topAnchor.constraint(equalTo: view.bottomAnchor)
+        panelOffscreen = panel.topAnchor.constraint(equalTo: view.bottomAnchor)
+        // Extends past the bottom safe area so no gap shows under the panel.
+        panelBottom = panel.bottomAnchor.constraint(equalTo: view.bottomAnchor)
 
         NSLayoutConstraint.activate([
             dimmer.topAnchor.constraint(equalTo: view.topAnchor),
@@ -98,9 +101,7 @@ public class AttachmentSheetViewController: UIViewController {
 
             panel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             panel.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            // Extends past the bottom safe area so no gap shows under the panel.
-            panel.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            panelBottom,
+            panelOffscreen,
 
             grabber.topAnchor.constraint(equalTo: panel.topAnchor, constant: 8),
             grabber.centerXAnchor.constraint(equalTo: panel.centerXAnchor),
@@ -149,7 +150,8 @@ public class AttachmentSheetViewController: UIViewController {
 
         // Slide up from below the screen once the panel's real height is known.
         view.layoutIfNeeded()
-        panelBottom.isActive = false
+        panelOffscreen.isActive = false
+        panelBottom.isActive = true
         UIView.animate(withDuration: 0.25) {
             self.dimmer.alpha = 1
             self.view.layoutIfNeeded()

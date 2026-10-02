@@ -141,7 +141,8 @@ class ImagePreviewController: UIViewController, UIScrollViewDelegate {
         guard case let .rawdata(imageBits, ref) = content.imgContent else { return }
 
         let picturesUrl: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let destinationURL = picturesUrl.appendingPathComponent(content.fileName ?? Utils.uniqueFilename(forMime: content.contentType))
+        let safeName = content.fileName.map { ($0 as NSString).lastPathComponent }.flatMap { $0.isEmpty ? nil : $0 }
+        let destinationURL = picturesUrl.appendingPathComponent(safeName ?? Utils.uniqueFilename(forMime: content.contentType))
         let data = ref != nil ? self.imageView.image?.pixelData(forMimeType: content.contentType) : imageBits
         guard let data = data else { return }
         do {

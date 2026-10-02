@@ -70,7 +70,7 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate, URLSessionDelegate {
 
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         /// Don't call delegate?.onDisconnected in this method. It would close the next connection.
-        completionHandler(.useCredential, URLCredential(trust: challenge.protectionSpace.serverTrust!))
+        completionHandler(.performDefaultHandling, nil)
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
@@ -78,6 +78,7 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate, URLSessionDelegate {
     }
 
     func connect(req: URLRequest) {
+        session?.invalidateAndCancel()
         session = URLSession(configuration: .default, delegate: self, delegateQueue: delegateQueue)
         socket = session.webSocketTask(with: req)
         state = .connecting
@@ -89,6 +90,7 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate, URLSessionDelegate {
     func close() {
         state = .closing
         socket.cancel(with: .goingAway, reason: nil)
+        session?.finishTasksAndInvalidate()
     }
 
     func send(text: String) {

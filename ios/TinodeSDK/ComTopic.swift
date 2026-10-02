@@ -153,6 +153,7 @@ public class ComTopic: Topic<TheCard, PrivateType, TheCard, PrivateType> {
         if limit <= 0 || self.seq == nil || self.seq! == 0 {
             // Invalid limit or topic has no messages.
             onLoaded([], nil)
+            return
         }
 
         // Sanitize 'from'.

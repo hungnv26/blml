@@ -225,7 +225,7 @@
 "Password too short" = "Password too short";
 
 /* Toast notification */
-"Permissions not modified: %d (%s)" = "Permissions not modified: %1$d (%2$s)";
+"Permissions not modified: %d (%@)" = "Permissions not modified: %1$d (%2$@)";
 
 /* Progress overlay */
 "Please wait..." = "Please wait...";

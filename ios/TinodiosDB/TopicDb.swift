@@ -347,7 +347,7 @@ public class TopicDb {
                     if updateMaxLocalSeq { st.maxLocalSeq = seq }
                 }
             } catch {
-                BaseDb.log.error("TopicDb - msgReceived failed: topicId = %@, error = %@", recordId, error.localizedDescription)
+                BaseDb.log.error("TopicDb - msgReceived failed: topicId = %lld, error = %@", recordId, error.localizedDescription)
                 return false
             }
         }
