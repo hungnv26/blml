@@ -138,6 +138,9 @@ export const LINK_PRIVACY_POLICY = 'https://chat.blml.app/privacy';
 // Link to Terms of Service.
 export const LINK_TERMS_OF_SERVICE = 'https://hungngo.net/blml/terms';
 
+// Open-source licenses page, served next to index.html.
+export const LINK_LICENSES = 'licenses.html';
+
 // When user starts a P2P topic, automatic subscription does not
 // happen until the first message. Setting this option to true enables
 // immediate subscription.

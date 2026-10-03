@@ -152,8 +152,7 @@ Other documentation:
 
 ## License
 
-BLML is built on [Tinode](https://github.com/tinode/chat). The server is
-licensed under the **GNU GPL v3.0**; the iOS, Android and web clients under the
-**Apache License 2.0**. Both licenses and the upstream copyright notices are
-preserved in `server/LICENSE`, `ios/LICENSE`, `android/LICENSE` and
-`webapp/LICENSE`.
+BLML is open source. The server is licensed under the **GNU GPL v3.0**; the
+iOS, Android and web clients under the **Apache License 2.0**. The license texts
+are in `server/LICENSE`, `ios/LICENSE`, `android/LICENSE` and `webapp/LICENSE`,
+and [UPSTREAM.md](UPSTREAM.md) records where the code comes from.

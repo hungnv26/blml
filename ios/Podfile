@@ -63,6 +63,8 @@ end
 post_install do | installer |
   require 'fileutils'
   FileUtils.cp_r('Pods/Target Support Files/Pods-Tinodios/Pods-Tinodios-acknowledgements.plist', 'Tinodios/Settings.bundle/Acknowledgements.plist', :remove_destination => true)
+  # The copy above lists only the pods; put BLML's own licence entry back.
+  load './Scripts/add_blml_acknowledgement.rb'
   installer.aggregate_targets.each do |aggregate_target|
     aggregate_target.xcconfigs.each do |config_name, config_file|
       xcconfig_path = aggregate_target.xcconfig_path(config_name)

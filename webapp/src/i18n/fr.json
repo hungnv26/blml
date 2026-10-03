@@ -535,7 +535,7 @@
     "translation": "SDK :",
     "defaultMessage": "SDK:",
     "missing": false,
-    "obsolete": false
+    "obsolete": true
   },
   "label_server": {
     "translation": "Serveur :",
@@ -2080,6 +2080,13 @@
     "translation": "",
     "defaultMessage": "they",
     "description": "Stand-in for the name of the other person in chat request messages when the name is unknown",
+    "missing": true,
+    "obsolete": false
+  },
+  "link_licenses": {
+    "translation": "",
+    "defaultMessage": "Licenses",
+    "description": "Ancor text for the open-source licenses link",
     "missing": true,
     "obsolete": false
   }

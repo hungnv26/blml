@@ -535,7 +535,7 @@
     "translation": "SDK:",
     "defaultMessage": "SDK:",
     "missing": false,
-    "obsolete": false
+    "obsolete": true
   },
   "label_server": {
     "translation": "Máy chủ:",
@@ -2080,6 +2080,13 @@
     "translation": "người đó",
     "defaultMessage": "they",
     "description": "Stand-in for the name of the other person in chat request messages when the name is unknown",
+    "missing": false,
+    "obsolete": false
+  },
+  "link_licenses": {
+    "translation": "Giấy phép",
+    "defaultMessage": "Licenses",
+    "description": "Ancor text for the open-source licenses link",
     "missing": false,
     "obsolete": false
   }

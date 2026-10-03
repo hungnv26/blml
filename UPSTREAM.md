@@ -28,3 +28,22 @@ cd /tmp/upstream-chat && git diff <commit-above>..HEAD -- . > /tmp/upstream.patc
   so the server directory and its modifications remain GPL-3.0.
 - `webapp/`, `android/`, `ios/` — Apache-2.0 (see each LICENSE).
 - Upstream copyright notices in source headers are retained.
+- All four directories have been modified by BLML since the fork (2026); the
+  git history of this repository records every change.
+
+## What must stay, and where the credit is shown
+
+Do not remove any of these — together they are what the two licenses ask for:
+
+- The four `LICENSE` files and the `Copyright … Tinode` headers in source files.
+- This file: it is the notice that the code is a modified version of Tinode,
+  and from which date.
+- The license entry each client shows to users, which names Tinode LLC as a
+  copyright holder and carries the Apache 2.0 text:
+  - Android: Settings → Help → Licenses (`license_notice` in `strings.xml`).
+  - iOS: the Settings app → BLML → Acknowledgements
+    (`ios/acknowledgement-blml.txt`, re-added after every `pod install`).
+  - Web: `licenses.html`, linked from Settings → Help.
+
+Nothing else has to mention Tinode: not the About screens, the README, the
+store listings or the websites.

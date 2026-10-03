@@ -2,9 +2,7 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
 
-import { Tinode } from 'tinode-sdk';
-
-import { APP_NAME, LINK_CONTACT_US, LINK_PRIVACY_POLICY, LINK_TERMS_OF_SERVICE } from '../config.js';
+import { APP_NAME, LINK_CONTACT_US, LINK_LICENSES, LINK_PRIVACY_POLICY, LINK_TERMS_OF_SERVICE } from '../config.js';
 
 export default class AccSupportView extends React.PureComponent {
   render() {
@@ -23,6 +21,10 @@ export default class AccSupportView extends React.PureComponent {
             <i className="material-icons">policy</i> &nbsp;<FormattedMessage id="link_privacy_policy"
               defaultMessage="Privacy Policy" description="Ancor text for privacy policy link" />
           </a>
+          <a href={LINK_LICENSES} className="flat-button" target="_blank">
+            <i className="material-icons">copyright</i> &nbsp;<FormattedMessage id="link_licenses"
+              defaultMessage="Licenses" description="Ancor text for the open-source licenses link" />
+          </a>
         </div>
         <div className="hr" />
         <div className="panel-form-column">
@@ -30,10 +32,6 @@ export default class AccSupportView extends React.PureComponent {
             <label className="small"><FormattedMessage id="label_client" defaultMessage="Client:"
               description="Label for a client version" /></label>
             {APP_NAME}
-          </div>
-          <div className="panel-form-row">
-            <label className="small"><FormattedMessage id="label_sdk" defaultMessage="SDK:" /></label>
-            {Tinode.getLibrary()}
           </div>
           <div className="panel-form-row">
             <label className="small"><FormattedMessage id="label_server" defaultMessage="Server:"

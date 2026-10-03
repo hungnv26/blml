@@ -9,7 +9,7 @@
     <string name="app_name" translatable="false">BLML</string>
     <string name="chats_title">Chats</string>
     <string name="app_name_full" translatable="false">BLML</string>
-    <string name="copyright" translatable="false">© 2026 BLML · Built on Tinode, © 2014–2025 Tinode LLC</string>
+    <string name="copyright" translatable="false">© 2026 BLML</string>
     <string name="tinode" translatable="false">BLML</string>
 
     <string name="app_version">Version</string>
@@ -260,6 +260,8 @@
     <string name="confirm_delmsg_for_all">Are you sure you want to delete all messages for all participants?</string>
     <string name="confirm_delmsg_for_self">Are you sure you want to delete all messages? You delete them only for yourself.</string>
     <string name="licenses">Licenses</string>
+    <string name="license_notice" translatable="false">BLML is open-source software, licensed under the Apache License, Version 2.0.\n\nCopyright © 2026 BLML.\nPortions copyright © 2014–2025 Tinode LLC.\n\nSource code: https://github.com/hungnv26/blml</string>
+    <string name="third_party_libraries">Third-party libraries</string>
     <string name="invalid_file" translatable="false">invalid</string>
     <string name="blocked_contacts">Blocked contacts</string>
     <string name="you_blocked_contact">You blocked this contact</string>

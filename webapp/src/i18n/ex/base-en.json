@@ -575,9 +575,6 @@
     "defaultMessage": "Scan my ID:",
     "description": "Label [Scan my ID:]"
   },
-  "label_sdk": {
-    "defaultMessage": "SDK:"
-  },
   "label_server": {
     "defaultMessage": "Server:",
     "description": "Label for a server version"
@@ -648,6 +645,10 @@
   "link_contact_us": {
     "defaultMessage": "Contact Us",
     "description": "Ancor text for contacting us by email"
+  },
+  "link_licenses": {
+    "defaultMessage": "Licenses",
+    "description": "Ancor text for the open-source licenses link"
   },
   "link_privacy_policy": {
     "defaultMessage": "Privacy Policy",

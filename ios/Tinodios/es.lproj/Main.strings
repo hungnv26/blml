@@ -19,8 +19,8 @@
 /* Class = "UITableViewController"; title = "General Settings"; ObjectID = "4dd-0I-UFm"; */
 "4dd-0I-UFm.title" = "Configuración general";
 
-/* Class = "UILabel"; text = "https://tinode.co"; ObjectID = "4hf-MD-NbA"; */
-"4hf-MD-NbA.text" = "https://tinode.co";
+/* Class = "UILabel"; text = "https://blml.app"; ObjectID = "4hf-MD-NbA"; */
+"4hf-MD-NbA.text" = "https://blml.app";
 
 /* Class = "UILabel"; text = "Send typing notifications"; ObjectID = "4ll-eW-b8Z"; */
 "4ll-eW-b8Z.text" = "Enviar notificaciones de escritura";
@@ -163,8 +163,8 @@
 /* Class = "UITableViewSection"; headerTitle = "Password reset"; ObjectID = "BRf-xV-zvt"; */
 "BRf-xV-zvt.headerTitle" = "Restablecimiento de contraseña";
 
-/* Class = "UILabel"; text = "Tinode"; ObjectID = "BS4-zj-4bf"; */
-"BS4-zj-4bf.text" = "Tinode";
+/* Class = "UILabel"; text = "BLML"; ObjectID = "BS4-zj-4bf"; */
+"BS4-zj-4bf.text" = "BLML";
 
 /* Class = "UITableViewSection"; headerTitle = "Contacts"; ObjectID = "bvE-OV-sy1"; */
 "bvE-OV-sy1.headerTitle" = "Contactos";
@@ -277,8 +277,8 @@
 /* Class = "UINavigationItem"; title = "Video Preview"; ObjectID = "Hah-A8-0yd"; */
 "Hah-A8-0yd.title" = "Vista previa del vídeo";
 
-/* Class = "UILabel"; text = "Tinode"; ObjectID = "HCG-mB-BeX"; */
-"HCG-mB-BeX.text" = "Tinode";
+/* Class = "UILabel"; text = "BLML"; ObjectID = "HCG-mB-BeX"; */
+"HCG-mB-BeX.text" = "BLML";
 
 /* Class = "UITextField"; placeholder = "Configuration Code"; ObjectID = "hDW-u7-vzK"; */
 "hDW-u7-vzK.placeholder" = "Código de configuración";
@@ -457,8 +457,8 @@
 /* Class = "UITableViewSection"; headerTitle = "Actions"; ObjectID = "raq-d6-2nI"; */
 "raq-d6-2nI.headerTitle" = "Acciones";
 
-/* Class = "UINavigationItem"; title = "Tinode"; ObjectID = "Rgo-YL-uPZ"; */
-"Rgo-YL-uPZ.title" = "Tinode";
+/* Class = "UINavigationItem"; title = "BLML"; ObjectID = "Rgo-YL-uPZ"; */
+"Rgo-YL-uPZ.title" = "BLML";
 
 /* Class = "UIBarButtonItem"; title = "Profile"; ObjectID = "rlG-v4-QUc"; */
 "rlG-v4-QUc.title" = "Perfil";
@@ -580,8 +580,8 @@
 /* Class = "UILabel"; text = "Account and Security"; ObjectID = "z08-iK-CeG"; */
 "z08-iK-CeG.text" = "Cuenta y seguridad";
 
-/* Class = "UILabel"; text = "Tinode"; ObjectID = "zCU-jx-lsJ"; */
-"zCU-jx-lsJ.text" = "Tinode";
+/* Class = "UILabel"; text = "BLML"; ObjectID = "zCU-jx-lsJ"; */
+"zCU-jx-lsJ.text" = "BLML";
 
 /* Class = "UILabel"; text = "Others can find group by these tags"; ObjectID = "Zdw-nR-1tB"; */
 "Zdw-nR-1tB.text" = "Otros pueden encontrar grupos por estas etiquetas";
@@ -595,8 +595,8 @@
 /* Class = "UILabel"; text = "Privacy policy"; ObjectID = "Zn8-7V-BcX"; */
 "Zn8-7V-BcX.text" = "Política de privacidad";
 
-/* Class = "UILabel"; text = "Tinode"; ObjectID = "ZQJ-Ja-aBa"; */
-"ZQJ-Ja-aBa.text" = "Tinode";
+/* Class = "UILabel"; text = "BLML"; ObjectID = "ZQJ-Ja-aBa"; */
+"ZQJ-Ja-aBa.text" = "BLML";
 
 /* Class = "UITextField"; placeholder = "Password"; ObjectID = "ZQy-2N-acy"; */
 "ZQy-2N-acy.placeholder" = "Contraseña";

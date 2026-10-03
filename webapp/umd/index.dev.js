@@ -2320,6 +2320,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   KEYPRESS_DELAY: function() { return /* binding */ KEYPRESS_DELAY; },
 /* harmony export */   KNOWN_HOSTS: function() { return /* binding */ KNOWN_HOSTS; },
 /* harmony export */   LINK_CONTACT_US: function() { return /* binding */ LINK_CONTACT_US; },
+/* harmony export */   LINK_LICENSES: function() { return /* binding */ LINK_LICENSES; },
 /* harmony export */   LINK_PRIVACY_POLICY: function() { return /* binding */ LINK_PRIVACY_POLICY; },
 /* harmony export */   LINK_TERMS_OF_SERVICE: function() { return /* binding */ LINK_TERMS_OF_SERVICE; },
 /* harmony export */   LOGGING_ENABLED: function() { return /* binding */ LOGGING_ENABLED; },
@@ -2404,6 +2405,7 @@ const MAX_DURATION = 600_000;
 const LINK_CONTACT_US = 'mailto:support@blml.app';
 const LINK_PRIVACY_POLICY = 'https://chat.blml.app/privacy';
 const LINK_TERMS_OF_SERVICE = 'https://hungngo.net/blml/terms';
+const LINK_LICENSES = 'licenses.html';
 const IMMEDIATE_P2P_SUBSCRIPTION = false;
 const CLICKABLE_URL_SCHEMES = ['http', 'https', 'ftp', 'ftps'];
 const QRCODE_SIZE = 128;
@@ -4285,96 +4287,96 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_intl__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-intl */ "react-intl");
 /* harmony import */ var react_intl__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_intl__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var tinode_sdk__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! tinode-sdk */ "tinode-sdk");
-/* harmony import */ var tinode_sdk__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(tinode_sdk__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _config_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../config.js */ "./src/config.js");
-/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
-
+/* harmony import */ var _config_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../config.js */ "./src/config.js");
+/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
 
 
 
 
 class AccSupportView extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureComponent) {
   render() {
-    return (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
+    return (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
       className: "scrollable-panel",
-      children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
+      children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
         className: "panel-form-column",
-        children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("a", {
-          href: _config_js__WEBPACK_IMPORTED_MODULE_3__.LINK_CONTACT_US,
+        children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("a", {
+          href: _config_js__WEBPACK_IMPORTED_MODULE_2__.LINK_CONTACT_US,
           className: "flat-button",
           target: "_blank",
-          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("i", {
+          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("i", {
             className: "material-icons",
             children: "email"
-          }, void 0, false), " \xA0", (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
+          }, void 0, false), " \xA0", (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
             id: "link_contact_us",
             defaultMessage: "Contact Us",
             description: "Ancor text for contacting us by email"
           }, void 0, false)]
-        }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("a", {
-          href: _config_js__WEBPACK_IMPORTED_MODULE_3__.LINK_TERMS_OF_SERVICE,
+        }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("a", {
+          href: _config_js__WEBPACK_IMPORTED_MODULE_2__.LINK_TERMS_OF_SERVICE,
           className: "flat-button",
           target: "_blank",
-          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("i", {
+          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("i", {
             className: "material-icons",
             children: "description"
-          }, void 0, false), " \xA0", (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
+          }, void 0, false), " \xA0", (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
             id: "link_terms_of_service",
             defaultMessage: "Terms of Service",
             description: "Ancor text for terms of service link"
           }, void 0, false)]
-        }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("a", {
-          href: _config_js__WEBPACK_IMPORTED_MODULE_3__.LINK_PRIVACY_POLICY,
+        }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("a", {
+          href: _config_js__WEBPACK_IMPORTED_MODULE_2__.LINK_PRIVACY_POLICY,
           className: "flat-button",
           target: "_blank",
-          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("i", {
+          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("i", {
             className: "material-icons",
             children: "policy"
-          }, void 0, false), " \xA0", (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
+          }, void 0, false), " \xA0", (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
             id: "link_privacy_policy",
             defaultMessage: "Privacy Policy",
             description: "Ancor text for privacy policy link"
           }, void 0, false)]
+        }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("a", {
+          href: _config_js__WEBPACK_IMPORTED_MODULE_2__.LINK_LICENSES,
+          className: "flat-button",
+          target: "_blank",
+          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("i", {
+            className: "material-icons",
+            children: "copyright"
+          }, void 0, false), " \xA0", (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
+            id: "link_licenses",
+            defaultMessage: "Licenses",
+            description: "Ancor text for the open-source licenses link"
+          }, void 0, false)]
         }, void 0, true)]
-      }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
+      }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
         className: "hr"
-      }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
+      }, void 0, false), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
         className: "panel-form-column",
-        children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
+        children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
           className: "panel-form-row",
-          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("label", {
+          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("label", {
             className: "small",
-            children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
+            children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
               id: "label_client",
               defaultMessage: "Client:",
               description: "Label for a client version"
             }, void 0, false)
-          }, void 0, false), _config_js__WEBPACK_IMPORTED_MODULE_3__.APP_NAME]
-        }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
+          }, void 0, false), _config_js__WEBPACK_IMPORTED_MODULE_2__.APP_NAME]
+        }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
           className: "panel-form-row",
-          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("label", {
+          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("label", {
             className: "small",
-            children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
-              id: "label_sdk",
-              defaultMessage: "SDK:"
-            }, void 0, false)
-          }, void 0, false), tinode_sdk__WEBPACK_IMPORTED_MODULE_2__.Tinode.getLibrary()]
-        }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
-          className: "panel-form-row",
-          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("label", {
-            className: "small",
-            children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
+            children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
               id: "label_server",
               defaultMessage: "Server:",
               description: "Label for a server version"
             }, void 0, false)
           }, void 0, false), this.props.serverVersion]
-        }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("div", {
+        }, void 0, true), (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
           className: "panel-form-row",
-          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)("label", {
+          children: [(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("label", {
             className: "small",
-            children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
+            children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(react_intl__WEBPACK_IMPORTED_MODULE_1__.FormattedMessage, {
               id: "label_server_address",
               defaultMessage: "Server address:"
             }, void 0, false)
@@ -19667,7 +19669,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"patt":[{"name":"d10.png","size":384}
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = function(chunkId) {
 /******/ 			// return url for filenames based on template
-/******/ 			return "" + chunkId + "." + {"src_i18n_min_ar_json":"cef13fcc","src_i18n_min_de_json":"221ca0af","src_i18n_min_en_json":"e6d22b8c","src_i18n_min_es_json":"7f85f0fb","src_i18n_min_fr_json":"289596c4","src_i18n_min_it_json":"fd01c3df","src_i18n_min_ko_json":"a53c2ed1","src_i18n_min_ro_json":"97035eed","src_i18n_min_ru_json":"2231055b","src_i18n_min_th_json":"8c4483d7","src_i18n_min_uk_json":"ed34d44b","src_i18n_min_vi_json":"b0f272cf","src_i18n_min_zh_json":"825b8a29","src_i18n_min_zh-TW_json":"51932ebe","src_widgets_phone-country-selector_jsx":"1833f1ac","src_views_info-view_jsx":"c54b56bd","src_views_messages-view_jsx":"dcf23871","vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4":"57704eff","vendors-node_modules_libphonenumber-js_examples_mobile_json_js-node_modules_libphonenumber-js-406a14":"e01761ec","src_widgets_phone-edit_jsx":"ec748484","src_views_account-settings-view_jsx":"793ed96a","src_views_create-account-view_jsx":"fa5ba7ab","src_views_acc-security-view_jsx":"4830a19f","src_views_password-reset-view_jsx":"894c27dd","src_views_settings-view_jsx":"bfa56edf","src_views_wallpapers_jsx":"4c8d39c0","src_lib_phone_js":"2915d77e","src_widgets_call-panel_jsx":"16f3935d","src_widgets_doc-preview_jsx":"31fe6f23","src_widgets_image-preview_jsx":"f1775c54","src_widgets_the-card-preview_jsx":"cca01e6e","src_widgets_video-preview_jsx":"cee30469","vendors-node_modules_webm-duration-fix_lib_index_js":"c748539e","src_widgets_audio-recorder_jsx":"ab277bbe"}[chunkId] + ".dev.js";
+/******/ 			return "" + chunkId + "." + {"src_i18n_min_ar_json":"542ab799","src_i18n_min_de_json":"d5bf35f8","src_i18n_min_en_json":"368ac141","src_i18n_min_es_json":"8d7b39e8","src_i18n_min_fr_json":"d010d424","src_i18n_min_it_json":"d5e7588e","src_i18n_min_ko_json":"24cd1f06","src_i18n_min_ro_json":"09be9860","src_i18n_min_ru_json":"0db50b4f","src_i18n_min_th_json":"04800730","src_i18n_min_uk_json":"e0c95566","src_i18n_min_vi_json":"b7f7614f","src_i18n_min_zh_json":"b8d5eee7","src_i18n_min_zh-TW_json":"5dc4639b","src_widgets_phone-country-selector_jsx":"1833f1ac","src_views_info-view_jsx":"dc696cf7","src_views_messages-view_jsx":"a3238d05","vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4":"57704eff","vendors-node_modules_libphonenumber-js_examples_mobile_json_js-node_modules_libphonenumber-js-406a14":"e01761ec","src_widgets_phone-edit_jsx":"ec748484","src_views_account-settings-view_jsx":"c2da614d","src_views_create-account-view_jsx":"08442442","src_views_acc-security-view_jsx":"4830a19f","src_views_password-reset-view_jsx":"894c27dd","src_views_settings-view_jsx":"eefd4694","src_views_wallpapers_jsx":"cc0cc3e4","src_lib_phone_js":"2915d77e","src_widgets_call-panel_jsx":"2c78de4e","src_widgets_doc-preview_jsx":"31fe6f23","src_widgets_image-preview_jsx":"e620a260","src_widgets_the-card-preview_jsx":"cca01e6e","src_widgets_video-preview_jsx":"cee30469","vendors-node_modules_webm-duration-fix_lib_index_js":"c748539e","src_widgets_audio-recorder_jsx":"c2b3e61a"}[chunkId] + ".dev.js";
 /******/ 		};
 /******/ 	}();
 /******/ 	

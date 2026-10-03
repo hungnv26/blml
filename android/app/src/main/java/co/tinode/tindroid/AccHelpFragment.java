@@ -18,9 +18,14 @@ import android.widget.TextView;
 
 import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
@@ -63,12 +68,35 @@ public class AccHelpFragment extends Fragment {
         fragment.findViewById(R.id.aboutTheApp).setOnClickListener(v ->
                 ((ChatsActivity) activity).showFragment(ChatsActivity.FRAGMENT_ACC_ABOUT, null));
 
-        fragment.findViewById(R.id.ossLicenses).setOnClickListener(v -> {
-            OssLicensesMenuActivity.setActivityTitle(getString(R.string.licenses));
-            activity.startActivity(new Intent(activity, OssLicensesMenuActivity.class));
-        });
+        // BLML's own licence first (the generated screen lists only the libraries),
+        // with the library list one tap further.
+        fragment.findViewById(R.id.ossLicenses).setOnClickListener(v ->
+                new AlertDialog.Builder(activity)
+                        .setTitle(R.string.licenses)
+                        .setMessage(getString(R.string.license_notice) + "\n\n" + readApacheLicense())
+                        .setPositiveButton(R.string.third_party_libraries, (dialog, which) -> {
+                            OssLicensesMenuActivity.setActivityTitle(getString(R.string.third_party_libraries));
+                            activity.startActivity(new Intent(activity, OssLicensesMenuActivity.class));
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show());
 
         return fragment;
+    }
+
+    private String readApacheLicense() {
+        try (InputStream in = getResources().openRawResource(R.raw.apache_license);
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            byte[] buf = new byte[4096];
+            int n;
+            while ((n = in.read(buf)) > 0) {
+                out.write(buf, 0, n);
+            }
+            return out.toString("UTF-8");
+        } catch (IOException ex) {
+            Log.w(TAG, "Failed to read the license text", ex);
+            return "https://www.apache.org/licenses/LICENSE-2.0";
+        }
     }
 
     private void makeViewClickable(AppCompatActivity activity, TextView link,

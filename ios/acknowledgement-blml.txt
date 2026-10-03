@@ -1,0 +1,6 @@
+BLML is open-source software, licensed under the Apache License, Version 2.0.
+
+Copyright © 2026 BLML.
+Portions copyright © 2014–2025 Tinode LLC.
+
+Source code: https://github.com/hungnv26/blml

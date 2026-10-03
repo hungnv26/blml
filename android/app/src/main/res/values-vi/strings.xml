@@ -65,4 +65,6 @@
 
     <!-- Calls -->
     <string name="toggle_speakerphone_button">Bật/tắt loa ngoài</string>
+    <string name="licenses">Giấy phép</string>
+    <string name="third_party_libraries">Thư viện bên thứ ba</string>
 </resources>
