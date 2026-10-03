@@ -53,9 +53,9 @@ tasks.register('clean', Delete) {
 // Bump BLML_VERSION_CODE for every Play upload (must strictly increase);
 // BLML_VERSION_NAME is what users see.
 static def gitVersionCode() {
-    return 4
+    return 5
 }
 
 static def gitVersionName() {
-    return "1.2.1"
+    return "1.2.2"
 }

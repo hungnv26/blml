@@ -4,7 +4,6 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
     <!-- Needed for video calls, adding an avatar pic when registering new accounts,
     attaching photos to messages. -->
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -13,24 +12,16 @@
     <!-- Needed for saving attachments -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"/>
-    <!-- Needed for picking images and videos from gallery -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <!-- Required on API 34+ to handle selected photos access -->
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <!-- No READ_MEDIA_* permissions: photos and videos are chosen with the system
+    photo picker (PickVisualMedia), which needs none. Google Play only allows
+    broad media access for apps whose core purpose is managing a gallery. -->
 
     <!-- Needed for contact discovery - finding users on tinode who are in user's address book -->
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <!-- Store tinode IM id as a record in the address book -->
     <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
-    <!-- Creating and storing tinode credentials in the AccountManager -->
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
-    <!-- Accessing Tinode-authenticated accounts on Android pre-M (23). -->
-    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
-    <!-- Make current user discoverable by other users -->
-    <uses-permission android:name="android.permission.READ_PROFILE"/>
+    <!-- The app's own account in AccountManager needs no permission on API 23+
+    (minSdk is 27), so the legacy account permissions are not declared. -->
     <!-- Check if account sync is enabled -->
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
     <!-- Enable sync if it's disabled -->
@@ -42,14 +33,17 @@
     <!-- Needed for incoming call notifications -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <!-- Telephony API: placing and receiving calls. -->
     <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
-    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- Required on API 33+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- firebase-analytics (a transitive dependency, switched off below) merges in
+    the advertising ID permission. BLML has no ads and never reads the ID. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"
+        tools:node="remove" />
 
     <!-- Enable installation on devices without the camera: some features won't be available -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
