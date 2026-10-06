@@ -20,9 +20,9 @@ instructions:
 - **Any other information:**
 
 ```
-BLML is an invite-only private chat app. Please sign in with the account above
-on the first screen (Login / Password, then SIGN IN). No invite code is needed
-to sign in; it is only asked for when creating a new account.
+Please sign in with the account above on the first screen (Login / Password,
+then SIGN IN). Sign-up is open too, but the account above already has sample
+conversations. Leave the invite code field empty if you create an account.
 
 The account already has a contact and a group chat so that messaging, photos,
 voice notes, polls, blocking and reporting can be tried. Voice and video calls

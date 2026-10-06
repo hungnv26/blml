@@ -28,9 +28,9 @@ history follows you between devices.
 Every download is also gathered on **[blml.app](https://blml.app)**, which reads
 in Vietnamese or English.
 
-Creating an account needs an invite code from whoever runs the server — BLML is
-invite-only on purpose, so an address anyone can reach is not a room anyone can
-walk into.
+Anyone can create an account on chat.blml.app. If you run your own server you
+can keep it invite-only with a registration code, so an address anyone can reach
+need not be a room anyone can walk into.
 
 ### On your phone
 
@@ -128,8 +128,8 @@ group.
 
 That has real consequences worth being upfront about. There's no company
 guaranteeing uptime — if the server goes down, chat stops until someone restarts
-it. And because it's invite-only, growth is deliberate: you hand out a code, not
-a download link.
+it. And whoever runs the server decides who gets in: open sign-up, or a code
+you hand out yourself.
 
 For a family spread across countries, or a group that just wants somewhere
 quiet to talk, that's usually the right trade.

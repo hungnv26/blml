@@ -30,7 +30,7 @@ BLML is a private chat app for the people who actually matter to you: your famil
 
 No ads. No algorithms deciding what you see. No company reading your messages to sell you things. BLML runs on a small server that someone in your group controls, and your conversations, photos and voice notes stay there.
 
-BLML is invite-only. To create an account you need an invite code from the person who runs your group's server.
+Anyone can create an account. A family that runs its own BLML server can keep it invite-only.
 
 TALK TO PEOPLE
 • One-to-one and group chats
@@ -94,7 +94,7 @@ BLML là ứng dụng chat riêng tư dành cho những người thật sự qua
 
 Không quảng cáo. Không thuật toán quyết định bạn thấy gì. Không công ty nào đọc tin nhắn để bán hàng cho bạn. BLML chạy trên một máy chủ nhỏ do chính người trong nhóm quản lý, và các cuộc trò chuyện, ảnh, ghi âm của bạn nằm ở đó.
 
-BLML chỉ dành cho người được mời. Để tạo tài khoản, bạn cần mã mời từ người quản lý máy chủ của nhóm.
+Ai cũng có thể tạo tài khoản. Gia đình tự chạy máy chủ BLML riêng có thể giữ chế độ chỉ dành cho người được mời.
 
 TRÒ CHUYỆN
 • Chat riêng và chat nhóm
@@ -145,8 +145,14 @@ Made by `python3 android/play/make-graphics.py`, in `graphics/`:
 |---|---|---|
 | `icon-512.png` | 512×512 | App icon |
 | `feature-graphic.png` | 1024×500 | Feature graphic |
-| `phone-1-conversation.png`, `phone-2-chats.png` | 1080×1920 | Phone screenshots (Play needs at least 2) |
+| `phone-1-group.png` … `phone-6-qr.png` | 1080×1920 | Phone screenshots, in this order (Play takes 2 to 8) |
 
-The two screenshots come from the staged captures in `brand/framed/`. They
-satisfy the minimum; a fuller, freshly staged set (calls, stickers, chat
-requests, wallpapers) would sell the app better and can be added to the script.
+The six screens: group chat, chat list, chat request, a one-to-one chat in the
+dark theme with the call buttons, the sticker panel, and the QR code.
+
+To retake them: start the local QA server and the emulator (see the `blml-qa`
+skill), run `python3 qa/stage_screenshots.py` to stage the conversations on the
+account the emulator is signed in to, switch the status bar to demo mode, save
+the captures to `brand/screenshots/play/`, frame each with
+`brand/frame-device.py <capture> brand/framed/play-<name>.png android`, then run
+`make-graphics.py`.
