@@ -13,15 +13,9 @@ import TinodeSDK
 import TinodiosDB
 
 class LoginViewController: UIViewController {
-    /// "Configure Connection" (QR / server address) exists for development and
-    /// QA only. BLML talks to one server, chat.blml.app, so Release builds don't
-    /// offer it. QA Debug builds still get it, and pick their host at build time
-    /// with `xcodebuild HOST_NAME=… USE_TLS=…` as before.
-    #if DEBUG
-    static let kAllowServerConfig = true
-    #else
-    static let kAllowServerConfig = false
-    #endif
+    // BLML talks to one server, chat.blml.app. Upstream's "Configure Connection"
+    // (QR / server address) screen is gone; QA Debug builds pick their host at
+    // build time with `xcodebuild HOST_NAME=… USE_TLS=…`.
 
     @IBOutlet weak var userNameTextEdit: UITextField!
     @IBOutlet weak var passwordTextEdit: UITextField!
@@ -30,7 +24,6 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var logoView: UIImageView!
     @IBOutlet weak var serviceNameLabel: UILabel!
     @IBOutlet weak var poweredByStack: UIStackView!
-    @IBOutlet weak var configureConnectionButton: UIButton!
 
     override func loadView() {
         super.loadView()
@@ -53,15 +46,8 @@ class LoginViewController: UIViewController {
 
         UiUtils.dismissKeyboardForTaps(onView: self.view)
 
-        if SharedUtils.appId != nil {
-            // Branding is configured. Show "Powered by" view, hide configureConnectionButton.
-            self.poweredByStack.isHidden = false
-            self.configureConnectionButton.isHidden = true
-        } else {
-            // Branding is not configured. Show "Configure connection" button, hide "Powered by" view.
-            self.configureConnectionButton.isHidden = !LoginViewController.kAllowServerConfig
-            self.poweredByStack.isHidden = true
-        }
+        // "Powered by" is only shown when a branding config names the service.
+        self.poweredByStack.isHidden = SharedUtils.appId == nil
         if let logo = SharedUtils.smallIcon {
             self.logoView.image = logo
         }
@@ -217,20 +203,12 @@ class LoginViewController: UIViewController {
     @objc func brandingConfigAvailable(_ notification: Notification) {
         DispatchQueue.main.async {
             if SharedUtils.appId != nil {
-                self.configureConnectionButton.isHidden = true
                 self.poweredByStack.isHidden = false
             }
             if let serviceName = SharedUtils.serviceName {
                 self.serviceNameLabel.text = serviceName
             }
         }
-    }
-
-    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
-        if identifier == "Login2Branding" {
-            return LoginViewController.kAllowServerConfig
-        }
-        return super.shouldPerformSegue(withIdentifier: identifier, sender: sender)
     }
 
     @IBAction func loginClicked(_ sender: Any) {

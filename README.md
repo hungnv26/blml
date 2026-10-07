@@ -28,9 +28,10 @@ history follows you between devices.
 Every download is also gathered on **[blml.app](https://blml.app)**, which reads
 in Vietnamese or English.
 
-Anyone can create an account on chat.blml.app. If you run your own server you
-can keep it invite-only with a registration code, so an address anyone can reach
-need not be a room anyone can walk into.
+Anyone can create an account on chat.blml.app: sign up with an email address,
+then confirm it from the email you receive. If you run your own server you can
+instead keep it invite-only with a registration code, so an address anyone can
+reach need not be a room anyone can walk into.
 
 ### On your phone
 

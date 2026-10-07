@@ -203,14 +203,17 @@ export default class CreateAccountView extends React.PureComponent {
               value={this.state.fn} onChange={this.handleFnChange} required/>
           }</FormattedMessage>
         </div>
-        <div className="panel-form-row">
-          <FormattedMessage id="invite_code_prompt" defaultMessage="Invite code"
-            description="Input placeholder for the registration invite code">{
-            (invite_code_prompt) => <input type="text" placeholder={invite_code_prompt}
-              autoComplete="off" autoCapitalize="characters"
-              value={this.state.inviteCode} onChange={this.handleInviteCodeChange} />
-          }</FormattedMessage>
-        </div>
+        {this.props.inviteRequired ?
+          <div className="panel-form-row">
+            <FormattedMessage id="invite_code_prompt" defaultMessage="Invite code"
+              description="Input placeholder for the registration invite code">{
+              (invite_code_prompt) => <input type="text" placeholder={invite_code_prompt}
+                autoComplete="off" autoCapitalize="characters" autoFocus
+                value={this.state.inviteCode} onChange={this.handleInviteCodeChange} />
+            }</FormattedMessage>
+          </div>
+          : null
+        }
         {this.props.reqCredMethod == 'email' ?
           <div className="panel-form-row">
             <FormattedMessage id="email_prompt" defaultMessage="Email, e.g. jdoe@example.com"

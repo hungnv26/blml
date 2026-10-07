@@ -21,8 +21,8 @@ instructions:
 
 ```
 Please sign in with the account above on the first screen (Login / Password,
-then SIGN IN). Sign-up is open too, but the account above already has sample
-conversations. Leave the invite code field empty if you create an account.
+then SIGN IN). Sign-up is open too (it asks for an email address and sends a
+confirmation code), but the account above already has sample conversations.
 
 The account already has a contact and a group chat so that messaging, photos,
 voice notes, polls, blocking and reporting can be tried. Voice and video calls

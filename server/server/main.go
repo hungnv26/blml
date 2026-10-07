@@ -156,6 +156,8 @@ var globals struct {
 
 	// Credential validators.
 	validators map[string]credValidator
+	// Validator name -> accounts created before this time are exempt at login.
+	validatorRequiredSince map[string]time.Time
 	// Credential validator config to pass to clients.
 	validatorClientConfig map[string][]string
 	// Validators required for each auth level.
@@ -239,6 +241,11 @@ type validatorConfig struct {
 	// and emails to be discoverable. A confirmed value still belongs to one
 	// account only.
 	AutoConfirm bool `json:"auto_confirm"`
+	// Only accounts created at or after this time (RFC 3339) must have the
+	// credential validated to log in. Lets a server start requiring, say, a
+	// verified email without locking out the accounts that predate the rule.
+	// New accounts are always subject to "required".
+	RequiredSince string `json:"required_since"`
 	// Validator params passed to validator unchanged.
 	Config json.RawMessage `json:"config"`
 }
@@ -582,6 +589,17 @@ func main() {
 		}
 		if vconf.AutoConfirm {
 			logs.Warn.Printf("Validator '%s' confirms credentials WITHOUT verification (auto_confirm)", name)
+		}
+		if vconf.RequiredSince != "" {
+			since, err := time.Parse(time.RFC3339, vconf.RequiredSince)
+			if err != nil {
+				logs.Err.Fatalf("Invalid required_since '%s' in validator '%s': %s", vconf.RequiredSince, name, err)
+			}
+			if globals.validatorRequiredSince == nil {
+				globals.validatorRequiredSince = make(map[string]time.Time)
+			}
+			globals.validatorRequiredSince[name] = since
+			logs.Info.Printf("Validator '%s' required only for accounts created since %s", name, since.Format(time.RFC3339))
 		}
 	}
 

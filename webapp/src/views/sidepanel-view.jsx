@@ -174,6 +174,7 @@ class SidepanelView extends React.PureComponent {
             <CreateAccountView
               tinode={this.props.tinode}
               reqCredMethod={this.props.reqCredMethod}
+              inviteRequired={this.props.inviteRequired}
               onShowCountrySelector={this.props.onShowCountrySelector}
               onCreateAccount={this.props.onCreateAccount}
               onCancel={this.props.onCancel}

@@ -58,15 +58,13 @@ public class InviteHelper {
         sb.append("2. ").append(context.getString(R.string.invite_message_server,
                 (tls ? "https://" : "http://") + host)).append("\n");
 
+        // Only servers that are invite-only have a code to pass on; an open
+        // server (chat.blml.app) needs nothing more than the address.
         String code = getInviteCode(context);
         if (code != null) {
             sb.append("3. ").append(context.getString(R.string.invite_message_code, code));
-        } else {
-            // Better to say a code is needed than to let them hit a 403 and
-            // assume the server is broken.
-            sb.append("3. ").append(context.getString(R.string.invite_message_no_code));
         }
-        return sb.toString();
+        return sb.toString().trim();
     }
 
     public static void share(Context context) {

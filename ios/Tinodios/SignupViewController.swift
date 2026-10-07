@@ -12,6 +12,8 @@ import TinodiosDB
 
 class SignupViewController: UITableViewController {
     // UI positions of the Contacts fields.
+    private static let kSectionGeneral = 2
+    private static let kGeneralInviteCode = 1
     private static let kSectionContacts = 3
     private static let kContactsEmail = 0
     private static let kContactsTel = 1
@@ -26,11 +28,16 @@ class SignupViewController: UITableViewController {
     /// signing up can act on. Nothing else in signup is permission-checked, so a
     /// 403 here means the invite code was missing or wrong — and showing an HTTP
     /// status taught the reader nothing about the one field they left blank.
+    private static func isInviteRefusal(_ error: Error) -> Bool {
+        let text = error.localizedDescription
+        return text.contains("403") || text.lowercased().contains("permission denied")
+    }
+
     private static func signupErrorMessage(_ error: Error) -> String {
         let text = error.localizedDescription
         if text.contains("403") || text.lowercased().contains("permission denied") {
             return NSLocalizedString(
-                "Sign-up needs a valid invite code. Ask whoever invited you for the current one.",
+                "This server needs an invite code. Ask whoever invited you for it.",
                 comment: "Sign-up rejected because the invite code was missing or wrong")
         }
         if text.contains("409") || text.lowercased().contains("duplicate") {
@@ -55,6 +62,9 @@ class SignupViewController: UITableViewController {
 
     // Required credential methods.
     private var credMethods: [String]?
+    // The invite code row stays hidden until the server refuses sign-up
+    // without one (403): most servers, including chat.blml.app, are open.
+    private var inviteRequired = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -144,6 +154,10 @@ class SignupViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.section == SignupViewController.kSectionGeneral &&
+            indexPath.row == SignupViewController.kGeneralInviteCode && !inviteRequired {
+            return CGFloat.leastNonzeroMagnitude
+        }
         // Show only required credential fields.
         if indexPath.section == SignupViewController.kSectionContacts {
             let method = self.credMethods?.first
@@ -287,10 +301,15 @@ class SignupViewController: UITableViewController {
                         }
                         return nil
                     }
-                    .thenCatch { err in
+                    .thenCatch { [weak self] err in
                         Cache.log.error("Failed to create account: %@", err.localizedDescription)
                         DispatchQueue.main.async {
                             UiUtils.showToast(message: SignupViewController.signupErrorMessage(err))
+                            if let signupVC = self, SignupViewController.isInviteRefusal(err), !signupVC.inviteRequired {
+                                signupVC.inviteRequired = true
+                                signupVC.tableView.reloadData()
+                                signupVC.descriptionTextField.becomeFirstResponder()
+                            }
                         }
                         Cache.tinode.disconnect()
                         return nil
@@ -306,6 +325,11 @@ class SignupViewController: UITableViewController {
                 Cache.tinode.disconnect()
                 DispatchQueue.main.async {
                     UiUtils.showToast(message: SignupViewController.signupErrorMessage(error))
+                    if SignupViewController.isInviteRefusal(error) && !self.inviteRequired {
+                        self.inviteRequired = true
+                        self.tableView.reloadData()
+                        self.descriptionTextField.becomeFirstResponder()
+                    }
                     self.signUpButton.isUserInteractionEnabled = true
                     UiUtils.toggleProgressOverlay(in: self, visible: false)
                 }

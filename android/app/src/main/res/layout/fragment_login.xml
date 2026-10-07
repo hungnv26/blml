@@ -83,6 +83,19 @@
         android:layout_centerHorizontal="true"
         android:visibility="gone" />
 
+    <!-- Plain "Sign Up" link under the form, like iOS, instead of a toolbar icon. -->
+    <Button
+        android:id="@+id/signUpLink"
+        style="?attr/buttonBarButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/action_signup"
+        android:textSize="@dimen/button_text"
+        android:textColor="@color/colorAccent"
+        android:layout_below="@+id/forgotPassword"
+        android:layout_marginTop="16dp"
+        android:layout_centerHorizontal="true" />
+
     <!-- Shown by LoginFragment once Google sign-in is configured in Firebase. -->
     <Button
         android:id="@+id/signInGoogle"
@@ -90,7 +103,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/sign_in_with_google"
-        android:layout_below="@+id/forgotPassword"
+        android:layout_below="@+id/signUpLink"
         android:layout_marginTop="8dp"
         android:layout_centerHorizontal="true"
         android:visibility="gone" />

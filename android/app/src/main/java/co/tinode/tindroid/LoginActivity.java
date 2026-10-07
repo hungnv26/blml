@@ -154,9 +154,6 @@ public class LoginActivity extends BaseActivity
         if (id == R.id.action_settings && BuildConfig.SERVER_CONFIG) {
             showFragment(FRAGMENT_SETTINGS, null);
             return true;
-        } else if (id == R.id.action_signup) {
-            showFragment(FRAGMENT_SIGNUP, null);
-            return true;
         } else if (id == R.id.action_about) {
             DialogFragment about = new AboutDialogFragment();
             about.show(getSupportFragmentManager(), "about");

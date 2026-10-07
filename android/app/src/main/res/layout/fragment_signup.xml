@@ -95,9 +95,13 @@
                     android:inputType="textPersonName" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Hidden until the server refuses sign-up without a code (403):
+                 most servers, including chat.blml.app, are open. -->
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/inviteWrapper"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:visibility="gone">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/userDescription"
@@ -105,7 +109,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
-                    android:hint="@string/invite_code_required"
+                    android:hint="@string/invite_code_hint"
                     android:inputType="textPersonName|textMultiLine"
                     android:maxLines="3"
                     tools:text="I'm an all around nice guy. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />

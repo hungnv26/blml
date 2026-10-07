@@ -463,6 +463,10 @@
     "defaultMessage": "Invalid security token",
     "description": "Error message when resetting password."
   },
+  "invite_code_needed": {
+    "defaultMessage": "This server needs an invite code. Ask whoever invited you for it.",
+    "description": "Error shown when sign-up was refused for lack of an invite code"
+  },
   "invite_code_prompt": {
     "defaultMessage": "Invite code",
     "description": "Input placeholder for the registration invite code"

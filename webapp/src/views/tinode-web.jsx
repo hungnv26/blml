@@ -90,6 +90,11 @@ const messages = defineMessages({
     defaultMessage: 'Confirmed successfully',
     description: 'Notification message that the credential was successfully validated.'
   },
+  invite_code_needed: {
+    id: 'invite_code_needed',
+    defaultMessage: 'This server needs an invite code. Ask whoever invited you for it.',
+    description: 'Error shown when sign-up was refused for lack of an invite code'
+  },
   password_reset_success: {
     id: 'password_reset_success',
     defaultMessage: 'Password reset successfully',
@@ -308,6 +313,8 @@ class TinodeWeb extends React.Component {
       searchableContacts: [],
       // Credential validation.
       reqCredMethod: undefined,
+      // Set when sign-up came back 403: the server is invite-only, show the code field.
+      inviteRequired: false,
       credMethod: undefined,
       credCode: undefined,
       credToken: undefined,
@@ -1303,7 +1310,13 @@ class TinodeWeb extends React.Component {
           this.handleLoginSuccessful(this);
         }
       }).catch(err => {
-        this.handleError(err.message, 'err');
+        if (err.code == 403) {
+          // Nothing else in sign-up is permission checked: the server wants an invite code.
+          this.setState({inviteRequired: true});
+          this.handleError(this.props.intl.formatMessage(messages.invite_code_needed), 'err');
+        } else {
+          this.handleError(err.message, 'err');
+        }
       });
   }
 
@@ -2296,6 +2309,7 @@ class TinodeWeb extends React.Component {
             secureConnection={this.state.secureConnection}
             serverVersion={this.state.serverVersion}
             reqCredMethod={this.state.reqCredMethod}
+            inviteRequired={this.state.inviteRequired}
             textSize={this.state.textSize}
             colorSchema={this.state.colorSchema}
             wallpaper={this.state.wallpaper}

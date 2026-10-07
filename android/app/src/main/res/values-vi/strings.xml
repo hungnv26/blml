@@ -10,7 +10,7 @@
     <string name="error_login_failed">Đăng nhập không thành công</string>
     <string name="error_wrong_login">Sai tên đăng nhập hoặc mật khẩu.</string>
     <string name="description_optional">Mô tả (không bắt buộc)</string>
-    <string name="invite_code_required">Mã mời (bắt buộc)</string>
+    <string name="invite_code_hint">Mã mời</string>
     <!-- Shown above the SIGN UP button. %1$s is the Terms of Use URL, %2$s the Privacy Policy URL. -->
     <string name="sign_up_terms">Khi đăng ký, bạn đồng ý với &lt;a href="%1$s"&gt;Điều khoản sử dụng&lt;/a&gt; và &lt;a href="%2$s"&gt;Chính sách quyền riêng tư&lt;/a&gt;.</string>
     <string name="email_address_taken">Địa chỉ email này đã được một tài khoản khác sử dụng.</string>
@@ -67,4 +67,5 @@
     <string name="toggle_speakerphone_button">Bật/tắt loa ngoài</string>
     <string name="licenses">Giấy phép</string>
     <string name="third_party_libraries">Thư viện bên thứ ba</string>
+    <string name="action_signup">Đăng ký</string>
 </resources>

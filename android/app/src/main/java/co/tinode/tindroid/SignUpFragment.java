@@ -396,6 +396,17 @@ public class SignUpFragment extends Fragment
                                             || err.getMessage().toLowerCase(java.util.Locale.ROOT)
                                                     .contains("permission denied"));
                                 if (badInvite) {
+                                    // Reveal the (normally hidden) code field and put the cursor in it.
+                                    parent.runOnUiThread(() -> {
+                                        View wrapper = parent.findViewById(R.id.inviteWrapper);
+                                        if (wrapper != null) {
+                                            wrapper.setVisibility(View.VISIBLE);
+                                            View codeField = parent.findViewById(R.id.userDescription);
+                                            if (codeField != null) {
+                                                codeField.requestFocus();
+                                            }
+                                        }
+                                    });
                                     parent.reportError(null, signUp, 0, R.string.error_invite_code_invalid);
                                 } else {
                                     parent.reportError(err, signUp, 0, R.string.error_new_account_failed);

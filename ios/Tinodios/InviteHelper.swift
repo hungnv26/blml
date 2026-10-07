@@ -38,14 +38,11 @@ public class InviteHelper {
                            scheme + server)
         ]
 
+        // Only servers that are invite-only have a code to pass on; an open
+        // server (chat.blml.app) needs nothing more than the address.
         if let code = SharedUtils.getInviteCode() {
             lines.append("3. " + String(format: NSLocalizedString("Invite code: %@",
                                                                  comment: "Invite message: registration code"), code))
-        } else {
-            // Better to say the code is needed than to let them hit a 403 and
-            // assume the server is broken.
-            lines.append("3. " + NSLocalizedString("You'll need an invite code — ask me for it.",
-                                                   comment: "Invite message: code unknown"))
         }
 
         return lines.joined(separator: "\n")

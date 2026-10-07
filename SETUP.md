@@ -129,8 +129,8 @@ Two caching gotchas when shipping webapp updates, learned the hard way:
 
 ### Not set up yet (deliberately)
 
-- **Email verification** — needs SMTP credentials; `"email"` validator in
-  blml.conf. For a 50-person group you can skip it entirely.
+- **Phone verification by SMS** — needs Twilio; without it a number is taken
+  as entered (`auto_confirm`).
 - **Monitoring** — upstream ships an exporter (`server/monitoring/`) for
   Prometheus/InfluxDB if you ever want it.
 
@@ -138,14 +138,17 @@ Two caching gotchas when shipping webapp updates, learned the hard way:
 ## Email verification
 
 Enabled: signing up now requires confirming an email before the account works.
-The server replies `300 validate credentials`, sends a code, and the client shows
-a "Confirm credentials" screen.
+The server replies `300 validate credentials`, sends an email with a code and a
+link, and the client shows a "Confirm credentials" screen. Accounts created
+before `EMAIL_REQUIRED_SINCE` keep working without an email, so switching this
+on does not lock out existing members.
 
 Settings live in `deploy/secrets.env` (gitignored) and are injected into
 `blml.conf` by `gen-config.sh`:
 
 ```
 EMAIL_VERIFICATION=true
+EMAIL_REQUIRED_SINCE=2026-10-07T00:00:00Z   # when you switched it on (UTC)
 SMTP_SERVER=mailpit     # local catcher; a real host in production
 SMTP_PORT=1025
 SMTP_LOGIN=

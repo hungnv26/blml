@@ -15,13 +15,6 @@
     </group>
 
     <item
-        android:id="@+id/action_signup"
-        android:orderInCategory="100"
-        android:title="@string/action_signup"
-        android:icon="@drawable/ic_person_add"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/action_settings"
         android:orderInCategory="101"
         android:title="@string/action_settings"

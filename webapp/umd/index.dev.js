@@ -5065,6 +5065,7 @@ class SidepanelView extends (react__WEBPACK_IMPORTED_MODULE_0___default().PureCo
         children: (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxDEV)(CreateAccountView, {
           tinode: this.props.tinode,
           reqCredMethod: this.props.reqCredMethod,
+          inviteRequired: this.props.inviteRequired,
           onShowCountrySelector: this.props.onShowCountrySelector,
           onCreateAccount: this.props.onCreateAccount,
           onCancel: this.props.onCancel,
@@ -5329,6 +5330,11 @@ const messages = (0,react_intl__WEBPACK_IMPORTED_MODULE_1__.defineMessages)({
     defaultMessage: 'Confirmed successfully',
     description: 'Notification message that the credential was successfully validated.'
   },
+  invite_code_needed: {
+    id: 'invite_code_needed',
+    defaultMessage: 'This server needs an invite code. Ask whoever invited you for it.',
+    description: 'Error shown when sign-up was refused for lack of an invite code'
+  },
   password_reset_success: {
     id: 'password_reset_success',
     defaultMessage: 'Password reset successfully',
@@ -5504,6 +5510,7 @@ class TinodeWeb extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component)
       searchResults: [],
       searchableContacts: [],
       reqCredMethod: undefined,
+      inviteRequired: false,
       credMethod: undefined,
       credCode: undefined,
       credToken: undefined,
@@ -6344,7 +6351,14 @@ class TinodeWeb extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component)
         this.handleLoginSuccessful(this);
       }
     }).catch(err => {
-      this.handleError(err.message, 'err');
+      if (err.code == 403) {
+        this.setState({
+          inviteRequired: true
+        });
+        this.handleError(this.props.intl.formatMessage(messages.invite_code_needed), 'err');
+      } else {
+        this.handleError(err.message, 'err');
+      }
     });
   }
   handleToggleIncognitoMode(on) {
@@ -7252,6 +7266,7 @@ class TinodeWeb extends (react__WEBPACK_IMPORTED_MODULE_0___default().Component)
         secureConnection: this.state.secureConnection,
         serverVersion: this.state.serverVersion,
         reqCredMethod: this.state.reqCredMethod,
+        inviteRequired: this.state.inviteRequired,
         textSize: this.state.textSize,
         colorSchema: this.state.colorSchema,
         wallpaper: this.state.wallpaper,
@@ -19669,7 +19684,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"patt":[{"name":"d10.png","size":384}
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = function(chunkId) {
 /******/ 			// return url for filenames based on template
-/******/ 			return "" + chunkId + "." + {"src_i18n_min_ar_json":"542ab799","src_i18n_min_de_json":"d5bf35f8","src_i18n_min_en_json":"368ac141","src_i18n_min_es_json":"8d7b39e8","src_i18n_min_fr_json":"d010d424","src_i18n_min_it_json":"d5e7588e","src_i18n_min_ko_json":"24cd1f06","src_i18n_min_ro_json":"09be9860","src_i18n_min_ru_json":"0db50b4f","src_i18n_min_th_json":"04800730","src_i18n_min_uk_json":"e0c95566","src_i18n_min_vi_json":"b7f7614f","src_i18n_min_zh_json":"b8d5eee7","src_i18n_min_zh-TW_json":"5dc4639b","src_widgets_phone-country-selector_jsx":"1833f1ac","src_views_info-view_jsx":"dc696cf7","src_views_messages-view_jsx":"a3238d05","vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4":"57704eff","vendors-node_modules_libphonenumber-js_examples_mobile_json_js-node_modules_libphonenumber-js-406a14":"e01761ec","src_widgets_phone-edit_jsx":"ec748484","src_views_account-settings-view_jsx":"c2da614d","src_views_create-account-view_jsx":"08442442","src_views_acc-security-view_jsx":"4830a19f","src_views_password-reset-view_jsx":"894c27dd","src_views_settings-view_jsx":"eefd4694","src_views_wallpapers_jsx":"cc0cc3e4","src_lib_phone_js":"2915d77e","src_widgets_call-panel_jsx":"2c78de4e","src_widgets_doc-preview_jsx":"31fe6f23","src_widgets_image-preview_jsx":"e620a260","src_widgets_the-card-preview_jsx":"cca01e6e","src_widgets_video-preview_jsx":"cee30469","vendors-node_modules_webm-duration-fix_lib_index_js":"c748539e","src_widgets_audio-recorder_jsx":"c2b3e61a"}[chunkId] + ".dev.js";
+/******/ 			return "" + chunkId + "." + {"src_i18n_min_ar_json":"542ab799","src_i18n_min_de_json":"d5bf35f8","src_i18n_min_en_json":"f202c71a","src_i18n_min_es_json":"8d7b39e8","src_i18n_min_fr_json":"d010d424","src_i18n_min_it_json":"d5e7588e","src_i18n_min_ko_json":"24cd1f06","src_i18n_min_ro_json":"09be9860","src_i18n_min_ru_json":"0db50b4f","src_i18n_min_th_json":"04800730","src_i18n_min_uk_json":"e0c95566","src_i18n_min_vi_json":"f524e27c","src_i18n_min_zh_json":"b8d5eee7","src_i18n_min_zh-TW_json":"5dc4639b","src_widgets_phone-country-selector_jsx":"1833f1ac","src_views_info-view_jsx":"dc696cf7","src_views_messages-view_jsx":"a3238d05","vendors-node_modules_libphonenumber-js_es6_normalizeArguments_js-node_modules_libphonenumber--8d04f4":"57704eff","vendors-node_modules_libphonenumber-js_examples_mobile_json_js-node_modules_libphonenumber-js-406a14":"e01761ec","src_widgets_phone-edit_jsx":"ec748484","src_views_account-settings-view_jsx":"c2da614d","src_views_create-account-view_jsx":"333cbc33","src_views_acc-security-view_jsx":"4830a19f","src_views_password-reset-view_jsx":"894c27dd","src_views_settings-view_jsx":"eefd4694","src_views_wallpapers_jsx":"cc0cc3e4","src_lib_phone_js":"2915d77e","src_widgets_call-panel_jsx":"2c78de4e","src_widgets_doc-preview_jsx":"31fe6f23","src_widgets_image-preview_jsx":"e620a260","src_widgets_the-card-preview_jsx":"cca01e6e","src_widgets_video-preview_jsx":"cee30469","vendors-node_modules_webm-duration-fix_lib_index_js":"c748539e","src_widgets_audio-recorder_jsx":"c2b3e61a"}[chunkId] + ".dev.js";
 /******/ 		};
 /******/ 	}();
 /******/ 	

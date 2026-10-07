@@ -11,7 +11,7 @@ policy at https://chat.blml.app/privacy; if the app changes, change both.
 | Does your app collect or share any of the required user data types? | **Yes** |
 | Is all of the user data collected by your app encrypted in transit? | **Yes** (TLS to chat.blml.app and to Firebase) |
 | Do you provide a way for users to request that their data is deleted? | **Yes** |
-| Account creation methods | **Username and password** (plus a phone number) |
+| Account creation methods | **Username and password** (with a verified email address) |
 | Delete account URL | `https://hungngo.net/blml/delete-account` |
 | Can users delete some data without deleting the account? | **Yes**, same URL |
 
@@ -28,8 +28,8 @@ For every row: **Collected: Yes · Shared: No · Processed ephemerally: No**.
 |---|---|---|---|
 | Personal info → **Name** | Required | App functionality, Account management | Display name shown to the people you chat with |
 | Personal info → **User IDs** | Required | App functionality, Account management | Username and internal account ID |
-| Personal info → **Phone number** | Required | App functionality, Account management | Asked at sign-up; lets people who have your number find you |
-| Personal info → **Email address** | Optional | App functionality, Account management | Only if the user adds one |
+| Personal info → **Phone number** | Optional | App functionality, Account management | Lets people who have your number find you |
+| Personal info → **Email address** | Required | App functionality, Account management | Asked at sign-up and verified by email; also used for password reset |
 | Messages → **Other in-app messages** | Required | App functionality | Chat messages are stored on the server for delivery and history |
 | Photos and videos → **Photos** | Optional | App functionality | Photos the user sends, and the profile picture |
 | Photos and videos → **Videos** | Optional | App functionality | Videos the user sends |

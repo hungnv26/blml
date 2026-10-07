@@ -363,6 +363,7 @@ func replyUpdateUser(s *Session, msg *ClientComMessage, rec *auth.Rec) {
 					validated = append(validated, allCreds[i].Method)
 				}
 				_, missing, _ := stringSliceDelta(globals.authValidators[authLvl], validated)
+				missing = exemptGrandfathered(uid, missing)
 				if len(missing) > 0 {
 					params = map[string]any{"cred": missing}
 				}

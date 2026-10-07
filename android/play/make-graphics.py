@@ -67,12 +67,14 @@ def phone(name, framed, caption):
     w, h = 1080, 1920
     im = Image.new("RGB", (w, h), NAVY)
     d = ImageDraw.Draw(im)
-    bottom = centred(d, caption, 110, font(68), WHITE, w)
+    bottom = int(centred(d, caption, 90, font(66), WHITE, w)) + 30
     shot = Image.open(os.path.join(BRAND, "framed", framed)).convert("RGBA")
-    # The handset runs off the bottom edge, so the screen is as large as it can be.
-    sw = 860
-    shot = shot.resize((sw, round(shot.height * sw / shot.width)), Image.LANCZOS)
-    im.paste(shot, ((w - sw) // 2, int(bottom) + 60), shot)
+    # The whole handset fits under the caption: the bottom of the screen (the
+    # composer, the Accept and Decline buttons) is often the point of the shot.
+    sh = h - bottom - 50
+    sw = round(shot.width * sh / shot.height)
+    shot = shot.resize((sw, sh), Image.LANCZOS)
+    im.paste(shot, ((w - sw) // 2, bottom), shot)
     im.save(os.path.join(OUT, name))
 
 
@@ -80,7 +82,20 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     icon()
     feature()
-    phone("phone-1-conversation.png", "android-conversation.png", "Group chats that stay\nin the family")
-    phone("phone-2-chats.png", "android-chats.png", "No ads, no feed,\njust your people")
+    # Raw emulator captures are in brand/screenshots/play/ (staged on the local QA
+    # server, demo-mode status bar); brand/frame-device.py turns them into these.
+    shots = [
+        ("play-02-group.png", "Group chats that stay\nin the family"),
+        ("play-01-chats.png", "No ads, no feed,\njust your people"),
+        ("play-03-request.png", "New people have to\nask first"),
+        ("play-06-dark.png", "Message or call,\nday or night"),
+        ("play-04-stickers.png", "Stickers and emoji,\none tap away"),
+        ("play-05-qr.png", "Add each other\nwith a QR code"),
+    ]
+    for old in os.listdir(OUT):
+        if old.startswith("phone-"):
+            os.remove(os.path.join(OUT, old))
+    for i, (framed, caption) in enumerate(shots, 1):
+        phone(f"phone-{i}-{framed[8:-4]}.png", framed, caption)
     for f in sorted(os.listdir(OUT)):
         print(f, Image.open(os.path.join(OUT, f)).size)

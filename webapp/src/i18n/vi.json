@@ -2089,5 +2089,12 @@
     "description": "Ancor text for the open-source licenses link",
     "missing": false,
     "obsolete": false
+  },
+  "invite_code_needed": {
+    "translation": "Máy chủ này cần mã mời. Hãy hỏi người đã mời bạn.",
+    "defaultMessage": "This server needs an invite code. Ask whoever invited you for it.",
+    "description": "Error shown when sign-up was refused for lack of an invite code",
+    "missing": false,
+    "obsolete": false
   }
 }

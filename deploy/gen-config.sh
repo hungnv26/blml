@@ -96,7 +96,21 @@ if enabled:
     block = setkey(block, 'sender_password', os.environ.get('SMTP_PASSWORD', ''))
     block = setkey(block, 'sender', os.environ.get('SMTP_SENDER', ''))
     block = setkey(block, 'smtp_helo_host', 'blml.app')
+    # Links in the emails must point at this server, not the template's localhost.
+    block = setkey(block, 'host_url', 'https://%s/' % os.environ.get('BLML_DOMAIN', 'localhost:6060'))
+    # Accounts older than this date may keep logging in without a verified
+    # email; everyone who signs up after it must verify. Blank = everyone.
+    since = os.environ.get('EMAIL_REQUIRED_SINCE', '').strip()
+    block = re.sub(r'\n\t\t\t"required_since":[^\n]*', '', block)
+    if since:
+        block = re.sub(r'("required":\s*\[[^\]]*\])', lambda m: m.group(1) + ',\n\t\t\t"required_since": "%s"' % since, block, count=1)
     s = s[:i] + block + s[j:]
+
+# The template ships a fixed debug code ("123456") that confirms ANY email.
+# Never leave it in a generated config, enabled or not.
+i = s.find('"email": {')
+j = s.find('"tel": {', i)
+s = s[:i] + re.sub(r'("debug_response":\s*)"[^"]*"', r'\1""', s[i:j]) + s[j:]
 
 open(path, 'w').write(s)
 print("  email verification: " + ("REQUIRED" if enabled else "disabled"))

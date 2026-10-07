@@ -69,7 +69,7 @@
     <string name="error_wrong_login">Wrong user name or password.</string>
     <string name="login_required">Login required</string>
     <string name="password_required">Password required</string>
-    <string name="error_invite_code_invalid">Sign-up needs a valid invite code. Ask whoever invited you for the current one.</string>
+    <string name="error_invite_code_invalid">This server needs an invite code. Ask whoever invited you for it.</string>
     <string name="error_new_account_failed">Account registration failed:</string>
     <string name="no_chats">You have no chats\n\n¯\\_(ツ)_/¯</string>
     <string name="no_blocked_contacts">No blocked contacts</string>
@@ -289,7 +289,7 @@
     <string name="next_button_hint">Next</string>
     <string name="your_name">Your name</string>
     <string name="description_optional">Description (optional)</string>
-    <string name="invite_code_required">Invite code (required)</string>
+    <string name="invite_code_hint">Invite code</string>
     <string name="change_avatar">Change avatar</string>
     <string name="badge_verified">Verified/official</string>
     <string name="badge_staff">Staff-managed</string>
@@ -458,14 +458,13 @@
     <string name="note">Note</string>
     <string name="my_qr_code">My QR code</string>
     <string name="invite_a_friend">Invite a friend</string>
-    <string name="invite_a_friend_explained">Share the server and invite code</string>
+    <string name="invite_a_friend_explained">Share the app with someone</string>
     <string name="invite_code_title">Invite code</string>
     <string name="invite_code_explained">The code new members type when signing up. It is stored on this device only.</string>
     <string name="invite_message_intro">Join me on BLML \u2014 our private group chat.</string>
     <string name="invite_message_install">Ask me for the app install link.</string>
     <string name="invite_message_server">Server: %s</string>
     <string name="invite_message_code">Invite code: %s</string>
-    <string name="invite_message_no_code">You\'ll need an invite code \u2014 ask me for it.</string>
     <string name="invite_share_via">Invite a friend</string>
     <string name="hint_search_chats">Search</string>
     <string name="stickers_hint">Stickers</string>
